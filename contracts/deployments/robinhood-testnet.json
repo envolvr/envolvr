@@ -1,0 +1,75 @@
+{
+  "network": "robinhood-testnet",
+  "chainId": 46630,
+  "rpc": "https://rpc.testnet.chain.robinhood.com/rpc",
+  "explorer": "https://explorer.testnet.chain.robinhood.com",
+  "deployedAt": "2026-09-23",
+  "owner": "0xCa93b19144eeD1C6c8A6d2b9a208651064012A63",
+  "contracts": {
+    "ReceiptAnchor": "0xff179938C830134D8E2922dAe7e16Ee4F0E33853",
+    "WeightsRegistry": "0xb8508AcC964b91145aB17A0884aFcBEa128dDC82",
+    "EnvolvrToken": "0x4EbF132fe56ca80A467DCb5f64EcB30d82221b33",
+    "StakingAllowance": "0xB14F681DD0589993750DE02C45132f40BC2e72Af",
+    "CreditVault": "0x2aaB804f3eB6B436CB542d56D171d020bC2d7c51",
+    "MockUSDG": "0xF7326a325aED45a1BF5D1268982f519BeCe941b6"
+  },
+  "stakingParams": {
+    "cooldownSeconds": 604800,
+    "budgetNoticeSeconds": 604800,
+    "note": "test token, placeholder supply 1e9"
+  },
+  "anchoring": [
+    {
+      "providerId": "0x29763cd6f76d0f808112186362b0365bb2b02d4da45f6102a01c5dda40c38e49",
+      "providerLabel": "envolvr.provider:8f81bbea38a16637f0a291b7dc733b4c0e3f36e0 (week 0 test gateway)",
+      "anchorer": "0xCa93b19144eeD1C6c8A6d2b9a208651064012A63",
+      "note": "deployer key stands in for the enclave-held anchoring key",
+      "batches": [
+        {
+          "index": 0,
+          "root": "0x777ab4d908fa00e443fd18b2bb44da97e1cfda9d1b310d1244c6f434f151a8d9",
+          "count": 3,
+          "tx": "0xa96e8be660a875cc2b498e27067345cf5413834f50e97b4847b83223e3ada282",
+          "contains": "anchorer/test/fixtures/week0-receipt.json (index 0) plus 2 synthetic receipts"
+        }
+      ]
+    }
+  ],
+  "weightsReferences": [
+    {
+      "repo": "zai-org/GLM-5.3",
+      "revision": "aca966e4e02791568aa6a4ced368624b3d897f42",
+      "weightsRoot": "0x4a74f09c8c2fc635436fc6011d55ffc31fa88016c50ca7a1204b65cba8ea02ac",
+      "manifest": "docs/weights/zai-org__GLM-5.3@aca966e4.json",
+      "tx": "0x0a06ba21a7a99059c64f246da9926f819959b7ae2aa3b7577098c95846c6904b"
+    },
+    {
+      "repo": "Qwen/Qwen3.8-27B",
+      "revision": "1d4bf0f2ff6012fd82039f2fa52739d0dd7c60c0",
+      "weightsRoot": "0x85b9baedd39c1ff26019ea459981f34a0bfaf126611de1dc97be31668277f102",
+      "manifest": "docs/weights/Qwen__Qwen3.8-27B@1d4bf0f2.json",
+      "tx": "0x0604771019907e5f9caa3fde814d915b3558ce7b355d54bcd4ac9f329ec1d0f0"
+    }
+  ],
+  "creditVault": {
+    "deployBlock": 123339348,
+    "usdg": "MockUSDG (testnet only, open mint)",
+    "deposits": [
+      {
+        "depositId": 0,
+        "block": 123339517,
+        "tx": "0x7953cfaab26c707f1ed0668e0575bfd154d811daae2fbda240c1d1f265b0683f",
+        "amountMicros": 5000000,
+        "note": "from the interrupted first run; credited to that run's agent wallet"
+      },
+      {
+        "depositId": 1,
+        "block": 123345156,
+        "tx": "0xac3599b630436289da713f04a9d64c52d722a98662827bad642bf105467fb784",
+        "amountMicros": 5000000,
+        "account": "0xd9203C5591E3a10835482af27f88aB8eF3C4Bf2E",
+        "note": "depositFor by deployer; control plane watcher credited 5000000 micro-USD"
+      }
+    ]
+  }
+}

@@ -1,0 +1,24 @@
+# secrets
+.env
+.env.*
+!.env.example
+
+# os / editor
+.DS_Store
+
+# generated
+node_modules/
+target/
+out/
+cache/
+broadcast/
+
+# separate repos
+/gateway/
+/internal/
+
+# local runs
+infra/simulator/dstack-simulator-*/
+*.db
+*.db-shm
+*.db-wal

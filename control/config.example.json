@@ -1,0 +1,17 @@
+{
+  "port": 8787,
+  "dbPath": "control.db",
+  "upstreamName": "redpill",
+  "marginBps": 2000,
+  "minAvailableMicros": 1000,
+  "models": {
+    "z-ai/glm-5.3": { "inputCostPerToken": "0.0000014", "outputCostPerToken": "0.0000044" },
+    "z-ai/glm-5.3-flash": { "inputCostPerToken": "0.00000015", "outputCostPerToken": "0.0000005" },
+    "qwen/qwen3.8-27b": { "inputCostPerToken": "0.00000024", "outputCostPerToken": "0.0000025" }
+  },
+  "chain": {
+    "rpcUrl": "https://rpc.testnet.chain.robinhood.com/rpc",
+    "stakingAllowance": "0xB14F681DD0589993750DE02C45132f40BC2e72Af"
+  },
+  "blockedWallets": []
+}

@@ -1,0 +1,17 @@
+{
+  "name": "@envolvr/weights",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "license": "Apache-2.0",
+  "description": "Weights manifests and roots for envolvr attested weights.",
+  "scripts": {
+    "test": "node --test test/*.test.ts"
+  },
+  "engines": {
+    "node": ">=24"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.2"
+  }
+}

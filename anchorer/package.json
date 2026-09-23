@@ -1,0 +1,21 @@
+{
+  "name": "@envolvr/anchorer",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "license": "Apache-2.0",
+  "description": "Batches ACI receipt digests into Merkle roots for the envolvr ReceiptAnchor contract.",
+  "scripts": {
+    "test": "node --test test/*.test.ts"
+  },
+  "engines": {
+    "node": ">=24"
+  },
+  "dependencies": {
+    "@noble/hashes": "^1.8.0",
+    "canonicalize": "^5.1.0"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.2"
+  }
+}
