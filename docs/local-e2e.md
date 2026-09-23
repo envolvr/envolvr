@@ -66,7 +66,7 @@ temporary.
 ## 4. Client
 
 ```bash
-cd control && ADMIN_TOKEN=… node --disable-warning=ExperimentalWarning scripts/e2e-local.ts
+cd control && ADMIN_TOKEN=… node --disable-warning=ExperimentalWarning scripts/e2e.ts
 ```
 
 Expected, as observed:

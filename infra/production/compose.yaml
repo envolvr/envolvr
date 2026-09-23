@@ -1,0 +1,145 @@
+# envolvr production: Private AI Gateway plus the envolvr control plane, in one
+# dstack TDX VM on Phala Cloud.
+#
+# Everything that defines behaviour is in this file, so dstack's compose_hash
+# (measured into RTMR3) binds it: both source commits, the image digests, the
+# gateway config, the upstream pins and the control-plane config. Only secrets
+# arrive through encrypted environment variables:
+#
+#   PRIVATE_AI_GATEWAY_ADMIN_TOKEN   gateway admin API
+#   ENVOLVR_CONTROL_TOKEN            gateway -> control plane bearer
+#   ENVOLVR_CONTROL_ADMIN_TOKEN      control plane /admin
+#   ENVOLVR_UPSTREAM_KEY             RedPill (Phala Cloud Confidential AI) API key
+#
+#   phala deploy -n envolvr-prod -c compose.yaml -t tdx.large --image dstack-0.5.9 \
+#     --no-dev-os --public-logs -e PRIVATE_AI_GATEWAY_ADMIN_TOKEN=… -e ENVOLVR_CONTROL_TOKEN=… \
+#     -e ENVOLVR_CONTROL_ADMIN_TOKEN=… -e ENVOLVR_UPSTREAM_KEY=…
+#
+# Build on tdx.large (the gateway compiles Rust at first boot), then resize down;
+# the build is cached on the data disk.
+#
+# Compose does not recreate a container when only an inline config's content
+# changes. Bump the -rN suffix of a config whenever its content changes.
+
+services:
+  gateway:
+    image: docker.io/dstacktee/git-launcher@sha256:4437dce18ec713b0991d34bd926d324966b1a0b90fad485b8ddb3f4ed2af138b
+    command: ["/etc/git-launcher/gateway.conf"]
+    ports:
+      - "8086:8086"
+    configs:
+      - source: gateway-pin-r1
+        target: /etc/git-launcher/gateway.conf
+      - source: gateway-config-r1
+        target: /etc/private-ai-gateway/gateway.config.json
+      - source: gateway-upstreams-r1
+        target: /etc/private-ai-gateway/upstreams.seed.json
+    environment:
+      PRIVATE_AI_GATEWAY_CONFIG_PATH: /etc/private-ai-gateway/gateway.config.json
+      PRIVATE_AI_GATEWAY_CACHE_DIR: /var/lib/private-ai-gateway/cache
+    volumes:
+      - gateway-checkout:/var/lib/git-launcher
+      - gateway-state:/var/lib/private-ai-gateway
+      - /var/run/dstack.sock:/var/run/dstack.sock
+    depends_on:
+      - control
+    restart: unless-stopped
+
+  control:
+    image: docker.io/library/node:24-bookworm@sha256:64af3819f9275802414d7cdc38c27e9d82bd564dec4d4da87d008255d36c63b4
+    command:
+      - sh
+      - -c
+      - |
+        set -eu
+        COMMIT=c2d4b45acd92f085520d0620f1f8956052f0c482
+        [ -d /opt/envolvr/.git ] || git clone --quiet --no-checkout https://github.com/envolvr/envolvr.git /opt/envolvr
+        cd /opt/envolvr
+        git fetch --quiet origin
+        git checkout --quiet --force "$$COMMIT"
+        git clean -fdxq -e control/node_modules
+        [ "$$(git rev-parse HEAD)" = "$$COMMIT" ]
+        cd control
+        npx --yes pnpm@10.13.1 install --frozen-lockfile --prod
+        exec node --disable-warning=ExperimentalWarning src/main.ts
+    ports:
+      - "8787:8787"
+    configs:
+      - source: control-config-r1
+        target: /etc/envolvr/control.json
+    environment:
+      CONTROL_CONFIG: /etc/envolvr/control.json
+      CONTROL_TOKEN: ${ENVOLVR_CONTROL_TOKEN:?set ENVOLVR_CONTROL_TOKEN}
+      ADMIN_TOKEN: ${ENVOLVR_CONTROL_ADMIN_TOKEN:?set ENVOLVR_CONTROL_ADMIN_TOKEN}
+    volumes:
+      - control-data:/data
+    restart: unless-stopped
+
+configs:
+  gateway-pin-r1:
+    content: |
+      REPO_URL=https://github.com/envolvr/private-ai-gateway.git
+      COMMIT_SHA=0e764ddb2ce2c74d313060018477c37de25a425d
+      WORK_DIR=/var/lib/git-launcher/private-ai-gateway
+      INSTALL_CMD=dpkg --configure -a && apt-get update -qq && apt-get install -y --no-install-recommends gcc libc6-dev
+      RUN_CMD=bash entrypoint.sh
+
+  gateway-config-r1:
+    content: |
+      {
+        "bind": "0.0.0.0:8086",
+        "state_dir": "/var/lib/private-ai-gateway",
+        "upstream_config_seed_path": "/etc/private-ai-gateway/upstreams.seed.json",
+        "admin_token": "${PRIVATE_AI_GATEWAY_ADMIN_TOKEN:?set PRIVATE_AI_GATEWAY_ADMIN_TOKEN}",
+        "dstack_endpoint": "unix:/var/run/dstack.sock",
+        "middleware": {
+          "control_url": "http://control:8787",
+          "control_token": "${ENVOLVR_CONTROL_TOKEN:?set ENVOLVR_CONTROL_TOKEN}"
+        }
+      }
+
+  gateway-upstreams-r1:
+    content: |
+      [
+        {
+          "name": "redpill",
+          "provider": "aci-service",
+          "base_url": "https://api.redpill.ai",
+          "models": {
+            "z-ai/glm-5.3": "z-ai/glm-5.3",
+            "z-ai/glm-5.3-flash": "z-ai/glm-5.3-flash",
+            "qwen/qwen3.8-27b": "qwen/qwen3.8-27b"
+          },
+          "bearer_token": "${ENVOLVR_UPSTREAM_KEY:?set ENVOLVR_UPSTREAM_KEY}",
+          "accepted_subjects": ["app-id:0xfdb7a14e5a6675f752e2cb69c9067a98ca402918"],
+          "accepted_dstack_kms_root_public_keys": ["0334c76e0c3f52ec64cbf9bbf5c910c272330166fd656c0a86bb330963e46910e1"]
+        }
+      ]
+
+  control-config-r1:
+    content: |
+      {
+        "port": 8787,
+        "dbPath": "/data/control.db",
+        "upstreamName": "redpill",
+        "marginBps": 2000,
+        "minAvailableMicros": 1000,
+        "models": {
+          "z-ai/glm-5.3": { "inputCostPerToken": "0.0000014", "outputCostPerToken": "0.0000044" },
+          "z-ai/glm-5.3-flash": { "inputCostPerToken": "0.00000015", "outputCostPerToken": "0.0000005" },
+          "qwen/qwen3.8-27b": { "inputCostPerToken": "0.00000024", "outputCostPerToken": "0.0000025" }
+        },
+        "chain": {
+          "rpcUrl": "https://rpc.testnet.chain.robinhood.com/rpc",
+          "stakingAllowance": "0xB14F681DD0589993750DE02C45132f40BC2e72Af",
+          "creditVault": "0x2aaB804f3eB6B436CB542d56D171d020bC2d7c51",
+          "depositStartBlock": 123339348,
+          "confirmations": 1
+        },
+        "blockedWallets": []
+      }
+
+volumes:
+  gateway-checkout:
+  gateway-state:
+  control-data:

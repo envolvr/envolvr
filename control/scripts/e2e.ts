@@ -1,9 +1,12 @@
-// Local end-to-end client: wallet sign-in -> credit -> request through the gateway
-// (middleware -> this control plane -> RedPill) -> receipt -> bill.
+// End-to-end client: wallet sign-in -> credit -> request through the gateway
+// (middleware -> control plane -> RedPill) -> receipt -> bill.
+// Local by default; set CONTROL_URL and GATEWAY_URL for a deployment.
+// ADMIN_TOKEN is the control plane admin token.
 import { secp256k1 } from '@noble/curves/secp256k1';
 import { addressOf, personalSign } from '../src/auth.ts';
 
-const CONTROL = 'http://127.0.0.1:8787', GATEWAY = 'http://127.0.0.1:8086';
+const CONTROL = process.env.CONTROL_URL ?? 'http://127.0.0.1:8787';
+const GATEWAY = process.env.GATEWAY_URL ?? 'http://127.0.0.1:8086';
 const admin = { authorization: `Bearer ${process.env.ADMIN_TOKEN}`, 'content-type': 'application/json' };
 const json = async (r: Response) => ({ status: r.status, body: await r.json().catch(() => null) as any });
 

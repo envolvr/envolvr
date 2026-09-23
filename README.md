@@ -22,7 +22,7 @@ agent ──> envolvr gateway (TDX enclave) ──> attested model enclave (conf
 | `control/` | Control plane for the gateway middleware: wallet sign-in and API keys, authorization, pricing, metering against staking allowances and USDG balances, deposit watcher. |
 | `anchorer/` | Batches ACI receipt digests into Merkle roots and proofs for `ReceiptAnchor`. |
 | `weights/` | Weights manifests and roots, from hub metadata (reference) or files on disk (boot step). |
-| `infra/` | Deployment compose for the gateway on Phala Cloud, and a dstack simulator image for local runs. |
+| `infra/` | `production/`: gateway plus control plane in one attested VM, with every source commit and image digest pinned in the measured compose. `gateway/`: gateway-only deploy. `simulator/`: dstack simulator image for local runs. |
 | `docs/` | Attested weights design, published weights manifests, local end-to-end guide, upstream proposals. |
 
 The gateway is a fork of
