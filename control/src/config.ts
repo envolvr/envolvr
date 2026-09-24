@@ -26,21 +26,59 @@ export interface Config {
     depositPollMs?: number;
   };
   blockedWallets: string[];
+  /** Encrypted off-VM ledger backups (backup.ts); off when absent. */
+  backup?: BackupConfig;
   /** Bearer token the gateway presents (middleware.control_token). */
   controlToken: string;
   /** Bearer token for /admin endpoints. */
   adminToken: string;
 }
 
-/** Settings from a JSON file; the two tokens from the environment only. */
+export interface BackupConfig {
+  /** S3-compatible endpoint, e.g. https://s3.us-east-005.backblazeb2.com */
+  endpoint: string;
+  bucket: string;
+  /** The endpoint's signing region, e.g. us-east-005 (B2), auto (R2). */
+  region: string;
+  /** Object key prefix, one per ledger (e.g. "control-db/"). */
+  prefix: string;
+  /** Default 300000 (5 minutes). */
+  intervalMs?: number;
+  /** Default 30. */
+  retainDays?: number;
+  /** Default /var/run/dstack.sock. */
+  dstackEndpoint?: string;
+  /** Restore this backup instead of the newest (applies only when dbPath does not exist). */
+  restoreKey?: string;
+  /** From the environment only: BACKUP_ACCESS_KEY_ID, BACKUP_SECRET_ACCESS_KEY. */
+  accessKeyId: string;
+  secretAccessKey: string;
+}
+
+type FileConfig = Omit<Config, 'controlToken' | 'adminToken' | 'blockedWallets' | 'backup'> & {
+  blockedWallets?: string[];
+  backup?: Omit<BackupConfig, 'accessKeyId' | 'secretAccessKey'>;
+};
+
+/** Settings from a JSON file; tokens and storage credentials from the environment only. */
 export function loadConfig(path: string, env: NodeJS.ProcessEnv = process.env): Config {
-  const file = JSON.parse(readFileSync(path, 'utf8')) as Omit<Config, 'controlToken' | 'adminToken'>;
+  const { backup, ...file } = JSON.parse(readFileSync(path, 'utf8')) as FileConfig;
   const controlToken = env.CONTROL_TOKEN;
   const adminToken = env.ADMIN_TOKEN;
   if (!controlToken || controlToken.length < 32) throw new Error('CONTROL_TOKEN must be set (32+ chars)');
   if (!adminToken || adminToken.length < 32) throw new Error('ADMIN_TOKEN must be set (32+ chars)');
   validateModels(file.models);
-  return { blockedWallets: [], ...file, controlToken, adminToken };
+  const config: Config = { blockedWallets: [], ...file, controlToken, adminToken };
+  if (backup) {
+    const { BACKUP_ACCESS_KEY_ID: accessKeyId, BACKUP_SECRET_ACCESS_KEY: secretAccessKey } = env;
+    if (!accessKeyId || !secretAccessKey) {
+      throw new Error('backup is configured: BACKUP_ACCESS_KEY_ID and BACKUP_SECRET_ACCESS_KEY must be set');
+    }
+    if (!backup.endpoint || !backup.bucket || !backup.region) throw new Error('backup needs endpoint, bucket and region');
+    if (!backup.prefix || !backup.prefix.endsWith('/')) throw new Error('backup.prefix must end with "/"');
+    config.backup = { ...backup, accessKeyId, secretAccessKey };
+  }
+  return config;
 }
 
 export function validateModels(models: Record<string, ModelRoutes>): void {
