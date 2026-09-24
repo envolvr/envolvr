@@ -28,10 +28,29 @@ export interface Config {
   blockedWallets: string[];
   /** Encrypted off-VM ledger backups (backup.ts); off when absent. */
   backup?: BackupConfig;
+  /** Receipt anchoring on chain (anchoring.ts); needs `chain`. Off when absent. */
+  anchoring?: AnchoringConfig;
   /** Bearer token the gateway presents (middleware.control_token). */
   controlToken: string;
   /** Bearer token for /admin endpoints. */
   adminToken: string;
+}
+
+export interface AnchoringConfig {
+  /** ReceiptAnchor contract address. */
+  receiptAnchor: string;
+  /** This gateway's log: keccak256("envolvr.provider:<dstack app id>"). */
+  providerId: string;
+  /** Checked against the RPC before every transaction. */
+  chainId: number;
+  /** Slot length, whole seconds, at least a minute. Default 600000 (10 minutes). */
+  intervalMs?: number;
+  /** Default 30000. */
+  pollMs?: number;
+  /** Default 100000. */
+  maxBatch?: number;
+  /** Default /var/run/dstack.sock. */
+  dstackEndpoint?: string;
 }
 
 export interface BackupConfig {
@@ -78,7 +97,20 @@ export function loadConfig(path: string, env: NodeJS.ProcessEnv = process.env): 
     if (!backup.prefix || !backup.prefix.endsWith('/')) throw new Error('backup.prefix must end with "/"');
     config.backup = { ...backup, accessKeyId, secretAccessKey };
   }
+  if (config.anchoring) validateAnchoring(config);
   return config;
+}
+
+function validateAnchoring(config: Config): void {
+  const a = config.anchoring!;
+  if (!config.chain?.rpcUrl) throw new Error('anchoring needs chain.rpcUrl');
+  if (!/^0x[0-9a-fA-F]{40}$/.test(a.receiptAnchor ?? '')) throw new Error('anchoring.receiptAnchor must be an address');
+  if (!/^0x[0-9a-fA-F]{64}$/.test(a.providerId ?? '')) throw new Error('anchoring.providerId must be 32 bytes of hex');
+  if (!Number.isInteger(a.chainId) || a.chainId <= 0) throw new Error('anchoring.chainId must be a positive integer');
+  const interval = a.intervalMs ?? 600_000;
+  if (!Number.isInteger(interval) || interval < 60_000 || interval % 1000 !== 0) {
+    throw new Error('anchoring.intervalMs must be whole seconds and at least 60000');
+  }
 }
 
 export function validateModels(models: Record<string, ModelRoutes>): void {

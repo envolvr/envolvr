@@ -3,8 +3,11 @@
 // Local by default; set CONTROL_URL and GATEWAY_URL for a deployment.
 // ADMIN_TOKEN is the control plane admin token. MODEL picks the model and
 // PROVIDER (JSON, e.g. '{"only":["near-ai"]}') the caller's routing block.
+// ANCHOR_WAIT (seconds) also waits for the receipt's anchoring proof.
+import { createHash } from 'node:crypto';
 import { secp256k1 } from '@noble/curves/secp256k1';
 import { addressOf, personalSign } from '../src/auth.ts';
+import { verifyProof } from '../src/merkle.ts';
 
 const CONTROL = process.env.CONTROL_URL ?? 'http://127.0.0.1:8787';
 const GATEWAY = process.env.GATEWAY_URL ?? 'http://127.0.0.1:8086';
@@ -40,7 +43,9 @@ console.log('5. request:', res.status, '| reply:', JSON.stringify(body.choices?.
   '| usage:', JSON.stringify(body.usage && { prompt: body.usage.prompt_tokens, completion: body.usage.completion_tokens, cost: body.usage.cost }),
   '| receipt:', receiptId);
 
-const receipt = await json(await fetch(`${GATEWAY}/v1/aci/receipts/${receiptId}`, { headers: { authorization: `Bearer ${apiKey}` } }));
+const receiptRes = await fetch(`${GATEWAY}/v1/aci/receipts/${receiptId}`, { headers: { authorization: `Bearer ${apiKey}` } });
+const receiptBytes = Buffer.from(await receiptRes.arrayBuffer());
+const receipt = { status: receiptRes.status, body: JSON.parse(receiptBytes.toString('utf8') || 'null') as any };
 const log = receipt.body?.event_log ?? [];
 const events = log.map((e: any) => e.type);
 console.log('6. receipt fetch:', receipt.status, '| events:', JSON.stringify(events));
@@ -52,3 +57,20 @@ console.log('   route:', selected?.route_id ?? selected?.selected_route ?? JSON.
 await new Promise((r) => setTimeout(r, 1500)); // post-consult is fire-and-forget
 const acct = await json(await fetch(`${CONTROL}/admin/account?wallet=${wallet}`, { headers: admin }));
 console.log('7. bill: balance', acct.body.balanceMicros, 'micro-USD (from 500000) | allowance today', acct.body.allowanceTodayMicros);
+
+if (process.env.ANCHOR_WAIT) {
+  // The digest a verifier computes: SHA-256 of the receipt's JCS bytes, which is what the gateway serves.
+  const digest = `0x${createHash('sha256').update(receiptBytes).digest('hex')}`;
+  const deadline = Date.now() + Number(process.env.ANCHOR_WAIT) * 1000;
+  let proof: any;
+  do {
+    proof = (await json(await fetch(`${CONTROL}/receipts/${digest}/proof`))).body;
+    if (proof?.status === 'anchored') break;
+    await new Promise((r) => setTimeout(r, 5000));
+  } while (Date.now() < deadline);
+  console.log('8. anchoring:', digest.slice(0, 18) + '…', '|', proof?.status ?? JSON.stringify(proof),
+    ...(proof?.status === 'anchored'
+      ? ['| batch', proof.batchIndex, 'leaf', proof.leafIndex, 'of', proof.count, '| tx', proof.txHash,
+        '| proof verifies against root:', verifyProof(proof.root, digest, proof.proof)]
+      : []));
+}

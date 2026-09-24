@@ -2,11 +2,13 @@
 // BACKUP_ACCESS_KEY_ID, BACKUP_SECRET_ACCESS_KEY when backups are configured)
 
 import { existsSync } from 'node:fs';
+import { Anchorer, anchorKey, ReceiptAnchorContract } from './anchoring.ts';
 import { LedgerBackups, ledgerBackupKey } from './backup.ts';
 import { loadConfig } from './config.ts';
 import { noAllowance, StakingAllowanceReader } from './chain.ts';
 import { Store } from './db.ts';
 import { DepositWatcher, RpcLogSource } from './deposits.ts';
+import { Rpc } from './evm.ts';
 import { S3Client } from './s3.ts';
 import { createControlServer } from './server.ts';
 
@@ -50,6 +52,18 @@ if (config.chain?.creditVault) {
   log('deposit watcher started', { vault: config.chain.creditVault });
 }
 
+let stopAnchoring = () => {};
+if (config.anchoring) {
+  const a = config.anchoring;
+  const contract = new ReceiptAnchorContract({
+    rpc: new Rpc(config.chain!.rpcUrl), contract: a.receiptAnchor, providerId: a.providerId, chainId: a.chainId,
+    key: await anchorKey(a.dstackEndpoint ?? '/var/run/dstack.sock'),
+  });
+  stopAnchoring = new Anchorer(store, contract, { intervalMs: a.intervalMs, maxBatch: a.maxBatch, log })
+    .start(a.pollMs ?? 30_000);
+  log('receipt anchoring configured', { contract: a.receiptAnchor, providerId: a.providerId, anchorer: contract.address });
+}
+
 const stopBackups = backups?.start(store.db, config.dbPath, config.backup?.intervalMs ?? 300_000);
 if (backups) log('ledger backups started', { bucket: config.backup!.bucket, prefix: config.backup!.prefix });
 
@@ -65,6 +79,7 @@ for (const signal of ['SIGTERM', 'SIGINT'] as const) {
     stopping = true;
     log('stopping', { signal });
     stopDeposits();
+    stopAnchoring();
     await new Promise<void>((resolve) => server.close(() => resolve()));
     await stopBackups?.();
     store.close();

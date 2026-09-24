@@ -1,6 +1,7 @@
 // Control-plane state in SQLite (node:sqlite). Money columns are micro-USD
 // integers. Usage reports are keyed by (request_id, attempt_index), so a replayed
-// report is ignored instead of billed twice.
+// report is ignored instead of billed twice. Receipt digests are keyed by digest,
+// so a digest the gateway sends twice is kept once.
 
 import { DatabaseSync } from 'node:sqlite';
 
@@ -19,6 +20,28 @@ export interface DepositEvent {
   amountMicros: bigint;
   depositId: number;
 }
+
+export interface AnchorBatch {
+  batchIndex: number;
+  root: string;
+  count: number;
+  createdAt: number;
+  txHash: string | null;
+  sentAt: number | null;
+  /** Block time the contract recorded; null until confirmed on chain. */
+  anchoredAt: number | null;
+  blockNumber: number | null;
+}
+
+interface BatchRow {
+  batch_index: number; root: string; count: number; created_at: number; tx_hash: string | null;
+  sent_at: number | null; anchored_at: number | null; block_number: number | null;
+}
+
+const batchOf = (r: BatchRow): AnchorBatch => ({
+  batchIndex: r.batch_index, root: r.root, count: r.count, createdAt: r.created_at, txHash: r.tx_hash,
+  sentAt: r.sent_at, anchoredAt: r.anchored_at, blockNumber: r.block_number,
+});
 
 export class Store {
   readonly db: DatabaseSync;
@@ -78,6 +101,25 @@ export class Store {
         name TEXT PRIMARY KEY,
         block_number INTEGER NOT NULL
       );
+      CREATE TABLE IF NOT EXISTS receipt_digests (
+        seq INTEGER PRIMARY KEY AUTOINCREMENT,
+        digest TEXT NOT NULL UNIQUE,
+        received_at INTEGER NOT NULL,
+        batch_index INTEGER,
+        leaf_index INTEGER
+      );
+      CREATE INDEX IF NOT EXISTS receipt_digests_unbatched ON receipt_digests (seq) WHERE batch_index IS NULL;
+      CREATE INDEX IF NOT EXISTS receipt_digests_batch ON receipt_digests (batch_index, leaf_index);
+      CREATE TABLE IF NOT EXISTS anchor_batches (
+        batch_index INTEGER PRIMARY KEY,
+        root TEXT NOT NULL,
+        count INTEGER NOT NULL,
+        created_at INTEGER NOT NULL,
+        tx_hash TEXT,
+        sent_at INTEGER,
+        anchored_at INTEGER,
+        block_number INTEGER
+      );
     `);
   }
 
@@ -118,6 +160,97 @@ export class Store {
 
   close(): void {
     this.db.close();
+  }
+
+  /** Record receipt digests (0x + 64 lowercase hex). Returns how many were new. */
+  addReceiptDigests(digests: string[], now: number): number {
+    const insert = this.db.prepare('INSERT OR IGNORE INTO receipt_digests (digest, received_at) VALUES (?, ?)');
+    this.db.exec('BEGIN IMMEDIATE');
+    try {
+      let added = 0;
+      for (const d of digests) added += Number(insert.run(d, now).changes);
+      this.db.exec('COMMIT');
+      return added;
+    } catch (err) {
+      this.db.exec('ROLLBACK');
+      throw err;
+    }
+  }
+
+  /** Digests received before `receivedBefore` (unix s) and not yet in a batch, oldest first. */
+  unbatchedDigests(limit: number, receivedBefore: number): string[] {
+    return (this.db.prepare(`SELECT digest FROM receipt_digests WHERE batch_index IS NULL AND received_at < ?
+      ORDER BY seq LIMIT ?`).all(receivedBefore, limit) as { digest: string }[]).map((r) => r.digest);
+  }
+
+  /** Create batch `batchIndex` over `digests` (in leaf order), in one transaction. */
+  createBatch(batchIndex: number, root: string, digests: string[], now: number): void {
+    this.db.exec('BEGIN IMMEDIATE');
+    try {
+      this.db.prepare('INSERT INTO anchor_batches (batch_index, root, count, created_at) VALUES (?, ?, ?, ?)')
+        .run(batchIndex, root, digests.length, now);
+      const assign = this.db.prepare(
+        'UPDATE receipt_digests SET batch_index = ?, leaf_index = ? WHERE digest = ? AND batch_index IS NULL');
+      digests.forEach((d, i) => {
+        if (assign.run(batchIndex, i, d).changes !== 1) throw new Error(`digest ${d} is missing or already batched`);
+      });
+      this.db.exec('COMMIT');
+    } catch (err) {
+      this.db.exec('ROLLBACK');
+      throw err;
+    }
+  }
+
+  /** Drop a batch that never landed; its digests go back to the queue. */
+  dissolveBatch(batchIndex: number): void {
+    this.db.exec('BEGIN IMMEDIATE');
+    try {
+      this.db.prepare('UPDATE receipt_digests SET batch_index = NULL, leaf_index = NULL WHERE batch_index = ?').run(batchIndex);
+      this.db.prepare('DELETE FROM anchor_batches WHERE batch_index = ?').run(batchIndex);
+      this.db.exec('COMMIT');
+    } catch (err) {
+      this.db.exec('ROLLBACK');
+      throw err;
+    }
+  }
+
+  batchSent(batchIndex: number, txHash: string, now: number): void {
+    this.db.prepare('UPDATE anchor_batches SET tx_hash = ?, sent_at = ? WHERE batch_index = ?').run(txHash, now, batchIndex);
+  }
+
+  batchAnchored(batchIndex: number, anchoredAt: number, blockNumber: number | null): void {
+    this.db.prepare('UPDATE anchor_batches SET anchored_at = ?, block_number = ? WHERE batch_index = ?')
+      .run(anchoredAt, blockNumber, batchIndex);
+  }
+
+  /** The oldest batch not yet confirmed on chain. */
+  openBatch(): AnchorBatch | undefined {
+    const row = this.db.prepare('SELECT * FROM anchor_batches WHERE anchored_at IS NULL ORDER BY batch_index LIMIT 1')
+      .get() as BatchRow | undefined;
+    return row && batchOf(row);
+  }
+
+  lastBatch(): AnchorBatch | undefined {
+    const row = this.db.prepare('SELECT * FROM anchor_batches ORDER BY batch_index DESC LIMIT 1').get() as BatchRow | undefined;
+    return row && batchOf(row);
+  }
+
+  batch(batchIndex: number): AnchorBatch | undefined {
+    const row = this.db.prepare('SELECT * FROM anchor_batches WHERE batch_index = ?').get(batchIndex) as BatchRow | undefined;
+    return row && batchOf(row);
+  }
+
+  /** Where a digest sits: its batch and leaf, or null batch while queued. */
+  receiptDigest(digest: string): { batchIndex: number | null; leafIndex: number | null } | undefined {
+    const row = this.db.prepare('SELECT batch_index, leaf_index FROM receipt_digests WHERE digest = ?').get(digest) as
+      { batch_index: number | null; leaf_index: number | null } | undefined;
+    return row && { batchIndex: row.batch_index, leafIndex: row.leaf_index };
+  }
+
+  /** A batch's digests in leaf order. */
+  batchDigests(batchIndex: number): string[] {
+    return (this.db.prepare('SELECT digest FROM receipt_digests WHERE batch_index = ? ORDER BY leaf_index')
+      .all(batchIndex) as { digest: string }[]).map((r) => r.digest);
   }
 
   accountByWallet(wallet: string): Account | undefined {

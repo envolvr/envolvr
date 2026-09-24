@@ -5,9 +5,12 @@
 //   POST /consult/post   usage report per attempt, idempotent by request id
 //   GET  /models/...     sub-catalogs relayed from /v1/models/...
 //                        (/models/providers/<upstream>: that upstream's models)
+//   POST /receipts       digests of signed receipts, for anchoring (idempotent)
 // Client-facing:
 //   GET  /auth/nonce?wallet=0x…   message to sign
 //   POST /auth/key                signed message -> API key (shown once)
+//   GET  /receipts/<digest>/proof inclusion proof of an anchored receipt; the
+//                                 digest is SHA-256 of the receipt's JCS bytes
 // Operator (bearer: adminToken):
 //   POST /admin/credit            credit a wallet's USDG balance
 //   GET  /admin/account?wallet=   balance and today's allowance
@@ -21,6 +24,7 @@ import { hashApiKey, newApiKey, newNonce, recoverSigner, signInMessage } from '.
 import type { AllowanceSource } from './chain.ts';
 import type { Config } from './config.ts';
 import type { Store } from './db.ts';
+import { ProofService } from './anchoring.ts';
 import { costMicros } from './money.ts';
 import {
   billingRates, DEFAULT_ENDPOINTS, parseProviderPrefs, quote, RoutingError, selectRoutes, withRouteMargin, type Route,
@@ -29,6 +33,8 @@ import {
 const DAY = 86_400;
 const NONCE_TTL = 300;
 const WALLET = /^0x[0-9a-fA-F]{40}$/;
+const DIGEST = /^0x[0-9a-f]{64}$/;
+const MAX_DIGESTS = 10_000;
 
 export interface Deps {
   config: Config;
@@ -218,6 +224,29 @@ export function createControlServer(deps: Deps): Server {
     return { apiKey, wallet: account.wallet };
   }
 
+  const proofs = new ProofService(store);
+
+  function receiveDigests(body: Record<string, unknown>) {
+    const receipts = body.receipts;
+    if (!Array.isArray(receipts) || receipts.length > MAX_DIGESTS) {
+      throw new HttpError(400, `receipts must be a list of at most ${MAX_DIGESTS}`);
+    }
+    const digests = receipts.map((r) => (r && typeof r === 'object' ? (r as Record<string, unknown>).digest : undefined));
+    if (!digests.every((d): d is string => typeof d === 'string' && DIGEST.test(d))) {
+      throw new HttpError(400, 'every receipt needs a digest: 0x and 64 lowercase hex');
+    }
+    return { added: store.addReceiptDigests(digests, now()) };
+  }
+
+  function receiptProof(pathname: string) {
+    const digest = pathname.slice('/receipts/'.length, -'/proof'.length).toLowerCase();
+    if (!DIGEST.test(digest)) throw new HttpError(400, 'digest must be 0x and 64 hex');
+    const proof = proofs.proof(digest);
+    if (!proof) throw new HttpError(404, 'unknown receipt digest');
+    const a = config.anchoring;
+    return a ? { ...proof, chainId: a.chainId, contract: a.receiptAnchor, providerId: a.providerId } : proof;
+  }
+
   function adminCredit(body: Record<string, unknown>) {
     const wallet = String(body.wallet ?? '');
     if (!WALLET.test(wallet)) throw new HttpError(400, 'wallet must be a 0x address');
@@ -256,6 +285,8 @@ export function createControlServer(deps: Deps): Server {
       if (route === 'POST /consult/pre') { gateway(); return send(res, 200, await consultPre(await readJson(req))); }
       if (route === 'POST /consult/post') { gateway(); return send(res, 200, await consultPost(await readJson(req))); }
       if (req.method === 'GET' && url.pathname.startsWith('/models')) { gateway(); return send(res, 200, catalog(url.pathname)); }
+      if (route === 'POST /receipts') { gateway(); return send(res, 200, receiveDigests(await readJson(req, 2 * 1024 * 1024))); }
+      if (req.method === 'GET' && /^\/receipts\/[^/]+\/proof$/.test(url.pathname)) return send(res, 200, receiptProof(url.pathname));
       if (route === 'GET /auth/nonce') return send(res, 200, authNonce(url));
       if (route === 'POST /auth/key') return send(res, 200, authKey(await readJson(req)));
       if (route === 'POST /admin/credit') { admin(); return send(res, 200, adminCredit(await readJson(req))); }
