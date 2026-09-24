@@ -12,6 +12,8 @@
 #   ENVOLVR_UPSTREAM_KEY             RedPill (Phala Cloud Confidential AI) API key
 #   ENVOLVR_NEAR_KEY                 NEAR AI Cloud API key
 #   CLOUDFLARE_API_TOKEN             envolvr.xyz zone: Zone:Read, DNS:Edit
+#   ENVOLVR_BACKUP_ACCESS_KEY_ID     Backblaze B2 application key, read and write on the
+#   ENVOLVR_BACKUP_SECRET_ACCESS_KEY ledger backup bucket only (keyID, applicationKey)
 #
 #   phala deploy -n envolvr-prod -c compose.yaml -t tdx.large --image dstack-0.5.9 \
 #     --no-dev-os --public-logs -e <file with the secrets above>
@@ -40,6 +42,13 @@
 # meta-dstack release. Trust does not rest on the download: the enclave attests
 # os_image_hash = sha256(sha256sum.txt), and every boot file is checked against
 # that list before the verifier can use it.
+#
+# The credit ledger (control.db) is copied off the VM to Backblaze B2 every five
+# minutes when it changed and on every stop, sealed with a key the dstack KMS
+# derives for this app, so only a VM of this app can read a copy. When /data/control.db
+# does not exist, the control plane restores the newest copy before it serves,
+# and refuses to start if it cannot read the bucket. To restore over an existing
+# ledger, point dbPath at a new file (optionally pinning backup.restoreKey).
 
 services:
   gateway:
@@ -139,7 +148,7 @@ services:
       - -c
       - |
         set -eu
-        COMMIT=597d1ec092e7aed65d412ac0e40fd0418e18ced9
+        COMMIT=4746139dc5c8d6cffb348b90d9aeab41ee88e06f
         [ -d /opt/envolvr/.git ] || git clone --quiet --no-checkout https://github.com/envolvr/envolvr.git /opt/envolvr
         cd /opt/envolvr
         git fetch --quiet origin
@@ -150,14 +159,19 @@ services:
         npx --yes pnpm@10.13.1 install --frozen-lockfile --prod
         exec node --disable-warning=ExperimentalWarning src/main.ts
     configs:
-      - source: control-config-r2
+      - source: control-config-r3
         target: /etc/envolvr/control.json
     environment:
       CONTROL_CONFIG: /etc/envolvr/control.json
       CONTROL_TOKEN: ${ENVOLVR_CONTROL_TOKEN:?set ENVOLVR_CONTROL_TOKEN}
       ADMIN_TOKEN: ${ENVOLVR_CONTROL_ADMIN_TOKEN:?set ENVOLVR_CONTROL_ADMIN_TOKEN}
+      BACKUP_ACCESS_KEY_ID: ${ENVOLVR_BACKUP_ACCESS_KEY_ID:?set ENVOLVR_BACKUP_ACCESS_KEY_ID}
+      BACKUP_SECRET_ACCESS_KEY: ${ENVOLVR_BACKUP_SECRET_ACCESS_KEY:?set ENVOLVR_BACKUP_SECRET_ACCESS_KEY}
     volumes:
       - control-data:/data
+      - /var/run/dstack.sock:/var/run/dstack.sock
+    # Time to finish in-flight requests and upload the final ledger copy.
+    stop_grace_period: 30s
     restart: unless-stopped
 
 configs:
@@ -251,7 +265,7 @@ configs:
         }
       ]
 
-  control-config-r2:
+  control-config-r3:
     content: |
       {
         "port": 8787,
@@ -280,7 +294,15 @@ configs:
           "depositStartBlock": 123339348,
           "confirmations": 1
         },
-        "blockedWallets": []
+        "blockedWallets": [],
+        "backup": {
+          "endpoint": "https://s3.us-east-005.backblazeb2.com",
+          "bucket": "envolvr-ledger",
+          "region": "us-east-005",
+          "prefix": "testnet/",
+          "intervalMs": 300000,
+          "retainDays": 30
+        }
       }
 
 volumes:
