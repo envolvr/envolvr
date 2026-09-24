@@ -49,17 +49,24 @@
 # does not exist, the control plane restores the newest copy before it serves,
 # and refuses to start if it cannot read the bucket. To restore over an existing
 # ledger, point dbPath at a new file (optionally pinning backup.restoreKey).
+#
+# Receipt anchoring: the gateway posts the digest of every signed receipt to the
+# control plane (receipt_log). In fixed 10-minute slots the control plane
+# anchors a Merkle root of the slot's digests to ReceiptAnchor on Robinhood
+# Chain, signed with a key the dstack KMS derives for this app, and serves each
+# receipt's inclusion proof at https://auth.envolvr.xyz/receipts/<digest>/proof.
+# The owner registers that key's address (logged at start) with setAnchorer.
 
 services:
   gateway:
     image: docker.io/dstacktee/git-launcher@sha256:4437dce18ec713b0991d34bd926d324966b1a0b90fad485b8ddb3f4ed2af138b
     command: ["/etc/git-launcher/gateway.conf"]
     configs:
-      - source: gateway-pin-r3
+      - source: gateway-pin-r4
         target: /etc/git-launcher/gateway.conf
       - source: run-gateway-r1
         target: /etc/envolvr/run-gateway.sh
-      - source: gateway-config-r3
+      - source: gateway-config-r4
         target: /etc/private-ai-gateway/gateway.config.json
       - source: gateway-upstreams-r2
         target: /etc/private-ai-gateway/upstreams.seed.json
@@ -148,7 +155,7 @@ services:
       - -c
       - |
         set -eu
-        COMMIT=4746139dc5c8d6cffb348b90d9aeab41ee88e06f
+        COMMIT=58eb006b025451de0395a414086cf39c0c3ebed8
         [ -d /opt/envolvr/.git ] || git clone --quiet --no-checkout https://github.com/envolvr/envolvr.git /opt/envolvr
         cd /opt/envolvr
         git fetch --quiet origin
@@ -159,7 +166,7 @@ services:
         npx --yes pnpm@10.13.1 install --frozen-lockfile --prod
         exec node --disable-warning=ExperimentalWarning src/main.ts
     configs:
-      - source: control-config-r3
+      - source: control-config-r4
         target: /etc/envolvr/control.json
     environment:
       CONTROL_CONFIG: /etc/envolvr/control.json
@@ -175,10 +182,10 @@ services:
     restart: unless-stopped
 
 configs:
-  gateway-pin-r3:
+  gateway-pin-r4:
     content: |
       REPO_URL=https://github.com/envolvr/private-ai-gateway.git
-      COMMIT_SHA=91dbc0cacc34227bf509200359074b116c9affab
+      COMMIT_SHA=b24a6c5716b8301cff0e80f8e1de078ae62910b5
       WORK_DIR=/var/lib/git-launcher/private-ai-gateway
       INSTALL_CMD=dpkg --configure -a && apt-get update -qq && apt-get install -y --no-install-recommends gcc libc6-dev curl ca-certificates && curl -fsSL --retry 3 -o /tmp/uv.tar.gz https://github.com/astral-sh/uv/releases/download/0.12.18/uv-x86_64-unknown-linux-gnu.tar.gz && echo '89eadd7c76fc063887959510d5ba0ab1264dfd5f1143b925ddb73021a40acf16  /tmp/uv.tar.gz' | sha256sum -c - && tar -xzf /tmp/uv.tar.gz -C /usr/local/bin --strip-components=1 uv-x86_64-unknown-linux-gnu/uv && uv sync --frozen --no-dev
       RUN_CMD=bash /etc/envolvr/run-gateway.sh
@@ -213,7 +220,7 @@ configs:
   # state_dir holds the live upstream config, sessions and receipts. It moves
   # to a fresh directory when the upstream seed must apply again; the Rust
   # build cache (PRIVATE_AI_GATEWAY_CACHE_DIR) stays where it is.
-  gateway-config-r3:
+  gateway-config-r4:
     content: |
       {
         "bind": "0.0.0.0:8086",
@@ -224,6 +231,10 @@ configs:
         "middleware": {
           "control_url": "http://control:8787",
           "control_token": "${ENVOLVR_CONTROL_TOKEN:?set ENVOLVR_CONTROL_TOKEN}"
+        },
+        "receipt_log": {
+          "url": "http://control:8787/receipts",
+          "bearer_token": "${ENVOLVR_CONTROL_TOKEN:?set ENVOLVR_CONTROL_TOKEN}"
         },
         "tls": {
           "domain_certificates": [
@@ -265,7 +276,7 @@ configs:
         }
       ]
 
-  control-config-r3:
+  control-config-r4:
     content: |
       {
         "port": 8787,
@@ -302,6 +313,12 @@ configs:
           "prefix": "testnet/",
           "intervalMs": 300000,
           "retainDays": 30
+        },
+        "anchoring": {
+          "receiptAnchor": "0xff179938C830134D8E2922dAe7e16Ee4F0E33853",
+          "providerId": "0x86b99987cd8f8ebddc2dd0efa61ed52b5db594430f12446db424da0d9c4b831f",
+          "chainId": 46630,
+          "intervalMs": 600000
         }
       }
 
