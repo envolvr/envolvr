@@ -11,16 +11,27 @@
 #   ENVOLVR_CONTROL_ADMIN_TOKEN      control plane /admin
 #   ENVOLVR_UPSTREAM_KEY             RedPill (Phala Cloud Confidential AI) API key
 #   ENVOLVR_NEAR_KEY                 NEAR AI Cloud API key
+#   CLOUDFLARE_API_TOKEN             envolvr.xyz zone: Zone:Read, DNS:Edit
 #
 #   phala deploy -n envolvr-prod -c compose.yaml -t tdx.large --image dstack-0.5.9 \
-#     --no-dev-os --public-logs -e PRIVATE_AI_GATEWAY_ADMIN_TOKEN=… -e ENVOLVR_CONTROL_TOKEN=… \
-#     -e ENVOLVR_CONTROL_ADMIN_TOKEN=… -e ENVOLVR_UPSTREAM_KEY=… -e ENVOLVR_NEAR_KEY=…
+#     --no-dev-os --public-logs -e <file with the secrets above>
 #
 # Build on tdx.large (the gateway compiles Rust at first boot), then resize down;
 # the build is cached on the data disk.
 #
 # Compose does not recreate a container when only an inline config's content
 # changes. Bump the -rN suffix of a config whenever its content changes.
+#
+# Public endpoints: https://api.envolvr.xyz (gateway) and https://auth.envolvr.xyz
+# (sign-in, control plane). TLS terminates in the ingress inside this VM; Phala's
+# edge only passes the encrypted stream through (DNS TXT
+# _dstack-app-address.<domain> = <app-id>:443). The ingress obtains the
+# certificates in the VM (Let's Encrypt, DNS-01 via Cloudflare), publishes CAA
+# records that pin issuance to its ACME account, and serves evidence at
+# /evidences/. The gateway puts the api.envolvr.xyz certificate key into its
+# attested keyset, so a client can bind its TLS channel to this workload. No
+# other port is published: the Phala URLs, which terminate TLS outside the VM,
+# no longer reach the gateway or the control plane.
 #
 # NEAR AI routes are verified per model enclave by the gateway's Python bridge
 # (run with uv, pinned below) against the dstack-verifier sidecar. The verifier
@@ -34,12 +45,12 @@ services:
   gateway:
     image: docker.io/dstacktee/git-launcher@sha256:4437dce18ec713b0991d34bd926d324966b1a0b90fad485b8ddb3f4ed2af138b
     command: ["/etc/git-launcher/gateway.conf"]
-    ports:
-      - "8086:8086"
     configs:
-      - source: gateway-pin-r2
+      - source: gateway-pin-r3
         target: /etc/git-launcher/gateway.conf
-      - source: gateway-config-r2
+      - source: run-gateway-r1
+        target: /etc/envolvr/run-gateway.sh
+      - source: gateway-config-r3
         target: /etc/private-ai-gateway/gateway.config.json
       - source: gateway-upstreams-r2
         target: /etc/private-ai-gateway/upstreams.seed.json
@@ -57,10 +68,33 @@ services:
     volumes:
       - gateway-checkout:/var/lib/git-launcher
       - gateway-state:/var/lib/private-ai-gateway
+      - ingress-evidences:/evidences:ro
       - /var/run/dstack.sock:/var/run/dstack.sock
     depends_on:
       - control
       - dstack-verifier
+      - ingress
+    restart: unless-stopped
+
+  ingress:
+    image: ghcr.io/dstack-tee/dstack-ingress:2.6@sha256:c212abb7bedec4d7b54a82bcf9972e58e39a4757cc811faeb6017eee6c0673b0
+    ports:
+      - "443:443"
+    environment:
+      DNS_PROVIDER: cloudflare
+      CLOUDFLARE_API_TOKEN: ${CLOUDFLARE_API_TOKEN:?set CLOUDFLARE_API_TOKEN}
+      GATEWAY_DOMAIN: gateway.dstack-pha-prod5.phala.network
+      SET_CAA: "true"
+      DOMAINS: |
+        api.envolvr.xyz
+        auth.envolvr.xyz
+      ROUTING_MAP: |
+        api.envolvr.xyz=gateway:8086
+        auth.envolvr.xyz=control:8787
+    volumes:
+      - /var/run/dstack.sock:/var/run/dstack.sock
+      - ingress-letsencrypt:/etc/letsencrypt
+      - ingress-evidences:/evidences
     restart: unless-stopped
 
   dstack-verifier:
@@ -115,8 +149,6 @@ services:
         cd control
         npx --yes pnpm@10.13.1 install --frozen-lockfile --prod
         exec node --disable-warning=ExperimentalWarning src/main.ts
-    ports:
-      - "8787:8787"
     configs:
       - source: control-config-r2
         target: /etc/envolvr/control.json
@@ -129,18 +161,45 @@ services:
     restart: unless-stopped
 
 configs:
-  gateway-pin-r2:
+  gateway-pin-r3:
     content: |
       REPO_URL=https://github.com/envolvr/private-ai-gateway.git
       COMMIT_SHA=91dbc0cacc34227bf509200359074b116c9affab
       WORK_DIR=/var/lib/git-launcher/private-ai-gateway
       INSTALL_CMD=dpkg --configure -a && apt-get update -qq && apt-get install -y --no-install-recommends gcc libc6-dev curl ca-certificates && curl -fsSL --retry 3 -o /tmp/uv.tar.gz https://github.com/astral-sh/uv/releases/download/0.12.18/uv-x86_64-unknown-linux-gnu.tar.gz && echo '89eadd7c76fc063887959510d5ba0ab1264dfd5f1143b925ddb73021a40acf16  /tmp/uv.tar.gz' | sha256sum -c - && tar -xzf /tmp/uv.tar.gz -C /usr/local/bin --strip-components=1 uv-x86_64-unknown-linux-gnu/uv && uv sync --frozen --no-dev
-      RUN_CMD=bash entrypoint.sh
+      RUN_CMD=bash /etc/envolvr/run-gateway.sh
+
+  # Starts the gateway (the repo's entrypoint.sh: build, then exec) once the
+  # ingress holds its certificate, and restarts it when a renewal changes that
+  # certificate, so the attested keyset always carries the key being served.
+  run-gateway-r1:
+    content: |
+      set -u
+      CERT=/evidences/cert-api.envolvr.xyz.pem
+      PID=
+      trap '[ -n "$$PID" ] && kill "$$PID" 2>/dev/null; wait; exit 0' TERM INT
+      until [ -s "$$CERT" ]; do echo "[run-gateway] waiting for $$CERT" >&2; sleep 10; done
+      while true; do
+        SUM=$$(sha256sum "$$CERT")
+        bash entrypoint.sh &
+        PID=$$!
+        while kill -0 "$$PID" 2>/dev/null; do
+          sleep 30
+          if [ "$$(sha256sum "$$CERT" 2>/dev/null)" != "$$SUM" ]; then
+            echo "[run-gateway] certificate changed; restarting the gateway" >&2
+            kill "$$PID" 2>/dev/null
+            break
+          fi
+        done
+        wait "$$PID"
+        echo "[run-gateway] gateway exited ($$?); restarting in 5 s" >&2
+        sleep 5
+      done
 
   # state_dir holds the live upstream config, sessions and receipts. It moves
   # to a fresh directory when the upstream seed must apply again; the Rust
   # build cache (PRIVATE_AI_GATEWAY_CACHE_DIR) stays where it is.
-  gateway-config-r2:
+  gateway-config-r3:
     content: |
       {
         "bind": "0.0.0.0:8086",
@@ -151,6 +210,11 @@ configs:
         "middleware": {
           "control_url": "http://control:8787",
           "control_token": "${ENVOLVR_CONTROL_TOKEN:?set ENVOLVR_CONTROL_TOKEN}"
+        },
+        "tls": {
+          "domain_certificates": [
+            { "domain": "api.envolvr.xyz", "certificate_path": "/evidences/cert-api.envolvr.xyz.pem" }
+          ]
         }
       }
 
@@ -224,3 +288,5 @@ volumes:
   gateway-state:
   control-data:
   verifier-cache:
+  ingress-letsencrypt:
+  ingress-evidences:
