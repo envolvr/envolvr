@@ -1,13 +1,22 @@
 {
   "port": 8787,
   "dbPath": "control.db",
-  "upstreamName": "redpill",
   "marginBps": 2000,
   "minAvailableMicros": 1000,
   "models": {
-    "z-ai/glm-5.3": { "inputCostPerToken": "0.0000014", "outputCostPerToken": "0.0000044" },
-    "z-ai/glm-5.3-flash": { "inputCostPerToken": "0.00000015", "outputCostPerToken": "0.0000005" },
-    "qwen/qwen3.8-27b": { "inputCostPerToken": "0.00000024", "outputCostPerToken": "0.0000025" }
+    "z-ai/glm-5.3": { "routes": [
+      {"upstream": "redpill", "inputCostPerToken": "0.0000014", "outputCostPerToken": "0.0000044"}
+    ] },
+    "z-ai/glm-5.3-flash": { "routes": [
+      {"upstream": "near-ai", "inputCostPerToken": "0.00000015", "outputCostPerToken": "0.0000005", "endpoints": ["/v1/chat/completions"]}
+    ] },
+    "qwen/qwen3.8-27b": { "routes": [
+      {"upstream": "redpill", "inputCostPerToken": "0.00000024", "outputCostPerToken": "0.0000025"},
+      {"upstream": "near-ai", "inputCostPerToken": "0.00000044", "outputCostPerToken": "0.0000033", "endpoints": ["/v1/chat/completions"], "optIn": true}
+    ] },
+    "qwen/qwen3.6-35b-a3b": { "routes": [
+      {"upstream": "near-ai", "inputCostPerToken": "0.00000017", "outputCostPerToken": "0.0000011", "endpoints": ["/v1/chat/completions"]}
+    ] }
   },
   "chain": {
     "rpcUrl": "https://rpc.testnet.chain.robinhood.com/rpc",

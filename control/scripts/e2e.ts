@@ -1,12 +1,15 @@
 // End-to-end client: wallet sign-in -> credit -> request through the gateway
-// (middleware -> control plane -> RedPill) -> receipt -> bill.
+// (middleware -> control plane -> upstream) -> receipt -> bill.
 // Local by default; set CONTROL_URL and GATEWAY_URL for a deployment.
-// ADMIN_TOKEN is the control plane admin token.
+// ADMIN_TOKEN is the control plane admin token. MODEL picks the model and
+// PROVIDER (JSON, e.g. '{"only":["near-ai"]}') the caller's routing block.
 import { secp256k1 } from '@noble/curves/secp256k1';
 import { addressOf, personalSign } from '../src/auth.ts';
 
 const CONTROL = process.env.CONTROL_URL ?? 'http://127.0.0.1:8787';
 const GATEWAY = process.env.GATEWAY_URL ?? 'http://127.0.0.1:8086';
+const MODEL = process.env.MODEL ?? 'z-ai/glm-5.3';
+const PROVIDER = process.env.PROVIDER ? JSON.parse(process.env.PROVIDER) : undefined;
 const admin = { authorization: `Bearer ${process.env.ADMIN_TOKEN}`, 'content-type': 'application/json' };
 const json = async (r: Response) => ({ status: r.status, body: await r.json().catch(() => null) as any });
 
@@ -20,7 +23,7 @@ console.log('1. signed in', wallet, '-> key', apiKey.slice(0, 10) + '…');
 
 const chat = (k: string) => fetch(`${GATEWAY}/v1/chat/completions`, { method: 'POST',
   headers: { authorization: `Bearer ${k}`, 'content-type': 'application/json' },
-  body: JSON.stringify({ model: 'z-ai/glm-5.3', max_tokens: 300, messages: [{ role: 'user', content: 'Reply with the single word: sealed' }] }) });
+  body: JSON.stringify({ model: MODEL, max_tokens: 300, provider: PROVIDER, messages: [{ role: 'user', content: 'Reply with the single word: sealed' }] }) });
 
 const noCredit = await json(await chat(apiKey));
 console.log('2. before credit:', noCredit.status, noCredit.body?.error?.message ?? noCredit.body);
@@ -38,8 +41,13 @@ console.log('5. request:', res.status, '| reply:', JSON.stringify(body.choices?.
   '| receipt:', receiptId);
 
 const receipt = await json(await fetch(`${GATEWAY}/v1/aci/receipts/${receiptId}`, { headers: { authorization: `Bearer ${apiKey}` } }));
-const events = (receipt.body?.event_log ?? []).map((e: any) => e.type);
+const log = receipt.body?.event_log ?? [];
+const events = log.map((e: any) => e.type);
 console.log('6. receipt fetch:', receipt.status, '| events:', JSON.stringify(events));
+const selected = log.find((e: any) => e.type === 'route.selected');
+const attested = log.find((e: any) => e.type === 'upstream.response_attested');
+console.log('   route:', selected?.route_id ?? selected?.selected_route ?? JSON.stringify(selected ?? null),
+  '| enclave binding:', attested ? `bound=${attested.bound} signer=${attested.signing_address ?? '-'} ${attested.reason ?? ''}` : 'none');
 
 await new Promise((r) => setTimeout(r, 1500)); // post-consult is fire-and-forget
 const acct = await json(await fetch(`${CONTROL}/admin/account?wallet=${wallet}`, { headers: admin }));

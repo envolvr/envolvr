@@ -15,8 +15,19 @@ const CONTROL = 'c'.repeat(40);
 const ADMIN = 'a'.repeat(40);
 
 const config: Config = {
-  port: 0, dbPath: ':memory:', upstreamName: 'redpill', marginBps: 2000, minAvailableMicros: 1000,
-  models: { 'z-ai/glm-5.3': { inputCostPerToken: '0.0000014', outputCostPerToken: '0.0000044' } },
+  port: 0, dbPath: ':memory:', marginBps: 2000, minAvailableMicros: 1000,
+  models: {
+    'z-ai/glm-5.3': { routes: [{ upstream: 'redpill', inputCostPerToken: '0.0000014', outputCostPerToken: '0.0000044' }] },
+    'qwen/qwen3.8-27b': {
+      routes: [
+        { upstream: 'redpill', inputCostPerToken: '0.00000024', outputCostPerToken: '0.0000025' },
+        {
+          upstream: 'near-ai', inputCostPerToken: '0.00000044', outputCostPerToken: '0.0000033',
+          endpoints: ['/v1/chat/completions'], optIn: true,
+        },
+      ],
+    },
+  },
   blockedWallets: [], controlToken: CONTROL, adminToken: ADMIN,
 };
 
@@ -128,6 +139,58 @@ test('usage is billed to the allowance first, then the balance, exactly once', a
   allowances.set(`${wallet}:${D0 + DAY}`, 1_000n);
   assert.equal((await call('GET', `/admin/account?wallet=${wallet}`, undefined, ADMIN)).body.allowanceLeftMicros, '1000');
   now -= DAY;
+});
+
+test('routes: opt-in routes only when named; provider prefs narrow the routes and the quote', async () => {
+  const { wallet, res } = await signIn(secp256k1.utils.randomPrivateKey());
+  allowances.set(`${wallet}:${D0}`, 1_000_000n);
+  const keyHash = hashApiKey(res.body.apiKey);
+  const ask = (provider?: unknown) =>
+    call('POST', '/consult/pre', { apiKeyHash: keyHash, model: 'qwen/qwen3.8-27b', provider }, CONTROL);
+  const ids = (b: Record<string, any>) => b.candidates.map((c: { routeId: string }) => c.routeId);
+
+  const plain = (await ask()).body;
+  assert.deepEqual(ids(plain), ['redpill:qwen/qwen3.8-27b']);
+  assert.deepEqual(plain.pricing, { inputCostPerToken: '0.000000288', outputCostPerToken: '0.000003' });
+
+  const pinned = (await ask({ only: ['near-ai'] })).body;
+  assert.deepEqual(ids(pinned), ['near-ai:qwen/qwen3.8-27b']);
+  assert.deepEqual(pinned.candidates[0].supportedEndpoints, ['/v1/chat/completions']);
+  assert.deepEqual(pinned.pricing, { inputCostPerToken: '0.000000528', outputCostPerToken: '0.00000396' });
+
+  const ordered = (await ask({ order: ['near-ai'] })).body;
+  assert.deepEqual(ids(ordered), ['near-ai:qwen/qwen3.8-27b', 'redpill:qwen/qwen3.8-27b']);
+  assert.deepEqual(ordered.pricing, pinned.pricing, 'quote covers every route the request may use');
+  assert.deepEqual(ids((await ask({ order: ['near-ai'], allow_fallbacks: false })).body), ['near-ai:qwen/qwen3.8-27b']);
+
+  assert.deepEqual((await ask({ only: ['chutes'] })).body,
+    { allow: false, status: 404, message: 'no route for this model matches provider' });
+  assert.deepEqual((await ask({ sort: 'price' })).body,
+    { allow: false, status: 400, message: 'unsupported provider field: sort' });
+  assert.equal((await ask('near-ai')).body.status, 400);
+
+  // Billing follows the quote the gateway echoes, if we could have issued it.
+  const report = (requestId: string, pricing: unknown, route = 'near-ai') => call('POST', '/consult/post', {
+    requestId, endpoint: '/v1/chat/completions', status: 200, durationMs: 900, attemptIndex: 0,
+    selectedRouteId: `${route}:qwen/qwen3.8-27b`, requestModel: 'qwen/qwen3.8-27b',
+    usage: { prompt_tokens: 1_000_000, completion_tokens: 0 }, pricing, userId: pinned.userId,
+  }, CONTROL);
+  assert.equal((await report('q-1', plain.pricing, 'redpill')).body.costMicros, '288000');
+  assert.equal((await report('q-2', pinned.pricing)).body.costMicros, '528000');
+  // A quote that does not cover the route that served, or that we never issue, bills the highest route.
+  assert.equal((await report('q-3', plain.pricing)).body.costMicros, '528000');
+  assert.equal((await report('q-4', { inputCostPerToken: '0.0000001', outputCostPerToken: '0' })).body.costMicros, '528000');
+});
+
+test('catalogs: every model with its routes, or one upstream at its own price', async () => {
+  const all = (await call('GET', '/models', undefined, CONTROL)).body;
+  const qwen = all.data.find((m: { id: string }) => m.id === 'qwen/qwen3.8-27b');
+  assert.deepEqual(qwen.pricing, { inputCostPerToken: '0.000000288', outputCostPerToken: '0.000003' });
+  assert.deepEqual(qwen.routes.map((r: { provider: string; optIn?: boolean }) => [r.provider, r.optIn ?? false]),
+    [['redpill', false], ['near-ai', true]]);
+  const near = (await call('GET', '/models/providers/near-ai', undefined, CONTROL)).body;
+  assert.deepEqual(near.data.map((m: { id: string }) => m.id), ['qwen/qwen3.8-27b']);
+  assert.deepEqual(near.data[0].pricing, { inputCostPerToken: '0.000000528', outputCostPerToken: '0.00000396' });
 });
 
 test('failed attempts without usage cost nothing', async () => {

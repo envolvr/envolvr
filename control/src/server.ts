@@ -4,6 +4,7 @@
 //   POST /consult/pre    authorize and route one request (fails closed on error)
 //   POST /consult/post   usage report per attempt, idempotent by request id
 //   GET  /models/...     sub-catalogs relayed from /v1/models/...
+//                        (/models/providers/<upstream>: that upstream's models)
 // Client-facing:
 //   GET  /auth/nonce?wallet=0x…   message to sign
 //   POST /auth/key                signed message -> API key (shown once)
@@ -20,7 +21,10 @@ import { hashApiKey, newApiKey, newNonce, recoverSigner, signInMessage } from '.
 import type { AllowanceSource } from './chain.ts';
 import type { Config } from './config.ts';
 import type { Store } from './db.ts';
-import { costMicros, withMargin, type Rates } from './money.ts';
+import { costMicros } from './money.ts';
+import {
+  billingRates, DEFAULT_ENDPOINTS, parseProviderPrefs, quote, RoutingError, selectRoutes, withRouteMargin, type Route,
+} from './routing.ts';
 
 const DAY = 86_400;
 const NONCE_TTL = 300;
@@ -77,8 +81,12 @@ export function createControlServer(deps: Deps): Server {
   const now = deps.now ?? (() => Math.floor(Date.now() / 1000));
   const log = deps.log ?? (() => {});
   const blocked = new Set(config.blockedWallets.map((w) => w.toLowerCase()));
-  const priced = new Map<string, Rates>(
-    Object.entries(config.models).map(([model, rates]) => [model, withMargin(rates, config.marginBps)]),
+  // Routes with the resale margin applied, per public model.
+  const priced = new Map<string, Route[]>(
+    Object.entries(config.models).map(([model, { routes }]) => [
+      model,
+      routes.map((r) => withRouteMargin(r, config.marginBps)),
+    ]),
   );
 
   async function allowanceLeft(accountId: number, wallet: string, dayStart: number): Promise<{ total: bigint; left: bigint }> {
@@ -101,8 +109,16 @@ export function createControlServer(deps: Deps): Server {
     if (!account) return deny(401, 'invalid API key');
     if (blocked.has(account.wallet)) return deny(403, 'account not permitted');
     const model = typeof body.model === 'string' ? body.model : undefined;
-    const rates = model ? priced.get(model) : undefined;
-    if (!model || !rates) return deny(404, 'model not found');
+    const routes = model ? priced.get(model) : undefined;
+    if (!model || !routes) return deny(404, 'model not found');
+    let chosen: Route[];
+    try {
+      chosen = selectRoutes(routes, parseProviderPrefs(body.provider));
+    } catch (err) {
+      if (err instanceof RoutingError) return deny(err.status, err.message);
+      throw err;
+    }
+    if (chosen.length === 0) return deny(404, 'no route for this model matches provider');
 
     const t = now();
     const { left } = await allowanceLeft(account.id, account.wallet, t - (t % DAY));
@@ -111,12 +127,12 @@ export function createControlServer(deps: Deps): Server {
 
     return {
       allow: true,
-      pricing: rates,
-      candidates: [{
-        routeId: `${config.upstreamName}:${model}`,
+      pricing: quote(chosen),
+      candidates: chosen.map((r) => ({
+        routeId: `${r.upstream}:${model}`,
         format: 'openai',
-        supportedEndpoints: ['/v1/chat/completions', '/v1/completions'],
-      }],
+        supportedEndpoints: r.endpoints ?? DEFAULT_ENDPOINTS,
+      })),
       userId: account.id,
       organizationId: account.id,
       workspaceId: account.id,
@@ -131,8 +147,10 @@ export function createControlServer(deps: Deps): Server {
     const attemptIndex = Number.isInteger(body.attemptIndex) ? (body.attemptIndex as number) : -1;
     const userId = Number.isInteger(body.userId) ? (body.userId as number) : null;
     const usage = body.usage && typeof body.usage === 'object' ? (body.usage as Record<string, unknown>) : null;
-    const rates = priced.get(model);
-    const cost = usage && rates ? costMicros(usage, rates) : 0n;
+    const route = typeof body.selectedRouteId === 'string' ? body.selectedRouteId : null;
+    const servedUpstream = route && route.endsWith(`:${model}`) ? route.slice(0, -(model.length + 1)) : null;
+    const routes = priced.get(model);
+    const cost = usage && routes ? costMicros(usage, billingRates(routes, body.pricing, servedUpstream)) : 0n;
 
     const account = userId !== null ? store.db.prepare('SELECT wallet FROM accounts WHERE id = ?').get(userId) as
       { wallet: string } | undefined : undefined;
@@ -141,17 +159,34 @@ export function createControlServer(deps: Deps): Server {
     const allowanceTotal = account ? (await allowanceLeft(userId!, account.wallet, dayStart)).total : 0n;
     const result = store.recordUsage({
       requestId, attemptIndex, accountId: account ? userId : null, model,
-      route: typeof body.selectedRouteId === 'string' ? body.selectedRouteId : null,
+      route,
       status: Number(body.status) || 0, costMicros: cost, allowanceMicros: allowanceTotal, dayStart, now: t,
     });
     return { recorded: result.recorded, costMicros: cost, fromAllowanceMicros: result.fromAllowance, fromBalanceMicros: result.fromBalance };
   }
 
-  function catalog() {
-    return {
-      object: 'list',
-      data: [...priced].map(([id, rates]) => ({ id, object: 'model', owned_by: 'envolvr', pricing: rates })),
-    };
+  // `/models`: every model at its default quote, with each route's own price.
+  // `/models/providers/<upstream>`: the models routed to that upstream, at its price.
+  function catalog(pathname: string) {
+    const provider = pathname.startsWith('/models/providers/')
+      ? decodeURIComponent(pathname.slice('/models/providers/'.length))
+      : null;
+    const data = [];
+    for (const [id, routes] of priced) {
+      if (provider !== null) {
+        const route = routes.find((r) => r.upstream === provider);
+        if (route) data.push({ id, object: 'model', owned_by: 'envolvr', pricing: quote([route]) });
+        continue;
+      }
+      data.push({
+        id,
+        object: 'model',
+        owned_by: 'envolvr',
+        pricing: quote(selectRoutes(routes, {})),
+        routes: routes.map((r) => ({ provider: r.upstream, pricing: quote([r]), ...(r.optIn ? { optIn: true } : {}) })),
+      });
+    }
+    return { object: 'list', data };
   }
 
   function authNonce(url: URL) {
@@ -220,7 +255,7 @@ export function createControlServer(deps: Deps): Server {
       if (route === 'GET /healthz') return send(res, 200, { ok: true });
       if (route === 'POST /consult/pre') { gateway(); return send(res, 200, await consultPre(await readJson(req))); }
       if (route === 'POST /consult/post') { gateway(); return send(res, 200, await consultPost(await readJson(req))); }
-      if (req.method === 'GET' && url.pathname.startsWith('/models')) { gateway(); return send(res, 200, catalog()); }
+      if (req.method === 'GET' && url.pathname.startsWith('/models')) { gateway(); return send(res, 200, catalog(url.pathname)); }
       if (route === 'GET /auth/nonce') return send(res, 200, authNonce(url));
       if (route === 'POST /auth/key') return send(res, 200, authKey(await readJson(req)));
       if (route === 'POST /admin/credit') { admin(); return send(res, 200, adminCredit(await readJson(req))); }
