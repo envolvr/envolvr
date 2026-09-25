@@ -99,6 +99,25 @@ services:
 
   ingress:
     image: ghcr.io/dstack-tee/dstack-ingress:2.6@sha256:c212abb7bedec4d7b54a82bcf9972e58e39a4757cc811faeb6017eee6c0673b0
+    # The logs are public (--public-logs), so they must not carry traffic
+    # metadata. The stock ingress logs every connection (time, domain, bytes,
+    # duration) and every evidence request; both are turned off here, before
+    # the stock entrypoint writes its haproxy config, and the container refuses
+    # to start if either change did not apply. Startup warnings and errors
+    # still reach the log.
+    entrypoint:
+      - bash
+      - -c
+      - |
+        set -eu
+        sed -i -e 's/^    log     global$$/    no log/' -e '/^    option  tcplog$$/d' /scripts/haproxy-lib.sh
+        sed -i 's|-l /dev/stderr|-l /dev/null|' /scripts/evidence-lib.sh
+        grep -q '^    no log$$' /scripts/haproxy-lib.sh
+        grep -q -- '-l /dev/null' /scripts/evidence-lib.sh
+        if grep -q 'option  tcplog' /scripts/haproxy-lib.sh; then echo "connection logging still on" >&2; exit 1; fi
+        exec /scripts/entrypoint.sh "$$@"
+      - ingress
+    command: ["haproxy", "-W", "-f", "/etc/haproxy/haproxy.cfg"]
     ports:
       - "443:443"
     environment:
@@ -160,7 +179,7 @@ services:
       - -c
       - |
         set -eu
-        COMMIT=eb24d111dd60da7e2b69152a5aff27a607bd5742
+        COMMIT=3124f40de5af7878ff120613fd37a988a98dd001
         [ -d /opt/envolvr/.git ] || git clone --quiet --no-checkout https://github.com/envolvr/envolvr.git /opt/envolvr
         cd /opt/envolvr
         git fetch --quiet origin
