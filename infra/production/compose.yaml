@@ -179,7 +179,7 @@ services:
       - -c
       - |
         set -eu
-        COMMIT=b2e54c7c604f1ebba8f19864ad5c35b3b814c908
+        COMMIT=b47b15da1ebc6a59b1c2a0736a53b963ebf94efb
         [ -d /opt/envolvr/.git ] || git clone --quiet --no-checkout https://github.com/envolvr/envolvr.git /opt/envolvr
         cd /opt/envolvr
         git fetch --quiet origin
@@ -190,7 +190,7 @@ services:
         npx --yes pnpm@10.13.1 install --frozen-lockfile --prod
         exec node --disable-warning=ExperimentalWarning src/main.ts
     configs:
-      - source: control-config-r6
+      - source: control-config-r7
         target: /etc/envolvr/control.json
     environment:
       CONTROL_CONFIG: /etc/envolvr/control.json
@@ -300,13 +300,14 @@ configs:
         }
       ]
 
-  control-config-r6:
+  control-config-r7:
     content: |
       {
         "port": 8787,
         "dbPath": "/data/control.db",
         "marginBps": 0,
         "depositFeeBps": 500,
+        "corsOrigins": ["https://envolvr.xyz"],
         "minAvailableMicros": 1000,
         "models": {
           "z-ai/glm-5.3": { "routes": [
