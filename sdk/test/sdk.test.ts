@@ -9,7 +9,7 @@ import { join } from 'node:path';
 import { secp256k1 } from '@noble/curves/secp256k1';
 import { keccak_256 } from '@noble/hashes/sha3';
 import { concatBytes, hexToBytes, utf8ToBytes } from '@noble/hashes/utils';
-import { depositUsdg, netCredit, signIn, signInMessage } from '../src/api.ts';
+import { closeAccount, closeAccountMessage, depositUsdg, netCredit, signIn, signInMessage } from '../src/api.ts';
 import { Envolvr, verifySaved } from '../src/client.ts';
 import { addressOfKey, encodeCall, hex, personalSign, signTx, unhex } from '../src/evm.ts';
 import { fromMicros, type Network, TESTNET, toMicros } from '../src/network.ts';
@@ -99,6 +99,15 @@ before(async () => {
       return send(200, { nonce: 'n1', issuedAt: '2026-09-25T00:00:00.000Z', message: state.tamper ? `${message}\nTransfer: everything` : message });
     }
     if (url.pathname === '/auth/key') return send(200, { apiKey: `envk_for_${body.signature.slice(2, 10)}`, wallet: body.wallet.toLowerCase() });
+    if (url.pathname === '/account/close/nonce') {
+      const wallet = url.searchParams.get('wallet')!;
+      const refundTo = url.searchParams.get('refundTo')!;
+      const message = closeAccountMessage(wallet, refundTo, 'n2', '2026-09-25T00:00:00.000Z');
+      return send(200, { nonce: 'n2', issuedAt: '2026-09-25T00:00:00.000Z', refundTo, message: state.tamper ? message.replace(refundTo.toLowerCase(), '0x' + 'ee'.repeat(20)) : message });
+    }
+    if (url.pathname === '/account/close') {
+      return send(200, { closed: true, revokedKeys: 1, refund: { id: 1, amountMicros: '9500000', status: 'pending', refundTo: body.refundTo.toLowerCase() } });
+    }
     if (url.pathname === '/pricing') return send(200, { depositFeeBps: 500, tokenPricing: 'provider list price' });
     if (url.pathname === '/rpc') {
       const { method, params } = body;
@@ -179,3 +188,13 @@ test('chat saves the receipt, the exact bytes and the keyset\'s attestation repo
   assert.equal(v.chargedToKey, true);
   assert.equal(v.anchor.status, 'pending');
 });
+
+test('closeAccount signs only the close message for the refund address it asked for', async () => {
+  state.tamper = false;
+  const r = await closeAccount(signer(), { network: net() });
+  assert.equal(r.refund?.refundTo, addressOfKey(unhex(KEY)));
+  state.tamper = true;
+  await assert.rejects(closeAccount(signer(), { network: net(), refundTo: '0x' + '44'.repeat(20) }), /refusing to sign/);
+  state.tamper = false;
+});
+

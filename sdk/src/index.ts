@@ -1,6 +1,8 @@
 // @envolvr/sdk: private, verifiable inference for agents on Robinhood Chain.
 
-export { depositUsdg, getAccount, getPricing, mintTestUsdg, netCredit, signIn, signInMessage } from './api.ts';
+export {
+  closeAccount, closeAccountMessage, depositUsdg, getAccount, getPricing, mintTestUsdg, netCredit, signIn, signInMessage,
+} from './api.ts';
 export type { Account, Pricing } from './api.ts';
 export { auditReceipt, fetchAttestationReport, runPap, verifyGateway } from './attest.ts';
 export type { PapResult } from './attest.ts';

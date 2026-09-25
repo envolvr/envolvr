@@ -35,6 +35,37 @@ export async function signIn(signer: Signer, network: Network = TESTNET): Promis
   }));
 }
 
+/** The message that closes an account; the SDK signs nothing else for it. */
+export function closeAccountMessage(wallet: string, refundTo: string, nonce: string, issuedAt: string): string {
+  return ['envolvr: close this account and refund its balance.', '', `Wallet: ${wallet.toLowerCase()}`,
+    `Refund to: ${refundTo.toLowerCase()}`, `Nonce: ${nonce}`, `Issued At: ${issuedAt}`].join('\n');
+}
+
+/**
+ * Close the account of `signer`'s wallet: every API key stops working, and the
+ * balance (net of deposit fees; the staking allowance is not money) is refunded
+ * to `refundTo`, by default the wallet itself. The refund is paid from the
+ * credit vault shortly after.
+ */
+export async function closeAccount(signer: Signer, opts: { refundTo?: string; network?: Network } = {}): Promise<{
+  closed: boolean; revokedKeys: number;
+  refund?: { id: number; amountMicros: string; status: 'pending' | 'held'; refundTo: string };
+}> {
+  const network = opts.network ?? TESTNET;
+  const refundTo = opts.refundTo ?? signer.address;
+  const n = await json<{ nonce: string; issuedAt: string; refundTo: string; message: string }>(
+    await fetch(`${network.control}/account/close/nonce?wallet=${signer.address}&refundTo=${refundTo}`),
+  );
+  const expected = closeAccountMessage(signer.address, refundTo, n.nonce, n.issuedAt);
+  if (n.message !== expected) throw new Error('the close message is not the one envolvr defines; refusing to sign it');
+  const signature = await signer.signMessage(expected);
+  return json(await fetch(`${network.control}/account/close`, {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({ wallet: signer.address, refundTo, nonce: n.nonce, issuedAt: n.issuedAt, signature }),
+  }));
+}
+
 export interface Account {
   wallet: string;
   /** USDG balance, micro-USD (6 decimals), as a decimal string. */

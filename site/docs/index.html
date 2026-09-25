@@ -157,6 +157,8 @@ const receiptId = res.response.headers.get('x-receipt-id');   // fetch it within
     <p>Staking ENVOLVR gives a share of a daily inference budget: budget × your stake ÷ total stake, taken at 00:00 UTC. Stake added during a day counts from the next day. The allowance is spent before your USDG balance and does not roll over. Unstaking has a 7-day cooldown.</p>
     <h3>Balance</h3>
     <p><code>GET https://auth.envolvr.xyz/account</code> with <code>Authorization: Bearer &lt;API key&gt;</code> returns your balance and today's allowance, in micro-USD.</p>
+    <h3>Close your account</h3>
+    <p>Your balance is yours to take back. Closing needs the wallet, not just a key: <code>GET /account/close/nonce?wallet=0x…&amp;refundTo=0x…</code> returns a message to sign, and <code>POST /account/close</code> with <code>{wallet, refundTo, nonce, issuedAt, signature}</code> revokes every API key of the account and refunds the balance to <code>refundTo</code>, by default the wallet itself. The refund is paid from the credit vault shortly after. Deposit fees are not refunded, and a staking allowance is not a balance. With the CLI: <code>envolvr close --yes</code>.</p>
 
     <h2 id="models">Models and providers</h2>
     <p><code>GET https://api.envolvr.xyz/v1/models</code> lists every model with its per-token prices and routes. At launch:</p>

@@ -7,7 +7,7 @@
 import { chmodSync, existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { homedir } from 'node:os';
 import { join } from 'node:path';
-import { depositUsdg, getPricing, mintTestUsdg, signIn } from './api.ts';
+import { closeAccount, depositUsdg, getPricing, mintTestUsdg, signIn } from './api.ts';
 import { AUDIT_CHECKS, verifyGateway } from './attest.ts';
 import { Envolvr, savedReceipts, verifySaved } from './client.ts';
 import { fromMicros, TESTNET, toMicros } from './network.ts';
@@ -27,6 +27,9 @@ const HELP = `envolvr: private inference your agent can prove
                                       signature, billing, payer and on-chain anchor of a receipt
   envolvr verify-gateway [--accept-compose <hash>]
                                       attestation of the live gateway (TDX quote, source, TLS key)
+  envolvr close --yes [--refund-to 0x…]
+                                      close the account: revoke every API key and refund the
+                                      balance to the wallet (or the address given)
 
 Receipts are saved under ./envolvr-receipts (ENVOLVR_RECEIPTS to change).`;
 
@@ -136,6 +139,15 @@ async function main() {
       console.log(`\nverdict: ${ok ? 'VERIFIED' : signed && a.status === 'pending' ? 'SIGNED, ANCHOR PENDING' : 'NOT VERIFIED'}`);
       if (!signed && v.audit) console.log('pap transcript:', JSON.stringify(v.signature.transcript, null, 2).slice(0, 4000));
       process.exit(ok ? 0 : signed && a.status === 'pending' ? 2 : 1);
+    }
+    case 'close': {
+      if (!args.includes('--yes')) throw new Error('closing revokes every API key of this wallet; run again with --yes');
+      const r = await closeAccount(wallet(), { refundTo: flag('refund-to'), network });
+      console.log(`account closed; ${r.revokedKeys} API key(s) revoked`);
+      console.log(r.refund
+        ? `refund #${r.refund.id}: ${usd(r.refund.amountMicros)} to ${r.refund.refundTo} (${r.refund.status === 'held' ? 'held for review' : 'paid from the credit vault shortly'})`
+        : 'no balance to refund');
+      return;
     }
     case 'verify-gateway': {
       const r = await verifyGateway(network, { acceptCompose: flag('accept-compose') ? [flag('accept-compose')!] : undefined });

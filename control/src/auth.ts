@@ -32,6 +32,21 @@ export function signInMessage(wallet: string, nonce: string, issuedAt: string): 
   ].join('\n');
 }
 
+/**
+ * What a wallet signs to close its account: its API keys are revoked and the
+ * balance is refunded to `refundTo`. A sign-in signature cannot stand in for it.
+ */
+export function closeAccountMessage(wallet: string, refundTo: string, nonce: string, issuedAt: string): string {
+  return [
+    'envolvr: close this account and refund its balance.',
+    '',
+    `Wallet: ${wallet.toLowerCase()}`,
+    `Refund to: ${refundTo.toLowerCase()}`,
+    `Nonce: ${nonce}`,
+    `Issued At: ${issuedAt}`,
+  ].join('\n');
+}
+
 export function addressOf(publicKey: Uint8Array): string {
   const uncompressed = secp256k1.ProjectivePoint.fromHex(publicKey).toRawBytes(false);
   return `0x${bytesToHex(keccak_256(uncompressed.slice(1)).slice(-20))}`;
