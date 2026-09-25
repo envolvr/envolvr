@@ -14,13 +14,16 @@ npm install @envolvr/sdk        # Node 20+
 ## From zero to a verified receipt (testnet)
 
 ```bash
-export ENVOLVR_PRIVATE_KEY=0x…   # a wallet with a little Robinhood testnet ETH for gas
-npx envolvr signin --save        # sign a message, get an API key
-npx envolvr testnet-mint 20      # test USDG (testnet only)
-npx envolvr deposit 10           # credited net of the deposit fee, within seconds
-npx envolvr chat "Reply with the single word: sealed"
-npx envolvr verify --last        # signature, billing, payer, on-chain anchor
+export ENVOLVR_PRIVATE_KEY=0x…            # a wallet with a little Robinhood testnet ETH for gas
+npx @envolvr/sdk signin --save            # sign a message, get an API key
+npx @envolvr/sdk testnet-mint 20          # test USDG (testnet only)
+npx @envolvr/sdk deposit 10               # credited net of the deposit fee, within seconds
+npx @envolvr/sdk chat "Reply with the single word: sealed"
+npx @envolvr/sdk verify --last            # signature, billing, payer, on-chain anchor
 ```
+
+Or `npm install -g @envolvr/sdk` and run `envolvr …`. Always name the scoped
+package with npx: `npx envolvr` alone would fetch an unrelated package.
 
 `verify` prints what the receipt proves: the gateway's TDX attestation and the
 receipt signature (checked by `private-ai-proxy`), what was billed and that it

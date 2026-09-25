@@ -95,16 +95,15 @@
     </ul>
 
     <h2 id="quickstart">Quickstart</h2>
-    <p>With the <code>envolvr</code> command from <a href="https://github.com/envolvr/envolvr/tree/main/sdk">@envolvr/sdk</a> (Node 20 or later), from an empty wallet to a verified receipt:</p>
-<pre><code>git clone https://github.com/envolvr/envolvr && cd envolvr/sdk
-pnpm install && pnpm build
-export ENVOLVR_PRIVATE_KEY=0x…        # a wallet with a little Robinhood testnet ETH for gas
+    <p>With the <code>envolvr</code> command from <a href="https://www.npmjs.com/package/@envolvr/sdk">@envolvr/sdk</a> (Node 20 or later), from an empty wallet to a verified receipt:</p>
+<pre><code>npm install -g @envolvr/sdk            # or run each command as npx @envolvr/sdk …
+export ENVOLVR_PRIVATE_KEY=0x…          # a wallet with a little Robinhood testnet ETH for gas
 
-node dist/cli.js signin --save        # sign a message, get an API key
-node dist/cli.js testnet-mint 20      # test USDG (testnet only)
-node dist/cli.js deposit 10           # credited, net of the deposit fee, within seconds
-node dist/cli.js chat "Reply with the single word: sealed"
-node dist/cli.js verify --last        # run again once the 10-minute slot has closed</code></pre>
+envolvr signin --save                   # sign a message, get an API key
+envolvr testnet-mint 20                 # test USDG (testnet only)
+envolvr deposit 10                      # credited, net of the deposit fee, within seconds
+envolvr chat "Reply with the single word: sealed"
+envolvr verify --last                   # run again once the 10-minute slot has closed</code></pre>
     <p><code>verify</code> reads the saved receipt back and prints what it proves:</p>
 <pre><code>✓ receipt signature by the attested key
 ✓ receipt names the attested keyset
@@ -121,10 +120,11 @@ node dist/cli.js verify --last        # run again once the 10-minute slot has cl
 ✓ anchor                      batch 2, leaf 0 of 2, 2026-09-25T11:40:01.000Z, tx 0xe379…bb98
 
 verdict: VERIFIED</code></pre>
-    <p><code>node dist/cli.js verify-gateway</code> checks the live gateway: the TDX quote to Intel's root, the measured compose and source commit, the production OS, and that your TLS connection ends at the attested key.</p>
+    <p><code>envolvr verify-gateway</code> checks the live gateway: the TDX quote to Intel's root, the measured compose and source commit, the production OS, and that your TLS connection ends at the attested key.</p>
 
     <h2 id="code">In code</h2>
-<pre><code>import { Envolvr, privateKeySigner, signIn, depositUsdg, TESTNET, toMicros } from '@envolvr/sdk';
+<pre><code>// npm install @envolvr/sdk
+import { Envolvr, privateKeySigner, signIn, depositUsdg, TESTNET, toMicros } from '@envolvr/sdk';
 
 const wallet = privateKeySigner(process.env.KEY, { rpcUrl: TESTNET.rpcUrl, chainId: TESTNET.chainId });
 const { apiKey } = await signIn(wallet);                      // shown once: store it

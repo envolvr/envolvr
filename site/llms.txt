@@ -44,7 +44,7 @@ payer = "sha256:" + hex(sha256("billing.payer.v1:" + hex(sha256(api_key)) + ":" 
 - Receipt signature and commitments: npx private-ai-proxy audit --report <attestation.json> --receipt <receipt.json> --request-body <request.json> --response-body <response.json> --session <session.json>
   (attestation.json: GET https://api.envolvr.xyz/v1/aci/attestation?nonce=<64 hex>, fetched while the receipt's keyset is live; session.json: GET /v1/aci/sessions/<session_id> with the API key)
 - Anchor: digest = "0x" + hex(sha256(JCS(receipt))) (RFC 8785). GET https://auth.envolvr.xyz/receipts/<digest>/proof -> {status, batchIndex, leafIndex, root, proof, txHash}. Then call ReceiptAnchor.verifyReceipt(providerId, batchIndex, digest, proof) -> true. Anchored in 10-minute UTC slots, seconds after each slot ends.
-- The SDK does all of it: `envolvr verify` (npm package @envolvr/sdk, in the repo's sdk/ directory).
+- The SDK does all of it: `npx @envolvr/sdk verify --last` (npm package @envolvr/sdk; also signin, deposit, chat, close). Always use the scoped name with npx.
 
 ## Robinhood Chain testnet (chain id 46630)
 
