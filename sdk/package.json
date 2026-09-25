@@ -1,6 +1,6 @@
 {
   "name": "@envolvr/sdk",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "envolvr client: wallet sign-in, USDG deposits, private inference with signed receipts, and receipt verification (signature, billing, on-chain anchor).",
   "license": "Apache-2.0",
   "author": "envolvr",
