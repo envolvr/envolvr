@@ -205,3 +205,22 @@ test('failed attempts without usage cost nothing', async () => {
 test('admin endpoints require the admin token', async () => {
   assert.equal((await call('POST', '/admin/credit', { wallet: '0x' + '1'.repeat(40), amountMicros: '1' }, CONTROL)).status, 401);
 });
+
+test('an upstream out of quota is logged for the monitor, with the route and nothing about the caller', async () => {
+  const lines: string[] = [];
+  const srv = createControlServer({
+    config, store: new Store(':memory:'), allowance, now: () => now,
+    log: (msg, fields) => lines.push(JSON.stringify({ msg, ...fields })),
+  });
+  await new Promise<void>((r) => srv.listen(0, r));
+  const url = `http://127.0.0.1:${(srv.address() as AddressInfo).port}/consult/post`;
+  const post = (errorMessage?: string) => fetch(url, {
+    method: 'POST', headers: { authorization: `Bearer ${CONTROL}`, 'content-type': 'application/json' },
+    body: JSON.stringify({ requestId: `r-${Math.random()}`, attemptIndex: 0, requestModel: 'z-ai/glm-5.3', status: 429,
+      selectedRouteId: 'redpill:z-ai/glm-5.3', usage: null, userId: 1, ...(errorMessage ? { errorMessage } : {}) }),
+  });
+  assert.equal((await post('upstream_http_error')).status, 200);
+  assert.equal((await post('upstream_quota_exhausted')).status, 200);
+  srv.close();
+  assert.deepEqual(lines, ['{"msg":"upstream quota exhausted","route":"redpill:z-ai/glm-5.3"}']);
+});

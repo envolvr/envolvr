@@ -183,6 +183,8 @@ export function createControlServer(deps: Deps): Server {
       route,
       status: Number(body.status) || 0, costMicros: cost, allowanceMicros: allowanceTotal, dayStart, now: t,
     });
+    // An upstream out of credit (NEAR AI and RedPill expose no balance API): the monitor alerts on this line.
+    if (body.errorMessage === 'upstream_quota_exhausted') log('upstream quota exhausted', { route });
     return { recorded: result.recorded, costMicros: cost, fromAllowanceMicros: result.fromAllowance, fromBalanceMicros: result.fromBalance };
   }
 
