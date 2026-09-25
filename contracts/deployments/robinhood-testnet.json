@@ -33,6 +33,21 @@
           "contains": "anchorer/test/fixtures/week0-receipt.json (index 0) plus 2 synthetic receipts"
         }
       ]
+    },
+    {
+      "providerId": "0x86b99987cd8f8ebddc2dd0efa61ed52b5db594430f12446db424da0d9c4b831f",
+      "providerLabel": "envolvr.provider:9e49e39941a14a320720714fcc1bae5d45c5d4e8 (envolvr-prod gateway)",
+      "anchorer": "0x3186f79f0673112d6474e9cb575dd4632dbd8450",
+      "note": "key derived by the dstack KMS inside envolvr-prod (path envolvr/control/receipt-anchorer); batches every 10 minutes with traffic, proofs at https://auth.envolvr.xyz/receipts/<digest>/proof",
+      "registeredAt": "2026-09-25",
+      "setAnchorerTx": "0xedd898417ac20669e34186eeed86f3524e3e53f79ca561ba4e13c45f698f6946",
+      "fundingTx": "0xecada156175ff1ed7e54663230a2f845015c67fd33f353de95d3cf664f4cf9f3",
+      "firstBatch": {
+        "index": 0,
+        "root": "0xb0bffe00bc064914ebe72d9328dec513f24afb37cf5d2c4fa07f815c2b0afe0b",
+        "count": 1,
+        "tx": "0xbd21693598cd09dc9b6ae4cdde46e9c844f9d9c11d60d295fd5958fd4470266a"
+      }
     }
   ],
   "weightsReferences": [

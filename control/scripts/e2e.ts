@@ -68,7 +68,7 @@ if (process.env.ANCHOR_WAIT) {
     if (proof?.status === 'anchored') break;
     await new Promise((r) => setTimeout(r, 5000));
   } while (Date.now() < deadline);
-  console.log('8. anchoring:', digest.slice(0, 18) + '…', '|', proof?.status ?? JSON.stringify(proof),
+  console.log('8. anchoring:', digest, '|', proof?.status ?? JSON.stringify(proof),
     ...(proof?.status === 'anchored'
       ? ['| batch', proof.batchIndex, 'leaf', proof.leafIndex, 'of', proof.count, '| tx', proof.txHash,
         '| proof verifies against root:', verifyProof(proof.root, digest, proof.proof)]
