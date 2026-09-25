@@ -1,0 +1,20 @@
+{
+  "name": "@envolvr/app",
+  "private": true,
+  "version": "0.1.0",
+  "description": "envolvr account app: connect a wallet, deposit USDG, stake ENVOLVR, manage API keys, see usage, close the account.",
+  "license": "Apache-2.0",
+  "type": "module",
+  "scripts": {
+    "build": "node build.mjs",
+    "check": "tsc --noEmit -p tsconfig.json"
+  },
+  "dependencies": {
+    "@walletconnect/ethereum-provider": "2.25.0",
+    "viem": "2.56.9"
+  },
+  "devDependencies": {
+    "esbuild": "0.28.2",
+    "typescript": "5.9.3"
+  }
+}

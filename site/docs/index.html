@@ -149,8 +149,11 @@ const receiptId = res.response.headers.get('x-receipt-id');   // fetch it within
 # base URL: http://127.0.0.1:4180/v1</code></pre>
 
     <h2 id="account">Account and funding</h2>
+    <p>In a browser, the <a href="/app/">account app</a> does all of this with your wallet: deposit, stake, create and revoke API keys, see usage and deposits, and close the account. Agents use the endpoints below, or the SDK.</p>
     <h3>Sign in</h3>
-    <p><code>GET https://auth.envolvr.xyz/auth/nonce?wallet=0x…</code> returns a message; sign it with EIP-191 <code>personal_sign</code> and send <code>{wallet, nonce, issuedAt, signature}</code> to <code>POST /auth/key</code>. The API key is shown once. Each sign-in issues a new key; earlier keys keep working.</p>
+    <p><code>GET https://auth.envolvr.xyz/auth/nonce?wallet=0x…</code> returns a message; sign it with EIP-191 <code>personal_sign</code> and send <code>{wallet, nonce, issuedAt, signature}</code> to <code>POST /auth/key</code>. The API key is shown once. Each sign-in issues a new key; earlier keys keep working until you revoke them.</p>
+    <h3>Manage keys</h3>
+    <p>A management session lists, labels and revokes keys and shows usage and deposits. <code>GET /auth/session/nonce?wallet=0x…</code> returns a message to sign; <code>POST /auth/session</code> with <code>{wallet, nonce, issuedAt, signature}</code> returns a session token, valid for 12 hours. It manages the account and cannot call models, and an API key cannot manage the account.</p>
     <h3>Deposit USDG</h3>
     <p>Approve the credit vault for USDG, then call <code>deposit(amount)</code> from your wallet, or <code>depositFor(account, amount)</code> to fund another wallet. The balance is credited within seconds of the deposit being mined, net of the deposit fee. Deposit from a wallet you control, and use the vault's functions: a plain USDG transfer to the vault is not credited.</p>
     <h3>Stake for an allowance</h3>
@@ -180,7 +183,10 @@ const receiptId = res.response.headers.get('x-receipt-id');   // fetch it within
       <tr><td><code>GET api/v1/aci/sessions/{id}</code></td><td>The attested provider session a receipt cites.</td></tr>
       <tr><td><code>GET api/v1/aci/attestation?nonce=</code></td><td>The gateway's attestation report for a fresh 64-hex nonce.</td></tr>
       <tr><td><code>GET auth/auth/nonce</code>, <code>POST auth/auth/key</code></td><td>Wallet sign-in.</td></tr>
-      <tr><td><code>GET auth/account</code></td><td>Balance and allowance (API key).</td></tr>
+      <tr><td><code>GET auth/account</code></td><td>Balance and allowance (API key or session).</td></tr>
+      <tr><td><code>GET auth/auth/session/nonce</code>, <code>POST auth/auth/session</code>, <code>POST auth/auth/session/end</code></td><td>A wallet-signed management session.</td></tr>
+      <tr><td><code>GET</code>/<code>POST auth/account/keys</code>, <code>POST auth/account/keys/revoke</code></td><td>List, create and revoke API keys (session).</td></tr>
+      <tr><td><code>GET auth/account/usage</code>, <code>GET auth/account/deposits</code></td><td>Requests with their cost, and deposits with their fee (session).</td></tr>
       <tr><td><code>GET auth/pricing</code></td><td>The current deposit fee.</td></tr>
       <tr><td><code>GET auth/receipts/{digest}/proof</code></td><td>A receipt's inclusion proof on Robinhood Chain (public).</td></tr>
     </table>

@@ -17,8 +17,10 @@
 
 ## Fund the account
 
+- In a browser: https://envolvr.xyz/app/ (connect a wallet; deposit, stake, manage keys, see usage, close).
 - USDG deposit: approve the CreditVault for USDG, then call deposit(uint256 amount) (or depositFor(address account, uint256 amount)). USDG has 6 decimals. Credited within seconds, net of the deposit fee (GET https://auth.envolvr.xyz/pricing -> depositFeeBps; currently 500 = 5%). A plain token transfer to the vault is not credited.
 - Staking: stake ENVOLVR in StakingAllowance for a pro-rata share of a daily USD budget (snapshot 00:00 UTC; counts from the next day; spent before the USDG balance; no rollover; 7-day unstake cooldown).
+- Manage keys: GET https://auth.envolvr.xyz/auth/session/nonce?wallet=<0x> -> {message}; sign it (EIP-191); POST https://auth.envolvr.xyz/auth/session {wallet, nonce, issuedAt, signature} -> {session} (12 hours; manages the account, cannot call models). With `Authorization: Bearer <session>`: GET/POST /account/keys ({label}), POST /account/keys/revoke {id}, GET /account/usage, GET /account/deposits.
 - Balance: GET https://auth.envolvr.xyz/account with the API key -> {balanceMicros, allowanceTodayMicros, allowanceLeftMicros} (micro-USD).
 - Close and refund: GET https://auth.envolvr.xyz/account/close/nonce?wallet=<0x>&refundTo=<0x> -> {message}; sign it with the wallet (EIP-191); POST https://auth.envolvr.xyz/account/close {wallet, refundTo, nonce, issuedAt, signature}. Revokes every API key and refunds the balance to refundTo (default: the wallet), paid from the credit vault shortly after. Deposit fees are not refunded.
 

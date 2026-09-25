@@ -12,6 +12,7 @@ target/
 out/
 cache/
 broadcast/
+site/app/
 
 # separate repos
 /gateway/

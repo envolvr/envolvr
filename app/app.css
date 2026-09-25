@@ -1,0 +1,47 @@
+/* The account app, on top of the site's tokens (../styles.css). */
+[hidden]{display:none !important}
+.app{padding-top:112px;padding-bottom:80px}
+button.btn{font-family:inherit;cursor:pointer}
+.btn-ghost{background:transparent}
+.badge{border:1px solid var(--volt-border);color:var(--volt);border-radius:999px;padding:2px 10px;font-size:11px;letter-spacing:.08em}
+.panel{max-width:620px}
+.panel h1{font-family:var(--serif);font-size:clamp(34px,4.6vw,52px);line-height:1.05;margin-bottom:8px}
+.wallets{display:grid;gap:10px;margin-top:28px}
+.wallets button{display:flex;align-items:center;gap:12px;width:100%;padding:14px 16px;border-radius:12px;border:1px solid var(--line);background:var(--card);color:var(--text);font:inherit;cursor:pointer;text-align:left}
+.wallets button:hover{border-color:#fcfcfe2e;background:var(--card-hi)}
+.wallets img{width:24px;height:24px;border-radius:6px}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px}
+.grid .wide{grid-column:1 / -1}
+.stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin:6px 0 16px}
+.stats strong{display:block;font-size:20px;font-weight:500;margin-top:4px;font-variant-numeric:tabular-nums}
+.small{font-size:13.5px;line-height:1.6}
+.dim{color:var(--muted)}
+.row{display:flex;gap:10px;flex-wrap:wrap;margin:10px 0}
+.field{display:flex;align-items:center;gap:10px;border:1px solid var(--line);border-radius:10px;padding:8px 12px;margin:12px 0 4px;background:var(--card)}
+.field span{color:var(--muted);font-size:13px;min-width:64px}
+.field em{font-style:normal;color:var(--muted);font-size:13px}
+input{flex:1;min-width:0;background:transparent;border:0;color:var(--text);font:inherit;font-family:var(--mono);font-size:14px;outline:none}
+.row input{border:1px solid var(--line);border-radius:10px;padding:9px 12px;background:var(--card)}
+.table{width:100%;border-collapse:collapse;font-size:13px;margin-top:10px}
+.table th,.table td{text-align:left;padding:8px 6px;border-bottom:1px solid var(--line-soft);color:var(--muted)}
+.table th{color:var(--text);font-weight:500}
+.table td.mono{font-family:var(--mono);font-size:12px}
+.table button{background:none;border:1px solid var(--line);color:var(--muted);border-radius:8px;padding:3px 9px;cursor:pointer;font:inherit;font-size:12px}
+.signin{border-top:1px solid var(--line-soft);margin-top:16px;padding-top:14px}
+.needs-session.locked{opacity:.45;pointer-events:none}
+button[disabled]{opacity:.45;cursor:not-allowed}
+.danger{border-color:#ff6b6b55;color:#ff9b9b}
+dialog{border:1px solid var(--line);border-radius:var(--r);background:var(--ink-2);color:var(--text);max-width:560px;padding:24px}
+dialog::backdrop{background:rgba(3,8,10,.7)}
+.key{display:block;word-break:break-all;font-family:var(--mono);font-size:13px;background:var(--card-hi);padding:12px;border-radius:8px;margin:12px 0}
+#toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:var(--ink-2);border:1px solid var(--line);border-radius:10px;padding:10px 16px;font-size:14px;max-width:92vw;z-index:50}
+#toast.error{border-color:#ff6b6b88}
+@media (max-width:860px){.grid{grid-template-columns:1fr}.stats{grid-template-columns:1fr 1fr}}
+/* The site hides the nav behind a menu toggle on phones; the app keeps its two controls in view. */
+@media (max-width:760px){
+  .app-nav .nav-inner{flex-wrap:nowrap;gap:10px}
+  .app-nav .brand{order:0}
+  .app-nav .brand-word,.app-nav #walletChip{display:none}
+  .app-nav .nav-links,.app-nav .nav-actions{display:flex}
+  .app{padding-top:92px}
+}

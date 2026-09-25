@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>envolvr · Account</title>
+<meta name="description" content="Connect a wallet to fund your envolvr account, stake ENVOLVR, manage API keys and see what your agents spent.">
+<meta name="theme-color" content="#03080a">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com https://fonts.reown.com; img-src 'self' data: https:; connect-src 'self' https://auth.envolvr.xyz https://rpc.testnet.chain.robinhood.com https://*.walletconnect.com https://*.walletconnect.org wss://*.walletconnect.com wss://*.walletconnect.org https://*.reown.com wss://*.reown.com https://*.web3modal.org https://*.web3modal.com; frame-src https://*.walletconnect.com https://*.walletconnect.org https://*.reown.com; base-uri 'none'; form-action 'none'">
+<meta name="referrer" content="no-referrer">
+<link rel="icon" href="../favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../styles.css">
+<link rel="stylesheet" href="app.css">
+</head>
+<body>
+<header class="nav scrolled app-nav">
+  <div class="wrap nav-inner">
+    <a class="brand" href="/" aria-label="envolvr home">
+      <svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true">
+        <path d="M16 2.75 27.25 9.1v13.8L16 29.25 4.75 22.9V9.1z" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linejoin="round"/>
+        <path d="M4.75 9.1 16 19.7 27.25 9.1" fill="none" stroke="var(--volt)" stroke-width="2.1" stroke-linejoin="round" stroke-linecap="round"/>
+      </svg>
+      <span class="brand-word">envolvr</span>
+    </a>
+    <span class="badge mono">testnet</span>
+    <nav class="nav-links" aria-label="App"><a href="/docs/">Docs</a></nav>
+    <div class="nav-actions"><span class="mono dim" id="walletChip" hidden></span><button class="btn btn-ghost" id="disconnect" hidden>Disconnect</button></div>
+  </div>
+</header>
+
+<main class="wrap app">
+  <section id="connectPanel" class="panel">
+    <h1>Your envolvr account</h1>
+    <p class="lede">Connect a wallet to fund your agents with USDG, stake ENVOLVR for a daily allowance, manage API keys and see what was spent. Your wallet is your account: no email, no password.</p>
+    <div id="walletList" class="wallets"></div>
+    <p class="dim small" id="noWallet" hidden>No browser wallet found. Install one (for example Rabby or MetaMask) and reload.</p>
+  </section>
+
+  <section id="appPanel" hidden>
+    <div class="grid">
+      <article class="card card-pad" id="overview">
+        <p class="card-tag mono">ACCOUNT</p>
+        <div class="stats">
+          <div><span class="dim small">Balance</span><strong id="balance">–</strong></div>
+          <div><span class="dim small">Allowance today</span><strong id="allowance">–</strong></div>
+          <div><span class="dim small">Deposit fee</span><strong id="fee">–</strong></div>
+        </div>
+        <p class="dim small">In your wallet: <span id="walletUsdg">–</span> USDG · <span id="walletEnvolvr">–</span> ENVOLVR · <span id="walletEth">–</span> ETH for gas</p>
+        <div id="signinBox" class="signin">
+          <p>Sign in with your wallet to manage API keys and see usage. It signs a message; no transaction, no gas.</p>
+          <button class="btn btn-primary" id="signin">Sign in</button>
+        </div>
+      </article>
+
+      <article class="card card-pad" id="depositCard">
+        <p class="card-tag mono">DEPOSIT USDG</p>
+        <label class="field"><span>Amount</span><input id="depositAmount" inputmode="decimal" placeholder="10.00"><em>USDG</em></label>
+        <p class="dim small" id="depositPreview">Credited to your balance, net of the deposit fee, within seconds.</p>
+        <div class="row"><button class="btn btn-primary" id="deposit">Deposit</button><button class="btn btn-outline" id="mint">Get 20 test USDG</button></div>
+      </article>
+
+      <article class="card card-pad" id="stakeCard">
+        <p class="card-tag mono">STAKE ENVOLVR</p>
+        <div class="stats">
+          <div><span class="dim small">Staked</span><strong id="staked">–</strong></div>
+          <div><span class="dim small">Unstaking</span><strong id="pending">–</strong></div>
+          <div><span class="dim small">Per 1,000 ENVOLVR today</span><strong id="rate">–</strong></div>
+        </div>
+        <label class="field"><span>Stake</span><input id="stakeAmount" inputmode="decimal" placeholder="1000"><em>ENVOLVR</em></label>
+        <div class="row"><button class="btn btn-primary" id="stake">Stake</button></div>
+        <label class="field"><span>Unstake</span><input id="unstakeAmount" inputmode="decimal" placeholder="1000"><em>ENVOLVR</em></label>
+        <div class="row"><button class="btn btn-outline" id="unstake">Request unstake</button><button class="btn btn-outline" id="withdraw" disabled>Withdraw</button></div>
+        <p class="dim small">Stake counts from the next 00:00 UTC. Unused allowance does not roll over. Unstaked tokens unlock after <span id="cooldown">7 days</span>.</p>
+      </article>
+
+      <article class="card card-pad needs-session" id="keysCard">
+        <p class="card-tag mono">API KEYS</p>
+        <div class="row"><input id="keyLabel" placeholder="Label, e.g. trading agent" maxlength="64"><button class="btn btn-primary" id="createKey">New key</button></div>
+        <table class="table" id="keysTable"><thead><tr><th>Key</th><th>Label</th><th>Created</th><th></th></tr></thead><tbody></tbody></table>
+      </article>
+
+      <article class="card card-pad wide needs-session" id="usageCard">
+        <p class="card-tag mono">USAGE</p>
+        <table class="table" id="usageTable"><thead><tr><th>When</th><th>Model</th><th>Provider</th><th>Cost</th><th>Paid from</th></tr></thead><tbody></tbody></table>
+        <p class="dim small">Each response's signed receipt is fetched and verified by the SDK: <a href="/docs/#verify">how to verify</a>.</p>
+      </article>
+
+      <article class="card card-pad needs-session" id="depositsCard">
+        <p class="card-tag mono">DEPOSITS</p>
+        <table class="table" id="depositsTable"><thead><tr><th>Block</th><th>Amount</th><th>Fee</th><th></th></tr></thead><tbody></tbody></table>
+      </article>
+
+      <article class="card card-pad" id="closeCard">
+        <p class="card-tag mono">CLOSE ACCOUNT</p>
+        <p class="small">Revokes every API key and refunds your balance, net of deposit fees, to the wallet below. Signed with your wallet.</p>
+        <label class="field"><span>Refund to</span><input id="refundTo" spellcheck="false"></label>
+        <div class="row"><button class="btn btn-outline danger" id="close">Close account</button></div>
+      </article>
+    </div>
+  </section>
+</main>
+
+<dialog id="keyDialog">
+  <p class="card-tag mono">NEW API KEY</p>
+  <p>Copy it now. It is shown once and envolvr keeps only its hash.</p>
+  <code id="newKey" class="key"></code>
+  <div class="row"><button class="btn btn-primary" id="copyKey">Copy</button><button class="btn btn-outline" id="closeDialog">Done</button></div>
+</dialog>
+<div id="toast" role="status" aria-live="polite" hidden></div>
+<script type="module" src="__MAIN__"></script>
+</body>
+</html>
