@@ -56,6 +56,11 @@
 # Chain, signed with a key the dstack KMS derives for this app, and serves each
 # receipt's inclusion proof at https://auth.envolvr.xyz/receipts/<digest>/proof.
 # The owner registers that key's address (logged at start) with setAnchorer.
+#
+# Sanctions screening: every wallet is checked against the Chainalysis
+# sanctions oracle, read on Ethereum and Arbitrum One through independent RPC
+# operators (it is not on Robinhood Chain yet), at sign-in, on every deposit
+# (a match is held, not credited) and daily while the wallet is active.
 
 services:
   gateway:
@@ -155,7 +160,7 @@ services:
       - -c
       - |
         set -eu
-        COMMIT=58eb006b025451de0395a414086cf39c0c3ebed8
+        COMMIT=eb24d111dd60da7e2b69152a5aff27a607bd5742
         [ -d /opt/envolvr/.git ] || git clone --quiet --no-checkout https://github.com/envolvr/envolvr.git /opt/envolvr
         cd /opt/envolvr
         git fetch --quiet origin
@@ -166,7 +171,7 @@ services:
         npx --yes pnpm@10.13.1 install --frozen-lockfile --prod
         exec node --disable-warning=ExperimentalWarning src/main.ts
     configs:
-      - source: control-config-r4
+      - source: control-config-r5
         target: /etc/envolvr/control.json
     environment:
       CONTROL_CONFIG: /etc/envolvr/control.json
@@ -276,7 +281,7 @@ configs:
         }
       ]
 
-  control-config-r4:
+  control-config-r5:
     content: |
       {
         "port": 8787,
@@ -306,6 +311,10 @@ configs:
           "confirmations": 1
         },
         "blockedWallets": [],
+        "screening": {
+          "oracleRpcUrls": ["https://ethereum-rpc.publicnode.com", "https://arb1.arbitrum.io/rpc"],
+          "rescreenAfterSeconds": 86400
+        },
         "backup": {
           "endpoint": "https://s3.us-east-005.backblazeb2.com",
           "bucket": "envolvr-ledger",
