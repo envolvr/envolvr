@@ -1,0 +1,26 @@
+{
+  "name": "@envolvr/sdk",
+  "version": "0.1.0",
+  "description": "envolvr client: wallet sign-in, USDG deposits, private inference with signed receipts, and receipt verification (signature, billing, on-chain anchor).",
+  "license": "Apache-2.0",
+  "type": "module",
+  "exports": {
+    ".": { "types": "./dist/index.d.ts", "default": "./dist/index.js" }
+  },
+  "bin": { "envolvr": "./dist/cli.js" },
+  "files": ["dist", "README.md"],
+  "engines": { "node": ">=20" },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "test": "node --disable-warning=ExperimentalWarning --test test/*.test.ts"
+  },
+  "dependencies": {
+    "@noble/curves": "^1.9.7",
+    "@noble/hashes": "^1.8.0",
+    "canonicalize": "^5.1.0"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.2",
+    "typescript": "5.9.3"
+  }
+}
