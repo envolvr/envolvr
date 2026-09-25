@@ -8,7 +8,7 @@ import { chmodSync, existsSync, mkdirSync, readFileSync, writeFileSync } from 'n
 import { homedir } from 'node:os';
 import { join } from 'node:path';
 import { depositUsdg, getPricing, mintTestUsdg, signIn } from './api.ts';
-import { verifyGateway } from './attest.ts';
+import { AUDIT_CHECKS, verifyGateway } from './attest.ts';
 import { Envolvr, savedReceipts, verifySaved } from './client.ts';
 import { fromMicros, TESTNET, toMicros } from './network.ts';
 import { privateKeySigner } from './wallet.ts';
@@ -112,7 +112,15 @@ async function main() {
       const acceptCompose = flag('accept-compose') ? [flag('accept-compose')!] : undefined;
       const v = await verifySaved(dir, { network, apiKey: key, receiptDir, acceptCompose });
       console.log(`receipt ${v.receiptId}`);
-      console.log(`${check(v.signature.verified)} attestation and signature   ${v.signature.verified ? 'verified by pap (quote, keyset, signature, commitments)' : 'not verified (run with the saved report; see below)'}`);
+      if (v.audit) {
+        for (const [id, label] of Object.entries(AUDIT_CHECKS)) {
+          const c = v.audit.checks[id];
+          console.log(`${c?.status === 'pass' ? '✓' : c?.status === 'fail' ? '✗' : '·'} ${label}`);
+        }
+        for (const c of v.audit.failed.filter((f) => !(f.id in AUDIT_CHECKS))) console.log(`✗ ${c.title}: ${c.detail}`);
+      } else {
+        console.log(`${check(false)} signature                   ${String(v.signature.transcript)}`);
+      }
       if (v.billing) {
         console.log(`${check(true)} billing                     ${v.billing.cost} ${v.billing.currency} for ${v.billing.tokens.prompt}+${v.billing.tokens.completion} tokens, billed ${usd(BigInt(v.billing.billedMicroUsd))}`);
         console.log(`${check(v.chargedToKey)} charged to this key         ${v.chargedToKey === undefined ? 'no API key given' : v.chargedToKey ? 'yes' : 'no'}`);
@@ -123,10 +131,11 @@ async function main() {
       console.log(`${check(a.status === 'anchored')} anchor                      ${a.status === 'anchored'
         ? `batch ${a.batchIndex}, leaf ${a.leafIndex} of ${a.count}, ${new Date(a.anchoredAt! * 1000).toISOString()}, tx ${a.txHash}`
         : a.status === 'pending' ? 'pending: batches close every 10 minutes (UTC)' : 'unknown to the proof service'}`);
-      const ok = v.signature.verified && a.status === 'anchored';
-      console.log(`\nverdict: ${ok ? 'VERIFIED' : a.status === 'pending' ? 'SIGNED, ANCHOR PENDING' : 'NOT VERIFIED'}`);
-      if (!v.signature.verified) console.log(JSON.stringify(v.signature.transcript, null, 2).slice(0, 4000));
-      process.exit(ok ? 0 : a.status === 'pending' ? 2 : 1);
+      const signed = v.audit?.signed ?? false;
+      const ok = signed && a.status === 'anchored';
+      console.log(`\nverdict: ${ok ? 'VERIFIED' : signed && a.status === 'pending' ? 'SIGNED, ANCHOR PENDING' : 'NOT VERIFIED'}`);
+      if (!signed && v.audit) console.log('pap transcript:', JSON.stringify(v.signature.transcript, null, 2).slice(0, 4000));
+      process.exit(ok ? 0 : signed && a.status === 'pending' ? 2 : 1);
     }
     case 'verify-gateway': {
       const r = await verifyGateway(network, { acceptCompose: flag('accept-compose') ? [flag('accept-compose')!] : undefined });

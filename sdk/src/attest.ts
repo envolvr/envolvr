@@ -65,13 +65,49 @@ export async function fetchAttestationReport(network: Network, nonce = newNonce(
  */
 export function auditReceipt(opts: {
   reportPath: string; nonce?: string; receiptPath: string; requestBodyPath?: string; responseBodyPath?: string;
-  acceptCompose?: string[];
+  sessionPath?: string; acceptCompose?: string[];
 }): Promise<PapResult> {
   return runPap([
     'audit', '--report', opts.reportPath, '--receipt', opts.receiptPath, '--require-production-os', '--skip-expiry',
     ...(opts.nonce ? ['--nonce', opts.nonce] : []),
     ...(opts.requestBodyPath ? ['--request-body', opts.requestBodyPath] : []),
     ...(opts.responseBodyPath ? ['--response-body', opts.responseBodyPath] : []),
+    ...(opts.sessionPath ? ['--session', opts.sessionPath] : []),
     ...(opts.acceptCompose ?? []).flatMap((h) => ['--accept-compose', h]),
   ]);
 }
+
+export interface AuditCheck { id: string; title: string; status: 'pass' | 'fail' | 'skip'; detail: string }
+
+/** What an offline audit establishes, by name. */
+export interface AuditSummary {
+  /** The receipt's signature, keyset, commitments and cited session all check out, and nothing failed. */
+  signed: boolean;
+  checks: Record<string, AuditCheck | undefined>;
+  failed: AuditCheck[];
+}
+
+// pap's check ids (ACI spec sections): what each one tells an agent.
+export const AUDIT_CHECKS: Record<string, string> = {
+  'receipt-1': 'receipt signature by the attested key',
+  'receipt-2': 'receipt names the attested keyset',
+  'receipt-3': 'request commitment matches the bytes sent',
+  'receipt-4': 'response commitment matches the bytes received',
+  'upstream-1': 'provider enclave verified before forwarding',
+  'upstream-2': 'cited provider session checks out',
+  'id-2': 'keyset bound into the TDX quote',
+  'id-4': 'workload measured and linked to public source',
+  'policy-os': 'production dstack OS image',
+  'id-1': 'TDX quote chains to Intel (checked live by verify-gateway)',
+};
+
+export function summarizeAudit(result: PapResult): AuditSummary {
+  const transcript = result.transcript as { checks?: AuditCheck[] } | string;
+  const all = typeof transcript === 'object' && Array.isArray(transcript.checks) ? transcript.checks : [];
+  const checks = Object.fromEntries(Object.keys(AUDIT_CHECKS).map((id) => [id, all.find((c) => c.id === id)]));
+  const failed = all.filter((c) => c.status === 'fail');
+  const required = ['receipt-1', 'receipt-2', 'id-2', 'id-4', 'policy-os', 'upstream-1'];
+  const signed = failed.length === 0 && required.every((id) => checks[id]?.status === 'pass');
+  return { signed, checks, failed };
+}
+

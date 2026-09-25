@@ -7,7 +7,7 @@
 import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { getAccount, getPricing } from './api.ts';
-import { auditReceipt, fetchAttestationReport, type PapResult } from './attest.ts';
+import { auditReceipt, type AuditSummary, fetchAttestationReport, type PapResult, summarizeAudit } from './attest.ts';
 import { type Network, TESTNET } from './network.ts';
 import { type Anchor, billingOf, type Billing, chargedTo, type Receipt, verifyAnchor } from './receipts.ts';
 
@@ -20,8 +20,10 @@ export interface SavedReceipt {
 
 export interface Verification {
   receiptId: string;
-  /** pap: attestation report, receipt signature, request and response commitments. */
+  /** pap's offline audit: attestation report, receipt signature, commitments, cited session. */
   signature: PapResult | { verified: false; transcript: string };
+  /** The audit read check by check; undefined when it did not run. */
+  audit?: AuditSummary;
   billing?: Billing;
   /** Whether the receipt's payer commitment matches the API key given. */
   chargedToKey?: boolean;
@@ -100,7 +102,18 @@ export class Envolvr {
     if (bodies.request !== undefined) writeFileSync(join(dir, 'request.json'), bodies.request);
     if (bodies.response !== undefined) writeFileSync(join(dir, 'response.json'), bodies.response);
     await this.saveReport(String(receipt.workload_keyset_digest));
+    await this.saveSession(receipt, dir);
     return { id, receipt, dir };
+  }
+
+  /** Keep the provider session the receipt cites (sessions, like receipts, expire). */
+  private async saveSession(receipt: Receipt, dir: string): Promise<void> {
+    const cited = receipt.event_log.find((e) => e.type === 'upstream.verified' && typeof e.session_id === 'string');
+    if (!cited) return;
+    const res = await fetch(`${this.network.gateway}/v1/aci/sessions/${cited.session_id}`, {
+      headers: { authorization: `Bearer ${this.apiKey}` },
+    });
+    if (res.ok) writeFileSync(join(dir, 'session.json'), await res.text());
   }
 
   /** Keep one attestation report per keyset, fetched while that keyset is live. */
@@ -144,11 +157,13 @@ export async function verifySaved(dir: string, opts: {
       nonce: existsSync(reportPath.replace(/\.json$/, '.nonce')) ? readFileSync(reportPath.replace(/\.json$/, '.nonce'), 'utf8') : undefined,
       requestBodyPath: existsSync(join(dir, 'request.json')) ? join(dir, 'request.json') : undefined,
       responseBodyPath: existsSync(join(dir, 'response.json')) ? join(dir, 'response.json') : undefined,
+      sessionPath: existsSync(join(dir, 'session.json')) ? join(dir, 'session.json') : undefined,
     })
     : { verified: false as const, transcript: `no attestation report for keyset ${String(receipt.workload_keyset_digest)} in ${reports}` };
   return {
     receiptId: receipt.receipt_id,
     signature,
+    audit: typeof signature.transcript === 'object' ? summarizeAudit(signature as PapResult) : undefined,
     billing: billingOf(receipt),
     chargedToKey: opts.apiKey ? chargedTo(receipt, opts.apiKey) : undefined,
     anchor: await verifyAnchor(receipt, network),
