@@ -110,6 +110,11 @@ export class Store {
       );
       CREATE INDEX IF NOT EXISTS receipt_digests_unbatched ON receipt_digests (seq) WHERE batch_index IS NULL;
       CREATE INDEX IF NOT EXISTS receipt_digests_batch ON receipt_digests (batch_index, leaf_index);
+      CREATE TABLE IF NOT EXISTS wallet_screening (
+        wallet TEXT PRIMARY KEY,
+        sanctioned INTEGER NOT NULL,
+        checked_at INTEGER NOT NULL
+      );
       CREATE TABLE IF NOT EXISTS anchor_batches (
         batch_index INTEGER PRIMARY KEY,
         root TEXT NOT NULL,
@@ -121,6 +126,11 @@ export class Store {
         block_number INTEGER
       );
     `);
+    // Added after the first deployments: a deposit held by sanctions screening.
+    const depositColumns = this.db.prepare('PRAGMA table_info(deposits)').all() as { name: string }[];
+    if (!depositColumns.some((c) => c.name === 'held')) {
+      this.db.exec('ALTER TABLE deposits ADD COLUMN held INTEGER NOT NULL DEFAULT 0');
+    }
   }
 
   cursor(name: string): number | undefined {
@@ -132,18 +142,22 @@ export class Store {
   /**
    * Credit a batch of vault deposits and advance the cursor to `throughBlock`, in
    * one transaction. A deposit already recorded (same tx hash and log index) is
-   * skipped, so replaying a block range never credits twice.
+   * skipped, so replaying a block range never credits twice. A deposit `hold`
+   * selects is recorded as held and not credited.
    */
-  applyDeposits(cursorName: string, deposits: DepositEvent[], throughBlock: number, now: number): number {
+  applyDeposits(cursorName: string, deposits: DepositEvent[], throughBlock: number, now: number,
+    hold: (d: DepositEvent) => boolean = () => false): number {
     this.db.exec('BEGIN IMMEDIATE');
     try {
       let credited = 0;
       for (const d of deposits) {
         const account = this.ensureAccount(d.account, now);
+        const held = hold(d);
         const inserted = this.db.prepare(`INSERT OR IGNORE INTO deposits
-          (tx_hash, log_index, account_id, payer, amount_micros, deposit_id, block_number) VALUES (?, ?, ?, ?, ?, ?, ?)`)
-          .run(d.txHash.toLowerCase(), d.logIndex, account.id, d.payer.toLowerCase(), d.amountMicros, d.depositId, d.blockNumber);
-        if (inserted.changes === 1) {
+          (tx_hash, log_index, account_id, payer, amount_micros, deposit_id, block_number, held) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`)
+          .run(d.txHash.toLowerCase(), d.logIndex, account.id, d.payer.toLowerCase(), d.amountMicros, d.depositId, d.blockNumber,
+            held ? 1 : 0);
+        if (inserted.changes === 1 && !held) {
           this.credit(account.id, d.amountMicros);
           credited++;
         }
@@ -160,6 +174,44 @@ export class Store {
 
   close(): void {
     this.db.close();
+  }
+
+  screeningResult(wallet: string): { sanctioned: boolean; checkedAt: number } | undefined {
+    const row = this.db.prepare('SELECT sanctioned, checked_at FROM wallet_screening WHERE wallet = ?')
+      .get(wallet.toLowerCase()) as { sanctioned: number; checked_at: number } | undefined;
+    return row && { sanctioned: row.sanctioned === 1, checkedAt: row.checked_at };
+  }
+
+  recordScreening(wallet: string, sanctioned: boolean, now: number): void {
+    this.db.prepare(`INSERT INTO wallet_screening (wallet, sanctioned, checked_at) VALUES (?, ?, ?)
+      ON CONFLICT (wallet) DO UPDATE SET sanctioned = excluded.sanctioned, checked_at = excluded.checked_at`)
+      .run(wallet.toLowerCase(), sanctioned ? 1 : 0, now);
+  }
+
+  heldDeposits(): { txHash: string; logIndex: number; wallet: string; payer: string; amountMicros: bigint; depositId: number; blockNumber: number }[] {
+    const rows = this.db.prepare(`SELECT d.tx_hash, d.log_index, a.wallet, d.payer, d.amount_micros, d.deposit_id, d.block_number
+      FROM deposits d JOIN accounts a ON a.id = d.account_id WHERE d.held = 1 ORDER BY d.block_number, d.log_index`).all() as
+      { tx_hash: string; log_index: number; wallet: string; payer: string; amount_micros: number; deposit_id: number; block_number: number }[];
+    return rows.map((r) => ({
+      txHash: r.tx_hash, logIndex: r.log_index, wallet: r.wallet, payer: r.payer, amountMicros: BigInt(r.amount_micros),
+      depositId: r.deposit_id, blockNumber: r.block_number,
+    }));
+  }
+
+  /** Credit a held deposit (after review). Returns the amount, or undefined if it is not held. */
+  releaseDeposit(txHash: string, logIndex: number): bigint | undefined {
+    this.db.exec('BEGIN IMMEDIATE');
+    try {
+      const row = this.db.prepare(`UPDATE deposits SET held = 0 WHERE tx_hash = ? AND log_index = ? AND held = 1
+        RETURNING account_id, amount_micros`).get(txHash.toLowerCase(), logIndex) as
+        { account_id: number; amount_micros: number } | undefined;
+      if (row) this.credit(row.account_id, BigInt(row.amount_micros));
+      this.db.exec('COMMIT');
+      return row && BigInt(row.amount_micros);
+    } catch (err) {
+      this.db.exec('ROLLBACK');
+      throw err;
+    }
   }
 
   /** Record receipt digests (0x + 64 lowercase hex). Returns how many were new. */

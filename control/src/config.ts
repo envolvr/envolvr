@@ -26,6 +26,8 @@ export interface Config {
     depositPollMs?: number;
   };
   blockedWallets: string[];
+  /** Sanctions screening (screening.ts); only `blockedWallets` applies when absent. */
+  screening?: ScreeningConfig;
   /** Encrypted off-VM ledger backups (backup.ts); off when absent. */
   backup?: BackupConfig;
   /** Receipt anchoring on chain (anchoring.ts); needs `chain`. Off when absent. */
@@ -34,6 +36,15 @@ export interface Config {
   controlToken: string;
   /** Bearer token for /admin endpoints. */
   adminToken: string;
+}
+
+export interface ScreeningConfig {
+  /** JSON-RPC endpoints of chains where the Chainalysis sanctions oracle is deployed; any "sanctioned" answer counts. */
+  oracleRpcUrls: string[];
+  /** Default 0x40C57923924B5c5c5455c48D93317139ADDaC8fb (the same on every chain it is deployed on). */
+  oracle?: string;
+  /** Default 86400. */
+  rescreenAfterSeconds?: number;
 }
 
 export interface AnchoringConfig {
@@ -98,6 +109,12 @@ export function loadConfig(path: string, env: NodeJS.ProcessEnv = process.env): 
     config.backup = { ...backup, accessKeyId, secretAccessKey };
   }
   if (config.anchoring) validateAnchoring(config);
+  if (config.screening) {
+    const urls = config.screening.oracleRpcUrls;
+    if (!Array.isArray(urls) || urls.length === 0 || !urls.every((u) => /^https?:\/\//.test(u))) {
+      throw new Error('screening.oracleRpcUrls must list at least one http(s) URL');
+    }
+  }
   return config;
 }
 

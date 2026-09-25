@@ -2,7 +2,10 @@
 //
 // Polls in bounded block ranges, `confirmations` blocks behind the head, and
 // commits each range's credits together with the cursor, so a crash never skips
-// a deposit and a replay never credits one twice.
+// a deposit and a replay never credits one twice. With a `screen`, the payer and
+// the credited wallet of every deposit are screened first: a deposit touching a
+// blocked wallet is recorded as held instead of credited, and a range whose
+// screening fails is retried later, never applied unscreened.
 
 import { keccak_256 } from '@noble/hashes/sha3';
 import { bytesToHex, utf8ToBytes } from '@noble/hashes/utils';
@@ -77,7 +80,10 @@ export class RpcLogSource implements LogSource {
 export class DepositWatcher {
   private store: Store;
   private source: LogSource;
-  private opts: { cursorName: string; startBlock: number; confirmations: number; maxRange: number; now: () => number };
+  private opts: {
+    cursorName: string; startBlock: number; confirmations: number; maxRange: number; now: () => number;
+    screen?: (wallet: string) => Promise<boolean>;
+  };
 
   constructor(store: Store, source: LogSource, opts: Partial<DepositWatcher['opts']> & { startBlock: number }) {
     this.store = store;
@@ -87,15 +93,23 @@ export class DepositWatcher {
     };
   }
 
-  /** Process the next block range. Returns deposits credited and the block reached. */
-  async pollOnce(): Promise<{ credited: number; throughBlock: number | undefined }> {
-    const { cursorName, startBlock, confirmations, maxRange, now } = this.opts;
+  /** Process the next block range. Returns deposits credited and held, and the block reached. */
+  async pollOnce(): Promise<{ credited: number; held: number[]; throughBlock: number | undefined }> {
+    const { cursorName, startBlock, confirmations, maxRange, now, screen } = this.opts;
     const from = (this.store.cursor(cursorName) ?? startBlock - 1) + 1;
     const safeHead = (await this.source.latestBlock()) - confirmations;
-    if (safeHead < from) return { credited: 0, throughBlock: this.store.cursor(cursorName) };
+    if (safeHead < from) return { credited: 0, held: [], throughBlock: this.store.cursor(cursorName) };
     const to = Math.min(safeHead, from + maxRange - 1);
     const logs = await this.source.depositLogs(from, to);
-    return { credited: this.store.applyDeposits(cursorName, logs, to, now()), throughBlock: to };
+    const blocked = new Set<string>();
+    if (screen) {
+      for (const wallet of new Set(logs.flatMap((d) => [d.account.toLowerCase(), d.payer.toLowerCase()]))) {
+        if (await screen(wallet)) blocked.add(wallet);
+      }
+    }
+    const hold = (d: DepositEvent) => blocked.has(d.account.toLowerCase()) || blocked.has(d.payer.toLowerCase());
+    const credited = this.store.applyDeposits(cursorName, logs, to, now(), hold);
+    return { credited, held: logs.filter(hold).map((d) => d.depositId), throughBlock: to };
   }
 
   /** Poll until caught up, then every `intervalMs`. */
@@ -105,7 +119,9 @@ export class DepositWatcher {
       while (!stopped) {
         try {
           const r = await this.pollOnce();
-          if (r.credited > 0) log('deposits credited', r);
+          if (r.credited > 0) log('deposits credited', { credited: r.credited, throughBlock: r.throughBlock });
+          // Count only: the logs are public, and a deposit id leads to its wallet on chain.
+          if (r.held.length > 0) log('deposits held by sanctions screening', { held: r.held.length });
           const head = (await this.source.latestBlock()) - this.opts.confirmations;
           if (r.throughBlock !== undefined && r.throughBlock < head) continue;
         } catch (err) {

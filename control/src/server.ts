@@ -14,6 +14,11 @@
 // Operator (bearer: adminToken):
 //   POST /admin/credit            credit a wallet's USDG balance
 //   GET  /admin/account?wallet=   balance and today's allowance
+//   GET  /admin/deposits/held     deposits held by sanctions screening
+//   POST /admin/deposits/release  credit a held deposit after review
+//
+// Sanctions screening (screening.ts) gates sign-in (fails closed, 503 while
+// screening is unavailable) and every consult (403 for a blocked wallet).
 //
 // The gateway sends no prompt content here: a key hash, the model, routing
 // constraints and content-free request features only.
@@ -26,6 +31,7 @@ import type { Config } from './config.ts';
 import type { Store } from './db.ts';
 import { ProofService } from './anchoring.ts';
 import { costMicros } from './money.ts';
+import { Screening, ScreeningUnavailable } from './screening.ts';
 import {
   billingRates, DEFAULT_ENDPOINTS, parseProviderPrefs, quote, RoutingError, selectRoutes, withRouteMargin, type Route,
 } from './routing.ts';
@@ -40,6 +46,8 @@ export interface Deps {
   config: Config;
   store: Store;
   allowance: AllowanceSource;
+  /** Defaults to the config's static blocklist alone. */
+  screening?: Screening;
   /** Unix seconds. */
   now?: () => number;
   log?: (msg: string, fields?: Record<string, unknown>) => void;
@@ -86,7 +94,7 @@ export function createControlServer(deps: Deps): Server {
   const { config, store, allowance } = deps;
   const now = deps.now ?? (() => Math.floor(Date.now() / 1000));
   const log = deps.log ?? (() => {});
-  const blocked = new Set(config.blockedWallets.map((w) => w.toLowerCase()));
+  const screening = deps.screening ?? new Screening(store, { blocklist: config.blockedWallets });
   // Routes with the resale margin applied, per public model.
   const priced = new Map<string, Route[]>(
     Object.entries(config.models).map(([model, { routes }]) => [
@@ -113,7 +121,14 @@ export function createControlServer(deps: Deps): Server {
     if (!keyHash) return deny(401, 'missing API key');
     const account = store.accountByKeyHash(keyHash);
     if (!account) return deny(401, 'invalid API key');
-    if (blocked.has(account.wallet)) return deny(403, 'account not permitted');
+    let blocked: boolean;
+    try {
+      blocked = await screening.blocked(account.wallet);
+    } catch (err) {
+      if (err instanceof ScreeningUnavailable) return deny(503, 'sanctions screening unavailable');
+      throw err;
+    }
+    if (blocked) return deny(403, 'account not permitted');
     const model = typeof body.model === 'string' ? body.model : undefined;
     const routes = model ? priced.get(model) : undefined;
     if (!model || !routes) return deny(404, 'model not found');
@@ -204,7 +219,7 @@ export function createControlServer(deps: Deps): Server {
     return { nonce, issuedAt, message: signInMessage(wallet, nonce, issuedAt) };
   }
 
-  function authKey(body: Record<string, unknown>) {
+  async function authKey(body: Record<string, unknown>) {
     const { wallet, nonce, issuedAt, signature } = body as Record<string, string>;
     if (!WALLET.test(wallet ?? '') || !nonce || !issuedAt || !signature) {
       throw new HttpError(400, 'wallet, nonce, issuedAt and signature are required');
@@ -216,8 +231,22 @@ export function createControlServer(deps: Deps): Server {
       throw new HttpError(401, 'invalid signature');
     }
     if (signer !== wallet.toLowerCase()) throw new HttpError(401, 'signature does not match wallet');
+    // Screen before spending the nonce, so a sign-in refused with 503 can be retried.
+    let blocked: boolean;
+    try {
+      blocked = await screening.check(wallet);
+    } catch (err) {
+      if (err instanceof ScreeningUnavailable) {
+        log('sign-in screening unavailable', { error: err.message });
+        throw new HttpError(503, 'sanctions screening unavailable, try again shortly');
+      }
+      throw err;
+    }
     if (!store.takeNonce(nonce, wallet, now())) throw new HttpError(401, 'nonce expired or already used');
-    if (blocked.has(wallet.toLowerCase())) throw new HttpError(403, 'account not permitted');
+    if (blocked) {
+      log('sign-in refused by sanctions screening');
+      throw new HttpError(403, 'account not permitted');
+    }
     const account = store.ensureAccount(wallet, now());
     const apiKey = newApiKey();
     store.addApiKey(account.id, hashApiKey(apiKey), now());
@@ -262,6 +291,18 @@ export function createControlServer(deps: Deps): Server {
     return { wallet: account.wallet, balanceMicros: store.accountByWallet(wallet)!.balanceMicros };
   }
 
+  function adminRelease(body: Record<string, unknown>) {
+    const txHash = String(body.txHash ?? '');
+    const logIndex = Number(body.logIndex);
+    if (!/^0x[0-9a-fA-F]{64}$/.test(txHash) || !Number.isInteger(logIndex)) {
+      throw new HttpError(400, 'txHash (0x + 64 hex) and logIndex are required');
+    }
+    const amount = store.releaseDeposit(txHash, logIndex);
+    if (amount === undefined) throw new HttpError(404, 'no held deposit with that txHash and logIndex');
+    log('held deposit released');
+    return { released: true, amountMicros: amount };
+  }
+
   async function adminAccount(url: URL) {
     const account = store.accountByWallet(url.searchParams.get('wallet') ?? '');
     if (!account) throw new HttpError(404, 'no such account');
@@ -288,9 +329,11 @@ export function createControlServer(deps: Deps): Server {
       if (route === 'POST /receipts') { gateway(); return send(res, 200, receiveDigests(await readJson(req, 2 * 1024 * 1024))); }
       if (req.method === 'GET' && /^\/receipts\/[^/]+\/proof$/.test(url.pathname)) return send(res, 200, receiptProof(url.pathname));
       if (route === 'GET /auth/nonce') return send(res, 200, authNonce(url));
-      if (route === 'POST /auth/key') return send(res, 200, authKey(await readJson(req)));
+      if (route === 'POST /auth/key') return send(res, 200, await authKey(await readJson(req)));
       if (route === 'POST /admin/credit') { admin(); return send(res, 200, adminCredit(await readJson(req))); }
       if (route === 'GET /admin/account') { admin(); return send(res, 200, await adminAccount(url)); }
+      if (route === 'GET /admin/deposits/held') { admin(); return send(res, 200, { deposits: store.heldDeposits() }); }
+      if (route === 'POST /admin/deposits/release') { admin(); return send(res, 200, adminRelease(await readJson(req))); }
       throw new HttpError(404, 'not found');
     } catch (err) {
       if (err instanceof HttpError) return send(res, err.status, { error: err.message });

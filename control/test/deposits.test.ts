@@ -40,13 +40,13 @@ test('credits each deposit once, stays behind the head, and resumes from the cur
   const src = source(110, [ev(100, 0, 5_000_000n), ev(105, 1, 2_000_000n), ev(111, 0, 1_000_000n)]);
   const watcher = new DepositWatcher(store, src, { startBlock: 100, confirmations: 2, maxRange: 1_000 });
 
-  assert.deepEqual(await watcher.pollOnce(), { credited: 2, throughBlock: 108 });
+  assert.deepEqual(await watcher.pollOnce(), { credited: 2, held: [], throughBlock: 108 });
   assert.equal(store.accountByWallet(agent)!.balanceMicros, 7_000_000n);
 
   // Nothing new until the head moves past the confirmation depth.
-  assert.deepEqual(await watcher.pollOnce(), { credited: 0, throughBlock: 108 });
+  assert.deepEqual(await watcher.pollOnce(), { credited: 0, held: [], throughBlock: 108 });
   src.head = 113;
-  assert.deepEqual(await watcher.pollOnce(), { credited: 1, throughBlock: 111 });
+  assert.deepEqual(await watcher.pollOnce(), { credited: 1, held: [], throughBlock: 111 });
   assert.equal(store.accountByWallet(agent)!.balanceMicros, 8_000_000n);
   assert.deepEqual(src.calls, [[100, 108], [109, 111]]);
 });

@@ -10,6 +10,7 @@ import { Store } from './db.ts';
 import { DepositWatcher, RpcLogSource } from './deposits.ts';
 import { Rpc } from './evm.ts';
 import { S3Client } from './s3.ts';
+import { OracleSource, Screening } from './screening.ts';
 import { createControlServer } from './server.ts';
 
 const config = loadConfig(process.env.CONTROL_CONFIG ?? 'config.json');
@@ -42,12 +43,21 @@ const allowance = config.chain
   ? new StakingAllowanceReader(config.chain.rpcUrl, config.chain.stakingAllowance)
   : noAllowance;
 
+const screening = new Screening(store, {
+  sources: (config.screening?.oracleRpcUrls ?? []).map((url) => new OracleSource(url, config.screening?.oracle)),
+  blocklist: config.blockedWallets,
+  rescreenAfterSeconds: config.screening?.rescreenAfterSeconds,
+  log,
+});
+if (config.screening) log('sanctions screening configured', { sources: config.screening.oracleRpcUrls.map((u) => new URL(u).host) });
+
 let stopDeposits = () => {};
 if (config.chain?.creditVault) {
   const source = new RpcLogSource(config.chain.rpcUrl, config.chain.creditVault);
   stopDeposits = new DepositWatcher(store, source, {
     startBlock: config.chain.depositStartBlock ?? 0,
     confirmations: config.chain.confirmations ?? 1,
+    screen: (wallet) => screening.check(wallet),
   }).start(config.chain.depositPollMs ?? 5_000, log);
   log('deposit watcher started', { vault: config.chain.creditVault });
 }
@@ -67,7 +77,7 @@ if (config.anchoring) {
 const stopBackups = backups?.start(store.db, config.dbPath, config.backup?.intervalMs ?? 300_000);
 if (backups) log('ledger backups started', { bucket: config.backup!.bucket, prefix: config.backup!.prefix });
 
-const server = createControlServer({ config, store, allowance, log }).listen(config.port, () =>
+const server = createControlServer({ config, store, allowance, screening, log }).listen(config.port, () =>
   log('control plane listening', { port: config.port, models: Object.keys(config.models) }),
 );
 
