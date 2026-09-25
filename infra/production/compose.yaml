@@ -179,7 +179,7 @@ services:
       - -c
       - |
         set -eu
-        COMMIT=fd6c19cf2a45ea78072d43c5bea39a6e8801b3d3
+        COMMIT=b2e54c7c604f1ebba8f19864ad5c35b3b814c908
         [ -d /opt/envolvr/.git ] || git clone --quiet --no-checkout https://github.com/envolvr/envolvr.git /opt/envolvr
         cd /opt/envolvr
         git fetch --quiet origin
