@@ -5,7 +5,7 @@ import { defineChain } from 'viem';
 export const CONTROL = document.querySelector('meta[name="envolvr-control"]')?.getAttribute('content') ?? 'https://auth.envolvr.xyz';
 
 /** WalletConnect (Reown) project id: public, not a secret. Empty hides WalletConnect. */
-export const WALLETCONNECT_PROJECT_ID = '';
+export const WALLETCONNECT_PROJECT_ID = '973fa1356cbee48ff81102e84d7b9a60';
 
 export const chain = defineChain({
   id: 46630,
