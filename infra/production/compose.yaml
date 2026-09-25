@@ -67,7 +67,7 @@ services:
     image: docker.io/dstacktee/git-launcher@sha256:4437dce18ec713b0991d34bd926d324966b1a0b90fad485b8ddb3f4ed2af138b
     command: ["/etc/git-launcher/gateway.conf"]
     configs:
-      - source: gateway-pin-r4
+      - source: gateway-pin-r5
         target: /etc/git-launcher/gateway.conf
       - source: run-gateway-r1
         target: /etc/envolvr/run-gateway.sh
@@ -179,7 +179,7 @@ services:
       - -c
       - |
         set -eu
-        COMMIT=3124f40de5af7878ff120613fd37a988a98dd001
+        COMMIT=fd6c19cf2a45ea78072d43c5bea39a6e8801b3d3
         [ -d /opt/envolvr/.git ] || git clone --quiet --no-checkout https://github.com/envolvr/envolvr.git /opt/envolvr
         cd /opt/envolvr
         git fetch --quiet origin
@@ -190,7 +190,7 @@ services:
         npx --yes pnpm@10.13.1 install --frozen-lockfile --prod
         exec node --disable-warning=ExperimentalWarning src/main.ts
     configs:
-      - source: control-config-r5
+      - source: control-config-r6
         target: /etc/envolvr/control.json
     environment:
       CONTROL_CONFIG: /etc/envolvr/control.json
@@ -206,10 +206,10 @@ services:
     restart: unless-stopped
 
 configs:
-  gateway-pin-r4:
+  gateway-pin-r5:
     content: |
       REPO_URL=https://github.com/envolvr/private-ai-gateway.git
-      COMMIT_SHA=b24a6c5716b8301cff0e80f8e1de078ae62910b5
+      COMMIT_SHA=adc714c3bf1288c471ad558b290976eb5ec45027
       WORK_DIR=/var/lib/git-launcher/private-ai-gateway
       INSTALL_CMD=dpkg --configure -a && apt-get update -qq && apt-get install -y --no-install-recommends gcc libc6-dev curl ca-certificates && curl -fsSL --retry 3 -o /tmp/uv.tar.gz https://github.com/astral-sh/uv/releases/download/0.12.18/uv-x86_64-unknown-linux-gnu.tar.gz && echo '89eadd7c76fc063887959510d5ba0ab1264dfd5f1143b925ddb73021a40acf16  /tmp/uv.tar.gz' | sha256sum -c - && tar -xzf /tmp/uv.tar.gz -C /usr/local/bin --strip-components=1 uv-x86_64-unknown-linux-gnu/uv && uv sync --frozen --no-dev
       RUN_CMD=bash /etc/envolvr/run-gateway.sh
@@ -300,12 +300,13 @@ configs:
         }
       ]
 
-  control-config-r5:
+  control-config-r6:
     content: |
       {
         "port": 8787,
         "dbPath": "/data/control.db",
-        "marginBps": 2000,
+        "marginBps": 0,
+        "depositFeeBps": 500,
         "minAvailableMicros": 1000,
         "models": {
           "z-ai/glm-5.3": { "routes": [
