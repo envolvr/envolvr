@@ -83,6 +83,8 @@ export class DepositWatcher {
   private opts: {
     cursorName: string; startBlock: number; confirmations: number; maxRange: number; now: () => number;
     screen?: (wallet: string) => Promise<boolean>;
+    /** The deposit fee in basis points, read when a range is credited. */
+    feeBps?: () => number;
   };
 
   constructor(store: Store, source: LogSource, opts: Partial<DepositWatcher['opts']> & { startBlock: number }) {
@@ -108,7 +110,7 @@ export class DepositWatcher {
       }
     }
     const hold = (d: DepositEvent) => blocked.has(d.account.toLowerCase()) || blocked.has(d.payer.toLowerCase());
-    const credited = this.store.applyDeposits(cursorName, logs, to, now(), hold);
+    const credited = this.store.applyDeposits(cursorName, logs, to, now(), hold, this.opts.feeBps?.() ?? 0);
     return { credited, held: logs.filter(hold).map((d) => d.depositId), throughBlock: to };
   }
 

@@ -224,3 +224,14 @@ test('an upstream out of quota is logged for the monitor, with the route and not
   srv.close();
   assert.deepEqual(lines, ['{"msg":"upstream quota exhausted","route":"redpill:z-ai/glm-5.3"}']);
 });
+
+test('GET /account: the caller sees its own balance with its API key, and nothing without one', async () => {
+  const { apiKey, wallet } = (await signIn(secp256k1.utils.randomPrivateKey())).res.body as { apiKey: string; wallet: string };
+  await call('POST', '/admin/credit', { wallet, amountMicros: '250000' }, ADMIN);
+  const res = await fetch(`${base}/account`, { headers: { authorization: `Bearer ${apiKey}` } });
+  assert.equal(res.status, 200);
+  assert.deepEqual(await res.json(), { wallet, balanceMicros: '250000', allowanceTodayMicros: '0', allowanceLeftMicros: '0' });
+  assert.equal((await fetch(`${base}/account`)).status, 401);
+  assert.equal((await fetch(`${base}/account`, { headers: { authorization: 'Bearer envk_nope' } })).status, 401);
+});
+

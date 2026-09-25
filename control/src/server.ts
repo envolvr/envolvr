@@ -11,11 +11,15 @@
 //   POST /auth/key                signed message -> API key (shown once)
 //   GET  /receipts/<digest>/proof inclusion proof of an anchored receipt; the
 //                                 digest is SHA-256 of the receipt's JCS bytes
+//   GET  /account                 the caller's balance and today's allowance
+//                                 (bearer: the API key)
+//   GET  /pricing                 the deposit fee and how prices are set
 // Operator (bearer: adminToken):
 //   POST /admin/credit            credit a wallet's USDG balance
 //   GET  /admin/account?wallet=   balance and today's allowance
 //   GET  /admin/deposits/held     deposits held by sanctions screening
 //   POST /admin/deposits/release  credit a held deposit after review
+//   GET|POST /admin/deposit-fee   read or set the deposit fee (bps); applies at once
 //
 // Sanctions screening (screening.ts) gates sign-in (fails closed, 503 while
 // screening is unavailable) and every consult (403 for a blocked wallet).
@@ -256,6 +260,14 @@ export function createControlServer(deps: Deps): Server {
   }
 
   const proofs = new ProofService(store);
+  const depositFeeBps = () => store.depositFeeBps(config.depositFeeBps ?? 0);
+
+  function adminDepositFee(body: Record<string, unknown>) {
+    const bps = Number(body.bps);
+    if (!Number.isInteger(bps) || bps < 0 || bps > 10_000) throw new HttpError(400, 'bps must be an integer from 0 to 10000');
+    store.setDepositFeeBps(bps, now());
+    return { bps };
+  }
 
   function receiveDigests(body: Record<string, unknown>) {
     const receipts = body.receipts;
@@ -305,8 +317,7 @@ export function createControlServer(deps: Deps): Server {
     return { released: true, amountMicros: amount };
   }
 
-  async function adminAccount(url: URL) {
-    const account = store.accountByWallet(url.searchParams.get('wallet') ?? '');
+  async function accountView(account: { id: number; wallet: string; balanceMicros: bigint } | undefined) {
     if (!account) throw new HttpError(404, 'no such account');
     const t = now();
     const { total, left } = await allowanceLeft(account.id, account.wallet, t - (t % DAY));
@@ -330,10 +341,28 @@ export function createControlServer(deps: Deps): Server {
       if (req.method === 'GET' && url.pathname.startsWith('/models')) { gateway(); return send(res, 200, catalog(url.pathname)); }
       if (route === 'POST /receipts') { gateway(); return send(res, 200, receiveDigests(await readJson(req, 2 * 1024 * 1024))); }
       if (req.method === 'GET' && /^\/receipts\/[^/]+\/proof$/.test(url.pathname)) return send(res, 200, receiptProof(url.pathname));
+      if (route === 'GET /pricing') {
+        return send(res, 200, {
+          depositFeeBps: depositFeeBps(),
+          tokenPricing: config.marginBps === 0 ? 'provider list price' : `provider list price plus ${config.marginBps / 100}%`,
+          models: '/v1/models on the gateway lists every model with its per-token prices',
+        });
+      }
       if (route === 'GET /auth/nonce') return send(res, 200, authNonce(url));
       if (route === 'POST /auth/key') return send(res, 200, await authKey(await readJson(req)));
       if (route === 'POST /admin/credit') { admin(); return send(res, 200, adminCredit(await readJson(req))); }
-      if (route === 'GET /admin/account') { admin(); return send(res, 200, await adminAccount(url)); }
+      if (route === 'GET /admin/account') {
+        admin();
+        return send(res, 200, await accountView(store.accountByWallet(url.searchParams.get('wallet') ?? '')));
+      }
+      if (route === 'GET /account') {
+        const key = req.headers.authorization?.startsWith('Bearer ') ? req.headers.authorization.slice(7) : '';
+        const account = key ? store.accountByKeyHash(hashApiKey(key)) : undefined;
+        if (!account) throw new HttpError(401, 'invalid API key');
+        return send(res, 200, await accountView(account));
+      }
+      if (route === 'GET /admin/deposit-fee') { admin(); return send(res, 200, { bps: depositFeeBps() }); }
+      if (route === 'POST /admin/deposit-fee') { admin(); return send(res, 200, adminDepositFee(await readJson(req))); }
       if (route === 'GET /admin/deposits/held') { admin(); return send(res, 200, { deposits: store.heldDeposits() }); }
       if (route === 'POST /admin/deposits/release') { admin(); return send(res, 200, adminRelease(await readJson(req))); }
       throw new HttpError(404, 'not found');

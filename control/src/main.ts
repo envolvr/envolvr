@@ -58,6 +58,7 @@ if (config.chain?.creditVault) {
     startBlock: config.chain.depositStartBlock ?? 0,
     confirmations: config.chain.confirmations ?? 1,
     screen: (wallet) => screening.check(wallet),
+    feeBps: () => store.depositFeeBps(config.depositFeeBps ?? 0),
   }).start(config.chain.depositPollMs ?? 5_000, log);
   log('deposit watcher started', { vault: config.chain.creditVault });
 }

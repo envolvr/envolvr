@@ -5,8 +5,13 @@ import type { ModelRoutes } from './routing.ts';
 export interface Config {
   port: number;
   dbPath: string;
-  /** Resale margin over upstream list price, in basis points. */
+  /** Resale margin over upstream list price, in basis points (0: providers' list prices). */
   marginBps: number;
+  /**
+   * Fee kept from each USDG deposit, in basis points: the starting value until an
+   * admin sets one in the ledger (POST /admin/deposit-fee). Default 0.
+   */
+  depositFeeBps?: number;
   /** Deny below this much available credit (allowance left plus balance), micro-USD. */
   minAvailableMicros: number;
   /**

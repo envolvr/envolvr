@@ -43,6 +43,11 @@ const batchOf = (r: BatchRow): AnchorBatch => ({
   sentAt: r.sent_at, anchoredAt: r.anchored_at, blockNumber: r.block_number,
 });
 
+/** The fee kept from a deposit: `bps` of it, rounded down (in the depositor's favor). */
+export function depositFee(amountMicros: bigint, bps: number): bigint {
+  return (amountMicros * BigInt(bps)) / 10_000n;
+}
+
 export class Store {
   readonly db: DatabaseSync;
 
@@ -110,6 +115,11 @@ export class Store {
       );
       CREATE INDEX IF NOT EXISTS receipt_digests_unbatched ON receipt_digests (seq) WHERE batch_index IS NULL;
       CREATE INDEX IF NOT EXISTS receipt_digests_batch ON receipt_digests (batch_index, leaf_index);
+      CREATE TABLE IF NOT EXISTS settings (
+        name TEXT PRIMARY KEY,
+        value TEXT NOT NULL,
+        updated_at INTEGER NOT NULL
+      );
       CREATE TABLE IF NOT EXISTS wallet_screening (
         wallet TEXT PRIMARY KEY,
         sanctioned INTEGER NOT NULL,
@@ -131,6 +141,10 @@ export class Store {
     if (!depositColumns.some((c) => c.name === 'held')) {
       this.db.exec('ALTER TABLE deposits ADD COLUMN held INTEGER NOT NULL DEFAULT 0');
     }
+    // Added with the deposit fee: what was kept from each deposit (0 before it).
+    if (!depositColumns.some((c) => c.name === 'fee_micros')) {
+      this.db.exec('ALTER TABLE deposits ADD COLUMN fee_micros INTEGER NOT NULL DEFAULT 0');
+    }
   }
 
   cursor(name: string): number | undefined {
@@ -142,23 +156,26 @@ export class Store {
   /**
    * Credit a batch of vault deposits and advance the cursor to `throughBlock`, in
    * one transaction. A deposit already recorded (same tx hash and log index) is
-   * skipped, so replaying a block range never credits twice. A deposit `hold`
-   * selects is recorded as held and not credited.
+   * skipped, so replaying a block range never credits twice. The deposit fee
+   * (`feeBps`, rounded down) is kept and recorded; the rest is credited. A
+   * deposit `hold` selects is recorded as held and not credited.
    */
   applyDeposits(cursorName: string, deposits: DepositEvent[], throughBlock: number, now: number,
-    hold: (d: DepositEvent) => boolean = () => false): number {
+    hold: (d: DepositEvent) => boolean = () => false, feeBps = 0): number {
     this.db.exec('BEGIN IMMEDIATE');
     try {
       let credited = 0;
       for (const d of deposits) {
         const account = this.ensureAccount(d.account, now);
         const held = hold(d);
+        const fee = depositFee(d.amountMicros, feeBps);
         const inserted = this.db.prepare(`INSERT OR IGNORE INTO deposits
-          (tx_hash, log_index, account_id, payer, amount_micros, deposit_id, block_number, held) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`)
+          (tx_hash, log_index, account_id, payer, amount_micros, deposit_id, block_number, held, fee_micros)
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`)
           .run(d.txHash.toLowerCase(), d.logIndex, account.id, d.payer.toLowerCase(), d.amountMicros, d.depositId, d.blockNumber,
-            held ? 1 : 0);
+            held ? 1 : 0, fee);
         if (inserted.changes === 1 && !held) {
-          this.credit(account.id, d.amountMicros);
+          this.credit(account.id, d.amountMicros - fee);
           credited++;
         }
       }
@@ -176,6 +193,18 @@ export class Store {
     this.db.close();
   }
 
+  /** The deposit fee in basis points: the ledger's setting, or `fallback` until one is set. */
+  depositFeeBps(fallback: number): number {
+    const row = this.db.prepare("SELECT value FROM settings WHERE name = 'deposit_fee_bps'").get() as { value: string } | undefined;
+    return row ? Number(row.value) : fallback;
+  }
+
+  setDepositFeeBps(bps: number, now: number): void {
+    if (!Number.isInteger(bps) || bps < 0 || bps > 10_000) throw new Error('deposit fee must be 0 to 10000 basis points');
+    this.db.prepare(`INSERT INTO settings (name, value, updated_at) VALUES ('deposit_fee_bps', ?, ?)
+      ON CONFLICT (name) DO UPDATE SET value = excluded.value, updated_at = excluded.updated_at`).run(String(bps), now);
+  }
+
   screeningResult(wallet: string): { sanctioned: boolean; checkedAt: number } | undefined {
     const row = this.db.prepare('SELECT sanctioned, checked_at FROM wallet_screening WHERE wallet = ?')
       .get(wallet.toLowerCase()) as { sanctioned: number; checked_at: number } | undefined;
@@ -188,26 +217,33 @@ export class Store {
       .run(wallet.toLowerCase(), sanctioned ? 1 : 0, now);
   }
 
-  heldDeposits(): { txHash: string; logIndex: number; wallet: string; payer: string; amountMicros: bigint; depositId: number; blockNumber: number }[] {
-    const rows = this.db.prepare(`SELECT d.tx_hash, d.log_index, a.wallet, d.payer, d.amount_micros, d.deposit_id, d.block_number
-      FROM deposits d JOIN accounts a ON a.id = d.account_id WHERE d.held = 1 ORDER BY d.block_number, d.log_index`).all() as
-      { tx_hash: string; log_index: number; wallet: string; payer: string; amount_micros: number; deposit_id: number; block_number: number }[];
+  heldDeposits(): {
+    txHash: string; logIndex: number; wallet: string; payer: string; amountMicros: bigint; feeMicros: bigint; depositId: number;
+    blockNumber: number;
+  }[] {
+    const rows = this.db.prepare(`SELECT d.tx_hash, d.log_index, a.wallet, d.payer, d.amount_micros, d.fee_micros, d.deposit_id,
+      d.block_number FROM deposits d JOIN accounts a ON a.id = d.account_id WHERE d.held = 1 ORDER BY d.block_number, d.log_index`)
+      .all() as {
+        tx_hash: string; log_index: number; wallet: string; payer: string; amount_micros: number; fee_micros: number;
+        deposit_id: number; block_number: number;
+      }[];
     return rows.map((r) => ({
       txHash: r.tx_hash, logIndex: r.log_index, wallet: r.wallet, payer: r.payer, amountMicros: BigInt(r.amount_micros),
-      depositId: r.deposit_id, blockNumber: r.block_number,
+      feeMicros: BigInt(r.fee_micros), depositId: r.deposit_id, blockNumber: r.block_number,
     }));
   }
 
-  /** Credit a held deposit (after review). Returns the amount, or undefined if it is not held. */
+  /** Credit a held deposit (after review), net of its fee. Returns the amount credited, or undefined if it is not held. */
   releaseDeposit(txHash: string, logIndex: number): bigint | undefined {
     this.db.exec('BEGIN IMMEDIATE');
     try {
       const row = this.db.prepare(`UPDATE deposits SET held = 0 WHERE tx_hash = ? AND log_index = ? AND held = 1
-        RETURNING account_id, amount_micros`).get(txHash.toLowerCase(), logIndex) as
-        { account_id: number; amount_micros: number } | undefined;
-      if (row) this.credit(row.account_id, BigInt(row.amount_micros));
+        RETURNING account_id, amount_micros, fee_micros`).get(txHash.toLowerCase(), logIndex) as
+        { account_id: number; amount_micros: number; fee_micros: number } | undefined;
+      const net = row && BigInt(row.amount_micros) - BigInt(row.fee_micros);
+      if (row) this.credit(row.account_id, net!);
       this.db.exec('COMMIT');
-      return row && BigInt(row.amount_micros);
+      return net;
     } catch (err) {
       this.db.exec('ROLLBACK');
       throw err;
