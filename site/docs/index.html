@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>envolvr docs · Private inference. Verifiable.</title>
+<meta name="description" content="How an agent uses envolvr: sign in with a wallet, deposit USDG, call an OpenAI-compatible API inside attested enclaves, and verify every receipt on Robinhood Chain.">
+<meta name="theme-color" content="#03080a">
+<link rel="icon" href="../favicon.svg" type="image/svg+xml">
+<meta property="og:title" content="envolvr docs">
+<meta property="og:description" content="Private inference your agent can prove: quickstart, API, receipts and verification.">
+<meta property="og:image" content="https://envolvr.xyz/images/og.jpg">
+<link rel="alternate" type="text/plain" href="/llms.txt" title="Docs for language models">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../styles.css">
+<style>
+  .docs{display:grid;grid-template-columns:220px minmax(0,1fr);gap:56px;padding:124px 0 96px}
+  .toc{position:sticky;top:92px;align-self:start;font-size:13.5px}
+  .toc p{color:var(--muted-2);letter-spacing:.16em;font-size:10.5px;margin:0 0 12px;font-family:var(--mono)}
+  .toc a{display:block;padding:5px 0;color:var(--muted)}
+  .toc a:hover{color:var(--text)}
+  .doc{max-width:760px}
+  .doc h1{font-family:var(--serif);font-size:clamp(34px,4.6vw,54px);line-height:1.05;letter-spacing:-.015em;margin-bottom:18px}
+  .doc h2{font-family:var(--serif);font-size:30px;letter-spacing:-.01em;margin:72px 0 16px;scroll-margin-top:90px}
+  .doc h3{font-weight:600;font-size:16px;letter-spacing:-.01em;margin:32px 0 10px}
+  .doc p,.doc li{color:var(--muted);font-size:15px;line-height:1.72}
+  .doc p strong,.doc li strong{color:var(--text);font-weight:500}
+  .doc ul,.doc ol{padding-left:20px}
+  .doc a{color:var(--volt)}
+  .doc code{font-family:var(--mono);font-size:.86em;color:var(--text);background:var(--card-hi);padding:1px 5px;border-radius:5px}
+  .doc pre{background:var(--ink-2);border:1px solid var(--line);border-radius:var(--r);padding:18px 20px;overflow-x:auto;margin:16px 0 22px}
+  .doc pre code{background:none;padding:0;font-size:13px;line-height:1.7;color:#e6ebe0}
+  .doc table{width:100%;border-collapse:collapse;margin:16px 0 22px;font-size:14px}
+  .doc th,.doc td{text-align:left;padding:10px 12px;border-bottom:1px solid var(--line-soft);color:var(--muted);vertical-align:top}
+  .doc th{color:var(--text);font-weight:500}
+  .note{border:1px solid var(--volt-border);background:var(--volt-subtle);border-radius:var(--r);padding:14px 18px;margin:18px 0}
+  .note p{margin:0}
+  @media (max-width:900px){.docs{grid-template-columns:1fr;gap:24px;padding-top:100px}.toc{position:static}}
+</style>
+</head>
+<body>
+
+<header class="nav scrolled" id="nav">
+  <div class="wrap nav-inner">
+    <a class="brand" href="/" aria-label="envolvr home">
+      <svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true">
+        <path d="M16 2.75 27.25 9.1v13.8L16 29.25 4.75 22.9V9.1z" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linejoin="round"/>
+        <path d="M4.75 9.1 16 19.7 27.25 9.1" fill="none" stroke="var(--volt)" stroke-width="2.1" stroke-linejoin="round" stroke-linecap="round"/>
+      </svg>
+      <span class="brand-word">envolvr</span>
+    </a>
+    <nav class="nav-links" aria-label="Docs">
+      <a href="#quickstart">Quickstart</a>
+      <a href="#api">API</a>
+      <a href="#receipts">Receipts</a>
+      <a href="#verify">Verify</a>
+      <a href="#pricing">Pricing</a>
+    </nav>
+    <div class="nav-actions">
+      <a class="btn btn-ghost" href="https://github.com/envolvr/envolvr">GitHub</a>
+    </div>
+  </div>
+</header>
+
+<main class="wrap docs">
+  <aside class="toc" aria-label="Contents">
+    <p>DOCS</p>
+    <a href="#overview">Overview</a>
+    <a href="#quickstart">Quickstart</a>
+    <a href="#code">In code</a>
+    <a href="#openai">OpenAI SDK</a>
+    <a href="#account">Account and funding</a>
+    <a href="#models">Models and providers</a>
+    <a href="#api">API reference</a>
+    <a href="#receipts">Receipts</a>
+    <a href="#verify">Verify</a>
+    <a href="#pricing">Pricing</a>
+    <a href="#network">Network and contracts</a>
+    <a href="#good-to-know">Good to know</a>
+  </aside>
+
+  <article class="doc">
+    <p class="eyebrow"><span class="dot"></span> Testnet · Robinhood Chain</p>
+    <h1>Private inference your agent can prove.</h1>
+    <p>envolvr is an OpenAI-compatible inference API that runs inside hardware-attested enclaves. Every response comes with a signed receipt, and every receipt is anchored on Robinhood Chain. Your agent can prove what ran, where, and what it paid, and anyone can check the proof without trusting envolvr.</p>
+
+    <h2 id="overview">Overview</h2>
+    <ul>
+      <li><strong>Gateway</strong> <code>https://api.envolvr.xyz</code> runs in an Intel TDX virtual machine whose code, configuration and keys are measured and published. It verifies the provider's GPU enclave before forwarding, and signs a receipt for every response.</li>
+      <li><strong>Providers</strong> serve open-weight models in confidential GPU enclaves: Phala (through RedPill) and NEAR AI Cloud. On NEAR routes each non-streamed response is also signed by the model enclave that produced it.</li>
+      <li><strong>Accounts</strong> are wallets. Sign a message to get an API key; fund it with USDG, or stake ENVOLVR for a daily allowance.</li>
+      <li><strong>Receipts</strong> record the model, the attested provider session, commitments to the exact request and response, and what was billed. They are anchored on Robinhood Chain every 10 minutes.</li>
+    </ul>
+
+    <h2 id="quickstart">Quickstart</h2>
+    <p>With the <code>envolvr</code> command from <a href="https://github.com/envolvr/envolvr/tree/main/sdk">@envolvr/sdk</a> (Node 20 or later), from an empty wallet to a verified receipt:</p>
+<pre><code>git clone https://github.com/envolvr/envolvr && cd envolvr/sdk
+pnpm install && pnpm build
+export ENVOLVR_PRIVATE_KEY=0x…        # a wallet with a little Robinhood testnet ETH for gas
+
+node dist/cli.js signin --save        # sign a message, get an API key
+node dist/cli.js testnet-mint 20      # test USDG (testnet only)
+node dist/cli.js deposit 10           # credited, net of the deposit fee, within seconds
+node dist/cli.js chat "Reply with the single word: sealed"
+node dist/cli.js verify --last        # run again once the 10-minute slot has closed</code></pre>
+    <p><code>verify</code> reads the saved receipt back and prints what it proves:</p>
+<pre><code>✓ receipt signature by the attested key
+✓ receipt names the attested keyset
+✓ request commitment matches the bytes sent
+✓ response commitment matches the bytes received
+✓ provider enclave verified before forwarding
+✓ cited provider session checks out
+✓ keyset bound into the TDX quote
+✓ workload measured and linked to public source
+✓ production dstack OS image
+· TDX quote chains to Intel (checked live by verify-gateway)
+✓ billing                     0.00001135 USD for 19+17 tokens, billed $0.000012
+✓ charged to this key         yes
+✓ anchor                      batch 2, leaf 0 of 2, 2026-09-25T11:40:01.000Z, tx 0xe379…bb98
+
+verdict: VERIFIED</code></pre>
+    <p><code>node dist/cli.js verify-gateway</code> checks the live gateway: the TDX quote to Intel's root, the measured compose and source commit, the production OS, and that your TLS connection ends at the attested key.</p>
+
+    <h2 id="code">In code</h2>
+<pre><code>import { Envolvr, privateKeySigner, signIn, depositUsdg, TESTNET, toMicros } from '@envolvr/sdk';
+
+const wallet = privateKeySigner(process.env.KEY, { rpcUrl: TESTNET.rpcUrl, chainId: TESTNET.chainId });
+const { apiKey } = await signIn(wallet);                      // shown once: store it
+await depositUsdg({ signer: wallet, amountMicros: toMicros('10') });
+
+const envolvr = new Envolvr({ apiKey, receiptDir: './receipts' });
+const { response, saved } = await envolvr.chat({
+  model: 'z-ai/glm-5.3',
+  messages: [{ role: 'user', content: 'Summarize the position risk.' }],
+});
+// later, once the slot has closed:
+const proof = await envolvr.verify(saved.dir);                // signature, billing, payer, anchor</code></pre>
+    <p>Any wallet works: implement <code>Signer</code> (<code>address</code>, <code>signMessage</code>, and <code>sendTransaction</code> for deposits) around viem, ethers or a hardware wallet. The client saves each receipt with the exact request and response bytes, the provider session it cites, and the attestation report of the keyset that signed it, so it can be verified later, offline.</p>
+
+    <h2 id="openai">With the OpenAI SDK</h2>
+<pre><code>import OpenAI from 'openai';
+const client = new OpenAI({ baseURL: 'https://api.envolvr.xyz/v1', apiKey: process.env.ENVOLVR_API_KEY });
+const res = await client.chat.completions.create({ model: 'z-ai/glm-5.3', messages: [...] }).withResponse();
+const receiptId = res.response.headers.get('x-receipt-id');   // fetch it within the hour</code></pre>
+    <p>To have every request go over a verified channel, run the local verifying proxy and point the client at it. It verifies the gateway before it starts, pins the attested TLS key, and checks every receipt:</p>
+<pre><code>npx private-ai-proxy serve https://api.envolvr.xyz --require-production-os
+# base URL: http://127.0.0.1:4180/v1</code></pre>
+
+    <h2 id="account">Account and funding</h2>
+    <h3>Sign in</h3>
+    <p><code>GET https://auth.envolvr.xyz/auth/nonce?wallet=0x…</code> returns a message; sign it with EIP-191 <code>personal_sign</code> and send <code>{wallet, nonce, issuedAt, signature}</code> to <code>POST /auth/key</code>. The API key is shown once. Each sign-in issues a new key; earlier keys keep working.</p>
+    <h3>Deposit USDG</h3>
+    <p>Approve the credit vault for USDG, then call <code>deposit(amount)</code> from your wallet, or <code>depositFor(account, amount)</code> to fund another wallet. The balance is credited within seconds of the deposit being mined, net of the deposit fee. Deposit from a wallet you control, and use the vault's functions: a plain USDG transfer to the vault is not credited.</p>
+    <h3>Stake for an allowance</h3>
+    <p>Staking ENVOLVR gives a share of a daily inference budget: budget × your stake ÷ total stake, taken at 00:00 UTC. Stake added during a day counts from the next day. The allowance is spent before your USDG balance and does not roll over. Unstaking has a 7-day cooldown.</p>
+    <h3>Balance</h3>
+    <p><code>GET https://auth.envolvr.xyz/account</code> with <code>Authorization: Bearer &lt;API key&gt;</code> returns your balance and today's allowance, in micro-USD.</p>
+
+    <h2 id="models">Models and providers</h2>
+    <p><code>GET https://api.envolvr.xyz/v1/models</code> lists every model with its per-token prices and routes. At launch:</p>
+    <table>
+      <tr><th>Model</th><th>Provider</th><th>Input / output per 1M tokens</th></tr>
+      <tr><td><code>z-ai/glm-5.3</code></td><td>Phala (RedPill)</td><td>$1.40 / $4.40</td></tr>
+      <tr><td><code>z-ai/glm-5.3-flash</code></td><td>NEAR AI, enclave-signed</td><td>$0.15 / $0.50</td></tr>
+      <tr><td><code>qwen/qwen3.8-27b</code></td><td>Phala (RedPill); NEAR AI on request</td><td>$0.24 / $2.50 (NEAR: $0.44 / $3.30)</td></tr>
+      <tr><td><code>qwen/qwen3.6-35b-a3b</code></td><td>NEAR AI, enclave-signed</td><td>$0.17 / $1.10</td></tr>
+    </table>
+    <p>Choose providers per request with an OpenRouter-style block: <code>"provider": {"only": ["near-ai"]}</code>, or <code>{"order": ["redpill", "near-ai"], "allow_fallbacks": true}</code>. Provider names are <code>redpill</code> and <code>near-ai</code>. A route marked opt-in in <code>/v1/models</code> is used only when you name it.</p>
+
+    <h2 id="api">API reference</h2>
+    <table>
+      <tr><th>Endpoint</th><th>What</th></tr>
+      <tr><td><code>POST api/v1/chat/completions</code></td><td>OpenAI chat completions, streaming or not. Header <code>x-receipt-id</code> names the receipt; <code>usage.cost</code> is the cost in USD.</td></tr>
+      <tr><td><code>GET api/v1/models</code></td><td>Models, prices, routes.</td></tr>
+      <tr><td><code>GET api/v1/aci/receipts/{id}</code></td><td>The signed receipt, with the same API key. Kept for an hour.</td></tr>
+      <tr><td><code>GET api/v1/aci/sessions/{id}</code></td><td>The attested provider session a receipt cites.</td></tr>
+      <tr><td><code>GET api/v1/aci/attestation?nonce=</code></td><td>The gateway's attestation report for a fresh 64-hex nonce.</td></tr>
+      <tr><td><code>GET auth/auth/nonce</code>, <code>POST auth/auth/key</code></td><td>Wallet sign-in.</td></tr>
+      <tr><td><code>GET auth/account</code></td><td>Balance and allowance (API key).</td></tr>
+      <tr><td><code>GET auth/pricing</code></td><td>The current deposit fee.</td></tr>
+      <tr><td><code>GET auth/receipts/{digest}/proof</code></td><td>A receipt's inclusion proof on Robinhood Chain (public).</td></tr>
+    </table>
+    <p><code>api</code> is <code>https://api.envolvr.xyz</code>, <code>auth</code> is <code>https://auth.envolvr.xyz</code>. Both terminate TLS inside the attested VM.</p>
+
+    <h2 id="receipts">Receipts</h2>
+    <p>A receipt is a JSON document signed with an Ed25519 key that lives only inside the gateway's enclave and is listed in its attested keyset. Its event log records, in order:</p>
+    <table>
+      <tr><th>Event</th><th>Records</th></tr>
+      <tr><td><code>request.received</code></td><td>SHA-256 of the exact request bytes: a commitment you can later open to an auditor.</td></tr>
+      <tr><td><code>route.selected</code></td><td>The provider route that served it.</td></tr>
+      <tr><td><code>upstream.verified</code></td><td>The attested provider session: TEE, GPU and OS claims, checked before forwarding.</td></tr>
+      <tr><td><code>upstream.response_attested</code></td><td>NEAR routes, non-streamed: the model enclave's own signature over this request and response.</td></tr>
+      <tr><td><code>billing.charged</code></td><td>Token counts, per-token rates, the exact cost, the amount billed, and a payer commitment.</td></tr>
+      <tr><td><code>response.returned</code></td><td>SHA-256 of the exact response bytes you received.</td></tr>
+    </table>
+    <p>The payer commitment is <code>sha256("billing.payer.v1:" + hex(sha256(api_key)) + ":" + receipt_id)</code>. It names no account and links no two receipts; you prove a receipt was charged to you by disclosing your key's hash, never the key.</p>
+    <p>Fetch receipts within the hour: the gateway keeps them for an hour. The SDK and the verifying proxy do it for you.</p>
+
+    <h2 id="verify">Verify</h2>
+    <h3>The gateway</h3>
+<pre><code>npx private-ai-proxy verify https://api.envolvr.xyz --require-production-os</code></pre>
+    <p>Checks the TDX quote to Intel's root, that the keyset and your nonce are bound into it, that the measured compose links to the public source commit, the production OS image, and that your TLS connection ends at the attested key. Pin a compose hash with <code>--accept-compose</code>.</p>
+    <h3>A receipt</h3>
+<pre><code>npx private-ai-proxy audit --report attestation.json --receipt receipt.json \
+  --request-body request.json --response-body response.json --session session.json --require-production-os</code></pre>
+    <p>Checks the signature against the attested keyset and the request and response bytes against the receipt's commitments. <code>envolvr verify</code> runs this for you on a saved receipt.</p>
+    <h3>The anchor</h3>
+    <p>The digest is SHA-256 of the receipt's JCS (RFC 8785) bytes. Get its proof from <code>https://auth.envolvr.xyz/receipts/{digest}/proof</code> and ask the contract directly:</p>
+<pre><code>cast call 0xff179938C830134D8E2922dAe7e16Ee4F0E33853 \
+  'verifyReceipt(bytes32,uint256,bytes32,bytes32[])(bool)' \
+  0x86b99987cd8f8ebddc2dd0efa61ed52b5db594430f12446db424da0d9c4b831f &lt;batchIndex&gt; &lt;digest&gt; '[&lt;proof&gt;]' \
+  --rpc-url https://rpc.testnet.chain.robinhood.com/rpc</code></pre>
+    <p>Receipts are anchored in fixed 10-minute slots (UTC): a slot's receipts become one Merkle root, anchored seconds after the slot ends by a key that only the attested gateway VM can derive. The chain sees the slot, never when in it your request ran.</p>
+
+    <h2 id="pricing">Pricing</h2>
+    <ul>
+      <li><strong>Tokens</strong> are priced at the providers' own list prices. <code>/v1/models</code> has them; every response carries its <code>usage.cost</code>.</li>
+      <li><strong>Deposits</strong>: a fee of 5% is kept from each USDG deposit. <code>GET /pricing</code> always has the current rate.</li>
+      <li><strong>Billing</strong> is the exact cost rounded up to the next micro-USD, and every receipt records the tokens, rates and amount, so any charge can be recomputed.</li>
+      <li>If one request allows several providers, it is priced at the highest of their list prices.</li>
+    </ul>
+
+    <h2 id="network">Network and contracts</h2>
+    <table>
+      <tr><th></th><th>Robinhood Chain testnet (46630)</th></tr>
+      <tr><td>RPC</td><td><code>https://rpc.testnet.chain.robinhood.com/rpc</code></td></tr>
+      <tr><td>USDG (test token, open mint)</td><td><code>0xF7326a325aED45a1BF5D1268982f519BeCe941b6</code></td></tr>
+      <tr><td>CreditVault</td><td><code>0x2aaB804f3eB6B436CB542d56D171d020bC2d7c51</code></td></tr>
+      <tr><td>StakingAllowance</td><td><code>0xB14F681DD0589993750DE02C45132f40BC2e72Af</code></td></tr>
+      <tr><td>ReceiptAnchor</td><td><code>0xff179938C830134D8E2922dAe7e16Ee4F0E33853</code></td></tr>
+      <tr><td>Gateway provider id</td><td><code>0x86b99987cd8f8ebddc2dd0efa61ed52b5db594430f12446db424da0d9c4b831f</code></td></tr>
+    </table>
+    <p>Source: <a href="https://github.com/envolvr/envolvr">envolvr/envolvr</a> (contracts, control plane, SDK, deployment compose) and <a href="https://github.com/envolvr/private-ai-gateway">envolvr/private-ai-gateway</a> (the gateway).</p>
+
+    <h2 id="good-to-know">Good to know</h2>
+    <ul>
+      <li>This is the testnet: test USDG, test contracts. Mainnet addresses will be published here.</li>
+      <li>Receipts are kept at the gateway for an hour; anchoring proofs are kept for good.</li>
+      <li>A proof is available within about 10 minutes, once the receipt's slot has closed.</li>
+      <li>Every wallet is screened against sanctions lists at sign-in and on deposit.</li>
+      <li>The gateway never logs prompts, responses, keys or wallets.</li>
+    </ul>
+  </article>
+</main>
+
+<footer class="footer">
+  <div class="wrap footer-legal">
+    <p>envolvr is a pre-launch protocol on testnet. Nothing here is financial, legal or investment advice. The attestation guarantee is limited to what is described in the protocol spec.</p>
+    <p class="mono dim">© 2026 envolvr</p>
+  </div>
+</footer>
+</body>
+</html>

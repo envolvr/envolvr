@@ -24,6 +24,7 @@ agent ──> envolvr gateway (TDX enclave) ──> attested model enclave (conf
 | `anchorer/` | Merkle batches and proofs for `ReceiptAnchor` from receipt files (CLI); the reference for the control plane's automatic anchoring. |
 | `weights/` | Weights manifests and roots, from hub metadata (reference) or files on disk (boot step). |
 | `infra/` | `production/`: gateway plus control plane in one attested VM, with every source commit and image digest pinned in the measured compose. `gateway/`: gateway-only deploy. `simulator/`: dstack simulator image for local runs. |
+| `site/` | envolvr.xyz: the landing page, the agent docs (`/docs/`) and `/llms.txt`, published by `.github/workflows/pages.yml`. |
 | `docs/` | Attested weights design, published weights manifests, local end-to-end guide, upstream proposals. |
 
 The gateway is a fork of

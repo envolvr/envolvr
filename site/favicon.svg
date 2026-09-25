@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="envolvr">
+  <title>envolvr</title>
+  <rect width="64" height="64" rx="14" fill="#03080a"/>
+  <g transform="translate(32 32) scale(1.52) translate(-16 -16)">
+    <path d="M16 2.75 27.25 9.1v13.8L16 29.25 4.75 22.9V9.1z" fill="none" stroke="#fcfcfe" stroke-width="2.3" stroke-linejoin="round"/>
+    <path d="M4.75 9.1 16 19.7 27.25 9.1" fill="none" stroke="#c8ff00" stroke-width="2.3" stroke-linejoin="round" stroke-linecap="round"/>
+  </g>
+</svg>

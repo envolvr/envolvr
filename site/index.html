@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>envolvr · Private inference. Verifiable.</title>
+<meta name="description" content="envolvr is a private inference network for AI agents on Robinhood Chain. Prompts run inside hardware-attested enclaves and return signed receipts that anyone can verify.">
+<meta name="theme-color" content="#03080a">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<meta property="og:title" content="envolvr · Private inference. Verifiable.">
+<meta property="og:description" content="Attested inference for agents on Robinhood Chain. Your agent's alpha stays yours.">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://envolvr.xyz/images/og.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://envolvr.xyz/images/og.jpg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+<script>document.documentElement.classList.add('js');</script>
+</head>
+<body>
+
+<header class="nav" id="nav">
+  <div class="wrap nav-inner">
+    <a class="brand" href="#top" aria-label="envolvr home">
+      <svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true">
+        <path d="M16 2.75 27.25 9.1v13.8L16 29.25 4.75 22.9V9.1z" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linejoin="round"/>
+        <path d="M4.75 9.1 16 19.7 27.25 9.1" fill="none" stroke="var(--volt)" stroke-width="2.1" stroke-linejoin="round" stroke-linecap="round"/>
+      </svg>
+      <span class="brand-word">envolvr</span>
+    </a>
+    <nav class="nav-links" aria-label="Main">
+      <a href="#problem">Problem</a>
+      <a href="#how">Protocol</a>
+      <a href="#receipts">Receipts</a>
+      <a href="#token">Token</a>
+      <a href="#guarantees">Guarantees</a>
+    </nav>
+    <div class="nav-actions">
+      <a class="btn btn-ghost" href="/docs/">Docs</a>
+      <a class="btn btn-primary" href="#token">Stake</a>
+    </div>
+    <button class="nav-toggle" id="navToggle" aria-label="Toggle menu" aria-expanded="false">
+      <span></span><span></span>
+    </button>
+  </div>
+</header>
+
+<main id="top">
+
+  <section class="hero">
+    <div class="hero-img" aria-hidden="true"></div>
+    <div class="wrap hero-grid">
+      <div class="hero-copy reveal">
+        <p class="eyebrow"><span class="dot"></span> Built for agents on Robinhood Chain</p>
+        <h1>Private inference<br>your agent can <em>prove</em>.</h1>
+        <p class="lede">
+          An agent's prompts run inside hardware-attested enclaves. The GPU operator
+          cannot read them. Every response comes back with a signed receipt that
+          anyone can check, on chain, without taking our word for it.
+        </p>
+        <div class="hero-cta">
+          <a class="btn btn-primary btn-lg" href="/docs/#quickstart">Start building</a>
+          <a class="btn btn-outline btn-lg" href="#receipts">See a receipt</a>
+        </div>
+        <p class="hero-note mono">OpenAI-compatible · settles in USDG · one line to integrate</p>
+      </div>
+
+      <div class="hero-panel reveal">
+        <div class="receipt" id="receipt">
+          <div class="receipt-head">
+            <span class="status status-idle" id="rcptStatus"><span class="pulse-idle"></span> unverified</span>
+            <span class="mono dim">rcpt-2bb7…8262</span>
+          </div>
+          <dl class="receipt-rows">
+            <div><dt>provider</dt><dd class="mono">phala · tdx</dd></div>
+            <div><dt>gpu</dt><dd class="mono">h200 · confidential</dd></div>
+            <div><dt>model</dt><dd class="mono">glm-5.3</dd></div>
+            <div><dt>session</dt><dd class="mono hl">6367…fe6b attested</dd></div>
+            <div><dt>keyset</dt><dd class="mono hl">sha256:f5d8…b5d4</dd></div>
+            <div><dt>prompt</dt><dd class="mono">commitment d845…b493</dd></div>
+            <div><dt>billed</dt><dd class="mono">$0.000012 · 36 tokens</dd></div>
+            <div><dt>anchor</dt><dd class="mono">rhc · batch 2 · 11:40 utc</dd></div>
+          </dl>
+          <div class="receipt-foot">
+            <button class="verify-btn mono" id="verifyBtn" type="button">verify independently</button>
+            <span class="seal">
+              <svg viewBox="0 0 32 32" aria-hidden="true">
+                <path d="M16 2.75 27.25 9.1v13.8L16 29.25 4.75 22.9V9.1z" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linejoin="round"/>
+                <path d="M4.75 9.1 16 19.7 27.25 9.1" fill="none" stroke="var(--volt)" stroke-width="2.1" stroke-linejoin="round" stroke-linecap="round"/>
+              </svg>
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="marquee" aria-hidden="true">
+      <div class="marquee-track mono">
+        <span>NVIDIA Confidential Compute</span><i></i>
+        <span>TDX attestation</span><i></i>
+        <span>End-to-end encrypted</span><i></i>
+        <span>USDG settlement</span><i></i>
+        <span>Robinhood Chain</span><i></i>
+        <span>Open verifier</span><i></i>
+        <span>NVIDIA Confidential Compute</span><i></i>
+        <span>TDX attestation</span><i></i>
+        <span>End-to-end encrypted</span><i></i>
+        <span>USDG settlement</span><i></i>
+        <span>Robinhood Chain</span><i></i>
+        <span>Open verifier</span><i></i>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="problem">
+    <div class="wrap sec-grid">
+      <div class="sec-rail" aria-hidden="true">
+        <span class="sec-num mono">01</span>
+        <span class="rail-line"></span>
+      </div>
+      <div class="sec-body">
+        <h2 class="sec-title reveal">Every prompt an agent sends is a disclosure.</h2>
+
+        <div class="compare">
+          <article class="cmp-panel reveal">
+            <header class="cmp-head">
+              <span class="mono cmp-tag">Hosted model</span>
+              <span class="mono cmp-state">readable</span>
+            </header>
+            <div class="cmp-body">
+              <p class="cmp-prompt">"Given the SOL funding rate and my current basis position, should I close the arb now or hold it through the weekend?"</p>
+              <dl class="cmp-meta">
+                <div><dt>wallet</dt><dd class="mono">0x7f3a…c41e</dd></div>
+                <div><dt>requested</dt><dd class="mono">14:02:11 UTC</dd></div>
+                <div><dt>served by</dt><dd class="mono">hosted frontier model</dd></div>
+                <div><dt>retained</dt><dd class="mono">unknown</dd></div>
+              </dl>
+            </div>
+            <p class="cmp-verdict">Position, intent and timing, all readable at the point of inference.</p>
+          </article>
+
+          <article class="cmp-panel cmp-sealed reveal">
+            <header class="cmp-head">
+              <span class="mono cmp-tag">envolvr</span>
+              <span class="mono cmp-state sealed">ciphertext</span>
+            </header>
+            <div class="cmp-body">
+              <p class="cmp-cipher mono">8f2a c41e 7b93 0d55 e10c<br>4a77 2fb8 91de 6c04 33af<br>8e21 77b5 d0f6 1a3c 9e84<br>b2d1 55c8 07ae f314 62bd</p>
+              <dl class="cmp-meta">
+                <div><dt>prompt</dt><dd class="mono hl">commitment 2b7e…d310</dd></div>
+                <div><dt>model</dt><dd class="mono hl">glm-5.3</dd></div>
+                <div><dt>keyset</dt><dd class="mono hl">sha256:f5d8…b5d4</dd></div>
+              </dl>
+            </div>
+            <p class="cmp-verdict">The operator sees ciphertext, a model name and a measurement. Your agent's reasoning stays sealed.</p>
+          </article>
+        </div>
+
+        <div class="problem-points">
+          <div class="reveal">
+            <h3>Reasoning leaks</h3>
+            <p>An agent that thinks with a hosted model hands that provider its positions, its signals and its intent. On a transparent chain, the surrounding job and payment data links the two together.</p>
+          </div>
+          <div class="reveal">
+            <h3>Privacy you cannot check</h3>
+            <p>Providers say they keep no logs. There is no way to confirm it. The default mode of every consumer private AI product is a contract and a promise.</p>
+          </div>
+          <div class="reveal">
+            <h3>No paper trail</h3>
+            <p>Regulated finance has to show which model at which version produced a decision, without exposing the strategy behind it. Nothing shipping today does both.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="how">
+    <div class="wrap sec-grid">
+      <div class="sec-rail" aria-hidden="true">
+        <span class="sec-num mono">02</span>
+        <span class="rail-line"></span>
+      </div>
+      <div class="sec-body">
+        <h2 class="sec-title reveal">Four steps, and no trusted middleman.</h2>
+        <ol class="steps">
+          <li class="reveal">
+            <span class="step-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 2.75 20.25 7.5v9L12 21.25 3.75 16.5v-9z"/>
+                <circle cx="12" cy="12" r="2.5"/>
+              </svg>
+            </span>
+            <span class="step-num mono">01</span>
+            <h3>Verify the enclave</h3>
+            <p>The client pulls the attestation quote and checks the measurement against a known build. If it does not match, the prompt never leaves the machine.</p>
+          </li>
+          <li class="reveal">
+            <span class="step-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="2.5" y="8" width="6" height="8" rx="1.6"/>
+                <path d="M10.5 12h3.2"/>
+                <path d="M12.4 10.3 14.2 12l-1.8 1.7"/>
+                <rect x="15.6" y="8" width="6" height="8" rx="1.6" stroke-dasharray="2.6 2.2"/>
+              </svg>
+            </span>
+            <span class="step-num mono">02</span>
+            <h3>Encrypt to the enclave</h3>
+            <p>The prompt is encrypted to a key held only inside the attested gateway enclave. It is read only inside attested enclaves, the gateway's and the provider's, so nothing outside them sees plaintext. That includes us.</p>
+          </li>
+          <li class="reveal">
+            <span class="step-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="6.5" y="6.5" width="11" height="11" rx="2.4"/>
+                <path d="M10 3.2v3.3M14 3.2v3.3M10 17.5v3.3M14 17.5v3.3M3.2 10h3.3M3.2 14h3.3M17.5 10h3.3M17.5 14h3.3"/>
+              </svg>
+            </span>
+            <span class="step-num mono">03</span>
+            <h3>Run attested inference</h3>
+            <p>Inference happens on a GPU TEE that the gateway verifies before it forwards a single byte. The operator cannot read the prompt or the response, and the receipt names the model and the attested session that served it.</p>
+          </li>
+          <li class="reveal">
+            <span class="step-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M5.5 3.2h8.6l4.4 4.4v13.2H5.5z"/>
+                <path d="M14.1 3.2v4.4h4.4"/>
+                <path d="M8.6 12.4h6.8M8.6 15.6h4.2"/>
+              </svg>
+            </span>
+            <span class="step-num mono">04</span>
+            <h3>Return a signed receipt</h3>
+            <p>The enclave signs a receipt that binds the model, the attested provider session, commitments to the exact request and response, and what was billed. Its hash is anchored on Robinhood Chain within ten minutes.</p>
+          </li>
+        </ol>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="receipts">
+    <div class="wrap sec-grid">
+      <div class="sec-rail" aria-hidden="true">
+        <span class="sec-num mono">03</span>
+        <span class="rail-line"></span>
+      </div>
+      <div class="sec-body split">
+        <div class="reveal">
+          <h2 class="sec-title">The receipt is the product.</h2>
+          <p class="body">
+            Privacy covers one half of the claim. The other half is proving which
+            model, served by which attested enclave, produced a specific output, and
+            what it cost, checkable by anyone, without trusting envolvr or the
+            provider. The proof is rooted in the silicon itself: Intel TDX and
+            NVIDIA Confidential Computing.
+          </p>
+          <p class="body">
+            The verifier is open source and deterministic. Run it yourself, or hand
+            it to your auditor. Receipt hashes are anchored on Robinhood Chain in an
+            append-only log, so a provider's entire history stays auditable.
+          </p>
+          <ul class="ticks">
+            <li>Attestation quote validation</li>
+            <li>Model and provider binding</li>
+            <li>Prompt commitment for selective disclosure</li>
+            <li>Billing record, recomputable to the micro-dollar</li>
+            <li>On-chain anchoring and per-provider history</li>
+          </ul>
+        </div>
+        <div class="reveal">
+          <div class="code-panel">
+            <div class="code-head">
+              <span class="mono dim">$ envolvr verify --last</span>
+            </div>
+            <pre class="mono"><span class="ok">✓</span> receipt signature    attested key
+<span class="ok">✓</span> keyset               bound into the tdx quote
+<span class="ok">✓</span> workload             measured, public source
+<span class="ok">✓</span> provider session     6367…fe6b verified
+<span class="ok">✓</span> prompt commitment    matches the request
+<span class="ok">✓</span> response commitment  matches the response
+<span class="ok">✓</span> billing              $0.000012 · charged to this key
+<span class="ok">✓</span> anchor               rhc · batch 2 · 11:40:01 utc
+
+<span class="dim">verdict:</span> <span class="ok">VERIFIED</span>
+<span class="dim">root of trust:</span> intel tdx · nvidia cc</pre>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="token">
+    <div class="wrap sec-grid">
+      <div class="sec-rail" aria-hidden="true">
+        <span class="sec-num mono">04</span>
+        <span class="rail-line"></span>
+      </div>
+      <div class="sec-body">
+        <h2 class="sec-title reveal">Two ways to pay. One of them is cheaper.</h2>
+        <div class="cards two">
+          <article class="card reveal">
+            <div class="card-art" aria-hidden="true">
+              <svg viewBox="0 0 212 120" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="40" cy="58" r="21"/>
+                <path d="M40 47v22M34.5 53h8.6a4.4 4.4 0 0 1 0 8.8h-8.6" stroke="var(--volt)"/>
+                <path d="M74 58h28"/>
+                <path d="M96 52.6 101.6 58 96 63.4"/>
+                <rect x="110" y="42" width="56" height="32" rx="8"/>
+                <path d="M132 80.5h12" opacity=".45"/>
+                <path d="M122 50h32M122 58h24M122 66h28" opacity=".35"/>
+              </svg>
+            </div>
+            <div class="card-pad">
+              <p class="card-tag mono">PAY AS YOU GO</p>
+              <h3>USDG, per request</h3>
+              <p>No signup, no token, no lockup. Sign in with your wallet, deposit USDG and call the endpoint. Built for agents that want to try the thing before committing to it.</p>
+              <ul class="ticks">
+                <li>USDG on Robinhood Chain</li>
+                <li>Provider list prices, 5% on deposit</li>
+                <li>No token exposure</li>
+              </ul>
+            </div>
+          </article>
+
+          <article class="card card-accent reveal">
+            <div class="card-art" aria-hidden="true">
+              <svg viewBox="0 0 212 120" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="26" y="76" width="80" height="9" rx="3"/>
+                <rect x="26" y="61" width="80" height="9" rx="3" opacity=".55"/>
+                <rect x="26" y="46" width="80" height="9" rx="3" opacity=".3"/>
+                <circle cx="162" cy="62" r="23"/>
+                <path d="M162 62V49" stroke="var(--volt)"/>
+                <path d="M162 62l9 6" stroke="var(--volt)"/>
+                <path d="M151 42a19 19 0 0 1 11-4" opacity=".5"/>
+              </svg>
+            </div>
+            <div class="card-pad">
+              <p class="card-tag mono">STAKE</p>
+              <h3>Daily compute allowance</h3>
+              <p>Stake ENVOLVR and claim your share of the daily inference pool, refreshed at 00:00 UTC. The token is prepaid access to compute. It is not a payment medium and not a claim on revenue.</p>
+              <ul class="ticks">
+                <li>More stake, more daily inference</li>
+                <li>Unused allowance does not roll over</li>
+                <li>Unstake cooldown applies</li>
+              </ul>
+            </div>
+          </article>
+        </div>
+        <div class="note reveal">
+          <p>
+            <strong>Next: an open provider network.</strong> Providers will stake
+            ENVOLVR to serve. A failed attestation or a wrong model is proven by the
+            receipt itself, and downtime by public challenges. Both are slashed,
+            and nothing is ever slashed for something we cannot detect. Delegation
+            will let anyone back a provider and share both its fees and its
+            slashing.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section section-invert" id="guarantees">
+    <div class="wrap sec-grid">
+      <div class="sec-rail" aria-hidden="true">
+        <span class="sec-num mono">05</span>
+        <span class="rail-line"></span>
+      </div>
+      <div class="sec-body">
+        <h2 class="sec-title reveal">Four things the receipt proves.</h2>
+        <ol class="guarantees">
+          <li class="reveal">
+            <span class="g-num mono">01</span>
+            <div>
+              <h3>The enclave is genuine and runs a measured, specific build.</h3>
+              <p>Attestation binds the quote to a known-good measurement. A different binary cannot produce a valid receipt.</p>
+            </div>
+          </li>
+          <li class="reveal">
+            <span class="g-num mono">02</span>
+            <div>
+              <h3>The GPU operator cannot read your prompt or your response.</h3>
+              <p>Your client encrypts to the enclave's public key. The operator holds the hardware, not the key.</p>
+            </div>
+          </li>
+          <li class="reveal">
+            <span class="g-num mono">03</span>
+            <div>
+              <h3>Every response is bound to its model and its attested provider.</h3>
+              <p>The signed receipt names the model and cites the attested provider session that served it. Change either and verification fails.</p>
+            </div>
+          </li>
+          <li class="reveal">
+            <span class="g-num mono">04</span>
+            <div>
+              <h3>You can verify all of the above without trusting us.</h3>
+              <p>The verifier is open source and deterministic, and every receipt hash is anchored on Robinhood Chain.</p>
+            </div>
+          </li>
+        </ol>
+        <p class="g-close mono reveal">Open verifier · deterministic · anchored on Robinhood Chain</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="system">
+    <div class="wrap sec-grid">
+      <div class="sec-rail" aria-hidden="true">
+        <span class="sec-num mono">06</span>
+        <span class="rail-line"></span>
+      </div>
+      <div class="sec-body">
+        <h2 class="sec-title reveal">What the network is made of.</h2>
+        <ol class="layers">
+          <li class="reveal">
+            <span class="layer-id mono">L1</span>
+            <div class="layer-main">
+              <h3>Client</h3>
+              <p>The SDK and the verifying proxy check the gateway's attestation before anything is sent, then speak only to a key held inside the attested enclave. Every receipt is kept, ready to verify.</p>
+            </div>
+            <span class="layer-spec mono">attestation check · pinned channel</span>
+          </li>
+          <li class="reveal">
+            <span class="layer-id mono">L2</span>
+            <div class="layer-main">
+              <h3>Gateway</h3>
+              <p>Routes jobs to verified providers from inside a TDX enclave. Its code and configuration are measured and public, its keys never leave it, and envolvr's operators cannot read what passes through.</p>
+            </div>
+            <span class="layer-spec mono">TEE-hosted · measured · no operator access</span>
+          </li>
+          <li class="reveal">
+            <span class="layer-id mono">L3</span>
+            <div class="layer-main">
+              <h3>Compute</h3>
+              <p>GPU TEE providers serve open-weight models on confidential hardware, verified for every request. The operator holds the machine, not the data. Next: attested weights, the exact weights measured inside the enclave.</p>
+            </div>
+            <span class="layer-spec mono">NVIDIA CC · TDX · verified per request</span>
+          </li>
+          <li class="reveal">
+            <span class="layer-id mono">L4</span>
+            <div class="layer-main">
+              <h3>Verifier</h3>
+              <p>Open source and deterministic. It validates the quote, the keyset, the provider session, the request and response commitments, the billing record and the on-chain anchor, and it can be run by anyone.</p>
+            </div>
+            <span class="layer-spec mono">open source · reproducible</span>
+          </li>
+          <li class="reveal">
+            <span class="layer-id mono">L5</span>
+            <div class="layer-main">
+              <h3>Registry</h3>
+              <p>Next: providers stake ENVOLVR to serve. A failed attestation or a wrong model is proven by the receipt itself, downtime by public challenges. Nothing is slashed for something we cannot detect.</p>
+            </div>
+            <span class="layer-spec mono">next · stake · objective slashing</span>
+          </li>
+          <li class="reveal">
+            <span class="layer-id mono">L6</span>
+            <div class="layer-main">
+              <h3>Settlement</h3>
+              <p>Jobs settle in USDG and every receipt hash is anchored on Robinhood Chain in an append-only log, so a provider's full history stays auditable by anyone.</p>
+            </div>
+            <span class="layer-spec mono">USDG · Robinhood Chain</span>
+          </li>
+        </ol>
+      </div>
+    </div>
+  </section>
+
+  <section class="cta-band">
+    <div class="wrap cta-inner">
+      <div class="reveal">
+        <h2>Your agent's alpha stays yours.</h2>
+        <p>Point an OpenAI SDK at envolvr and send your first attested request.</p>
+      </div>
+      <div class="cta-actions reveal">
+        <a class="btn btn-primary btn-lg" href="/docs/#quickstart">Start building</a>
+        <a class="btn btn-outline btn-lg" href="/docs/">Read the docs</a>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer class="footer">
+  <div class="wrap footer-inner">
+    <div class="footer-brand">
+      <svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true">
+        <path d="M16 2.75 27.25 9.1v13.8L16 29.25 4.75 22.9V9.1z" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linejoin="round"/>
+        <path d="M4.75 9.1 16 19.7 27.25 9.1" fill="none" stroke="var(--volt)" stroke-width="2.1" stroke-linejoin="round" stroke-linecap="round"/>
+      </svg>
+      <span class="brand-word">envolvr</span>
+      <p class="footer-line">Private inference. Verifiable.</p>
+    </div>
+    <nav class="footer-links" aria-label="Footer">
+      <div>
+        <p class="footer-head">Protocol</p>
+        <a href="#problem">Problem</a>
+        <a href="#how">How it works</a>
+        <a href="#receipts">Receipts</a>
+        <a href="#guarantees">Guarantees</a>
+      </div>
+      <div>
+        <p class="footer-head">Build</p>
+        <a href="/docs/">Documentation</a>
+        <a href="/docs/#quickstart">Quickstart</a>
+        <a href="https://github.com/envolvr/envolvr">GitHub</a>
+        <a href="/docs/#verify">Verifier</a>
+      </div>
+      <div>
+        <p class="footer-head">Token</p>
+        <a href="#token">Stake</a>
+        <a href="#token">USDG settlement</a>
+        <a href="#system">Network</a>
+      </div>
+    </nav>
+  </div>
+  <div class="wrap footer-legal">
+    <p>
+      envolvr is a pre-launch protocol. Nothing on this site is financial, legal or
+      investment advice, and nothing here is an offer to sell securities. ENVOLVR is
+      intended as prepaid access to compute. Availability is restricted by
+      jurisdiction and any token launch is subject to legal review. The attestation
+      guarantee is limited to what is described in the protocol spec.
+    </p>
+    <p class="mono dim">© 2026 envolvr</p>
+  </div>
+</footer>
+
+<script src="main.js"></script>
+</body>
+</html>
