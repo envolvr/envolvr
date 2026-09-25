@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>envolvr · Account</title>
-<meta name="description" content="Connect a wallet to fund your envolvr account, stake ENVOLVR, manage API keys and see what your agents spent.">
+<meta name="description" content="Connect a wallet to fund your envolvr account, stake NVLR, manage API keys and see what your agents spent.">
 <meta name="theme-color" content="#03080a">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com https://fonts.reown.com; img-src 'self' data: https:; connect-src 'self' https://auth.envolvr.xyz https://rpc.testnet.chain.robinhood.com https://*.walletconnect.com https://*.walletconnect.org wss://*.walletconnect.com wss://*.walletconnect.org https://*.reown.com wss://*.reown.com https://*.web3modal.org https://*.web3modal.com; frame-src https://*.walletconnect.com https://*.walletconnect.org https://*.reown.com; base-uri 'none'; form-action 'none'">
 <meta name="referrer" content="no-referrer">
@@ -34,7 +34,7 @@
 <main class="wrap app">
   <section id="connectPanel" class="panel">
     <h1>Your envolvr account</h1>
-    <p class="lede">Connect a wallet to fund your agents with USDG, stake ENVOLVR for a daily allowance, manage API keys and see what was spent. Your wallet is your account: no email, no password.</p>
+    <p class="lede">Connect a wallet to fund your agents with USDG, stake NVLR for a daily allowance, manage API keys and see what was spent. Your wallet is your account: no email, no password.</p>
     <div id="walletList" class="wallets"></div>
     <p class="dim small" id="noWallet" hidden>No browser wallet found. Install one (for example Rabby or MetaMask) and reload.</p>
   </section>
@@ -48,7 +48,7 @@
           <div><span class="dim small">Allowance today</span><strong id="allowance">–</strong></div>
           <div><span class="dim small">Deposit fee</span><strong id="fee">–</strong></div>
         </div>
-        <p class="dim small">In your wallet: <span id="walletUsdg">–</span> USDG · <span id="walletEnvolvr">–</span> ENVOLVR · <span id="walletEth">–</span> ETH for gas</p>
+        <p class="dim small">In your wallet: <span id="walletUsdg">–</span> USDG · <span id="walletNvlr">–</span> NVLR · <span id="walletEth">–</span> ETH for gas</p>
         <div id="signinBox" class="signin">
           <p>Sign in with your wallet to manage API keys and see usage. It signs a message; no transaction, no gas.</p>
           <button class="btn btn-primary" id="signin">Sign in</button>
@@ -63,15 +63,15 @@
       </article>
 
       <article class="card card-pad" id="stakeCard">
-        <p class="card-tag mono">STAKE ENVOLVR</p>
+        <p class="card-tag mono">STAKE NVLR</p>
         <div class="stats">
           <div><span class="dim small">Staked</span><strong id="staked">–</strong></div>
           <div><span class="dim small">Unstaking</span><strong id="pending">–</strong></div>
-          <div><span class="dim small">Per 1,000 ENVOLVR today</span><strong id="rate">–</strong></div>
+          <div><span class="dim small">Per 1,000 NVLR today</span><strong id="rate">–</strong></div>
         </div>
-        <label class="field"><span>Stake</span><input id="stakeAmount" inputmode="decimal" placeholder="1000"><em>ENVOLVR</em></label>
+        <label class="field"><span>Stake</span><input id="stakeAmount" inputmode="decimal" placeholder="1000"><em>NVLR</em></label>
         <div class="row"><button class="btn btn-primary" id="stake">Stake</button></div>
-        <label class="field"><span>Unstake</span><input id="unstakeAmount" inputmode="decimal" placeholder="1000"><em>ENVOLVR</em></label>
+        <label class="field"><span>Unstake</span><input id="unstakeAmount" inputmode="decimal" placeholder="1000"><em>NVLR</em></label>
         <div class="row"><button class="btn btn-outline" id="unstake">Request unstake</button><button class="btn btn-outline" id="withdraw" disabled>Withdraw</button></div>
         <p class="dim small">Stake counts from the next 00:00 UTC. Unused allowance does not roll over. Unstaked tokens unlock after <span id="cooldown">7 days</span>.</p>
       </article>

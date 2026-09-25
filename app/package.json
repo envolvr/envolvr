@@ -2,7 +2,7 @@
   "name": "@envolvr/app",
   "private": true,
   "version": "0.1.0",
-  "description": "envolvr account app: connect a wallet, deposit USDG, stake ENVOLVR, manage API keys, see usage, close the account.",
+  "description": "envolvr account app: connect a wallet, deposit USDG, stake NVLR, manage API keys, see usage, close the account.",
   "license": "Apache-2.0",
   "type": "module",
   "scripts": {

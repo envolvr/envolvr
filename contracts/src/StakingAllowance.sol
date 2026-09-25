@@ -9,7 +9,7 @@ import {SafeCast} from "@openzeppelin/contracts/utils/math/SafeCast.sol";
 import {Math} from "@openzeppelin/contracts/utils/math/Math.sol";
 
 /// @title StakingAllowance
-/// @notice Stake ENVOLVR for a pro-rata share of a capped daily inference budget.
+/// @notice Stake NVLR for a pro-rata share of a capped daily inference budget.
 ///
 /// Each staker's allowance for a UTC day is
 ///     budget(day) * stake(staker, day start) / totalStake(day start)

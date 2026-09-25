@@ -32,7 +32,7 @@ export const publicClient = createPublicClient({ chain, transport: http(undefine
 
 export interface ChainState {
   usdg: bigint;
-  envolvr: bigint;
+  nvlr: bigint;
   staked: bigint;
   totalStake: bigint;
   pending: { amount: bigint; unlocksAt: number };
@@ -46,9 +46,9 @@ export async function readState(address: Address): Promise<ChainState> {
   const read = <T>(address_: Address, abi: any, functionName: string, args: unknown[] = []) =>
     publicClient.readContract({ address: address_, abi, functionName, args }) as Promise<T>;
   const day = await read<bigint>(contracts.staking, staking, 'currentDayStart');
-  const [usdg, envolvr, staked, totalStake, pending, budgetToday, allowanceToday, cooldown, eth] = await Promise.all([
+  const [usdg, nvlr, staked, totalStake, pending, budgetToday, allowanceToday, cooldown, eth] = await Promise.all([
     read<bigint>(contracts.usdg, erc20, 'balanceOf', [address]),
-    read<bigint>(contracts.envolvr, erc20, 'balanceOf', [address]),
+    read<bigint>(contracts.nvlr, erc20, 'balanceOf', [address]),
     read<bigint>(contracts.staking, staking, 'stakeOf', [address]),
     read<bigint>(contracts.staking, staking, 'totalStake'),
     read<readonly [bigint, number]>(contracts.staking, staking, 'pendingUnstake', [address]),
@@ -58,7 +58,7 @@ export async function readState(address: Address): Promise<ChainState> {
     publicClient.getBalance({ address }),
   ]);
   return {
-    usdg, envolvr, staked, totalStake, pending: { amount: pending[0], unlocksAt: Number(pending[1]) }, budgetToday, allowanceToday,
+    usdg, nvlr, staked, totalStake, pending: { amount: pending[0], unlocksAt: Number(pending[1]) }, budgetToday, allowanceToday,
     cooldown: Number(cooldown), eth,
   };
 }
@@ -83,7 +83,7 @@ export async function deposit(provider: Eip1193, account: Address, amount: bigin
 }
 
 export async function stake(provider: Eip1193, account: Address, amount: bigint): Promise<string> {
-  await approveIfNeeded(provider, account, contracts.envolvr, contracts.staking, amount);
+  await approveIfNeeded(provider, account, contracts.nvlr, contracts.staking, amount);
   return send(provider, account, contracts.staking, staking, 'stake', [amount]);
 }
 

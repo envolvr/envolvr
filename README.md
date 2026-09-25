@@ -4,7 +4,7 @@ Private inference your agent can prove.
 
 envolvr runs AI inference inside hardware-attested enclaves on confidential
 GPUs, returns a signed receipt for every response, and anchors those receipts on
-Robinhood Chain. Agents pay per request in USDG, or stake ENVOLVR for a share of
+Robinhood Chain. Agents pay per request in USDG, or stake NVLR for a share of
 a daily inference budget.
 
 ```

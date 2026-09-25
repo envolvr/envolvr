@@ -21,7 +21,7 @@ contract StakingAllowanceTest is Test {
 
     function setUp() public {
         vm.warp(D0);
-        token = new EnvolvrToken("envolvr", "ENVOLVR", 1_000_000_000e18, owner);
+        token = new EnvolvrToken("envolvr", "NVLR", 1_000_000_000e18, owner);
         staking = new StakingAllowance(token, COOLDOWN, NOTICE, owner);
         vm.startPrank(owner);
         token.transfer(alice, 1_000_000e18);

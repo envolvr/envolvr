@@ -90,7 +90,7 @@
     <ul>
       <li><strong>Gateway</strong> <code>https://api.envolvr.xyz</code> runs in an Intel TDX virtual machine whose code, configuration and keys are measured and published. It verifies the provider's GPU enclave before forwarding, and signs a receipt for every response.</li>
       <li><strong>Providers</strong> serve open-weight models in confidential GPU enclaves: Phala (through RedPill) and NEAR AI Cloud. On NEAR routes each non-streamed response is also signed by the model enclave that produced it.</li>
-      <li><strong>Accounts</strong> are wallets. Sign a message to get an API key; fund it with USDG, or stake ENVOLVR for a daily allowance.</li>
+      <li><strong>Accounts</strong> are wallets. Sign a message to get an API key; fund it with USDG, or stake NVLR for a daily allowance.</li>
       <li><strong>Receipts</strong> record the model, the attested provider session, commitments to the exact request and response, and what was billed. They are anchored on Robinhood Chain every 10 minutes.</li>
     </ul>
 
@@ -157,7 +157,7 @@ const receiptId = res.response.headers.get('x-receipt-id');   // fetch it within
     <h3>Deposit USDG</h3>
     <p>Approve the credit vault for USDG, then call <code>deposit(amount)</code> from your wallet, or <code>depositFor(account, amount)</code> to fund another wallet. The balance is credited within seconds of the deposit being mined, net of the deposit fee. Deposit from a wallet you control, and use the vault's functions: a plain USDG transfer to the vault is not credited.</p>
     <h3>Stake for an allowance</h3>
-    <p>Staking ENVOLVR gives a share of a daily inference budget: budget × your stake ÷ total stake, taken at 00:00 UTC. Stake added during a day counts from the next day. The allowance is spent before your USDG balance and does not roll over. Unstaking has a 7-day cooldown.</p>
+    <p>Staking NVLR gives a share of a daily inference budget: budget × your stake ÷ total stake, taken at 00:00 UTC. Stake added during a day counts from the next day. The allowance is spent before your USDG balance and does not roll over. Unstaking has a 7-day cooldown.</p>
     <h3>Balance</h3>
     <p><code>GET https://auth.envolvr.xyz/account</code> with <code>Authorization: Bearer &lt;API key&gt;</code> returns your balance and today's allowance, in micro-USD.</p>
     <h3>Close your account</h3>

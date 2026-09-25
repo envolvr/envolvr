@@ -93,7 +93,7 @@ async function refresh() {
   state.chain = chainState;
   $('fee').textContent = pricing ? `${pricing.depositFeeBps / 100}%` : '–';
   $('walletUsdg').textContent = tokens(chainState.usdg, 6);
-  $('walletEnvolvr').textContent = tokens(chainState.envolvr);
+  $('walletNvlr').textContent = tokens(chainState.nvlr);
   $('walletEth').textContent = tokens(chainState.eth);
   $('staked').textContent = tokens(chainState.staked);
   const unlocked = chainState.pending.amount > 0n && chainState.pending.unlocksAt * 1000 <= Date.now();
@@ -226,7 +226,7 @@ $('mint').onclick = (e) => busy(e.currentTarget as HTMLButtonElement, 'Minting�
 
 $('stake').onclick = (e) => busy(e.currentTarget as HTMLButtonElement, 'Staking…', async () => {
   const amount = amountOf('stakeAmount', 18);
-  if (state.chain && state.chain.envolvr < amount) throw new Error('the wallet does not hold that much ENVOLVR');
+  if (state.chain && state.chain.nvlr < amount) throw new Error('the wallet does not hold that much NVLR');
   await onchain.stake(state.provider!, state.address!, amount);
   toast('Staked. It counts from the next 00:00 UTC.');
   $<HTMLInputElement>('stakeAmount').value = '';
@@ -243,7 +243,7 @@ $('unstake').onclick = (e) => busy(e.currentTarget as HTMLButtonElement, 'Reques
 
 $('withdraw').onclick = (e) => busy(e.currentTarget as HTMLButtonElement, 'Withdrawing…', async () => {
   await onchain.withdrawUnstaked(state.provider!, state.address!);
-  toast('Unstaked ENVOLVR withdrawn to your wallet');
+  toast('Unstaked NVLR withdrawn to your wallet');
   await refresh();
 });
 
