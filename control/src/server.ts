@@ -12,10 +12,20 @@
 //   GET  /receipts/<digest>/proof inclusion proof of an anchored receipt; the
 //                                 digest is SHA-256 of the receipt's JCS bytes
 //   GET  /account                 the caller's balance and today's allowance
-//                                 (bearer: the API key)
+//                                 (bearer: an API key or a management session)
+// Account management (the app; bearer: a session from a wallet-signed message, which
+// can manage the account but cannot run inference):
+//   GET  /auth/session/nonce?wallet=0x…   message to sign
+//   POST /auth/session            signed message -> session (12 hours)
+//   POST /auth/session/end        end the session
+//   GET  /account/keys            the account's API keys (id, label, hint, times)
+//   POST /account/keys            new API key ({label}), shown once
+//   POST /account/keys/revoke     revoke one ({id})
+//   GET  /account/usage?limit=    recent requests, cost and how they were paid
+//   GET  /account/deposits        deposits, fees kept, held ones
 //   GET  /pricing                 the deposit fee and how prices are set
 //   GET  /account/close/nonce?wallet=0x…&refundTo=0x…   message to sign to close
-//   POST /account/close           signed message -> keys revoked, balance to a refund
+//   POST /account/close           signed message -> keys revoked, sessions ended, balance to a refund
 // Operator (bearer: adminToken):
 //   POST /admin/credit            credit a wallet's USDG balance
 //   GET  /admin/account?wallet=   balance and today's allowance
@@ -34,7 +44,9 @@
 
 import { createServer, type IncomingMessage, type Server, type ServerResponse } from 'node:http';
 import { timingSafeEqual } from 'node:crypto';
-import { closeAccountMessage, hashApiKey, newApiKey, newNonce, recoverSigner, signInMessage } from './auth.ts';
+import {
+  closeAccountMessage, hashApiKey, manageMessage, newApiKey, newNonce, newSessionToken, recoverSigner, signInMessage,
+} from './auth.ts';
 import type { AllowanceSource } from './chain.ts';
 import type { Config } from './config.ts';
 import type { Store } from './db.ts';
@@ -47,6 +59,7 @@ import {
 
 const DAY = 86_400;
 const NONCE_TTL = 300;
+const SESSION_TTL = 12 * 3600;
 const WALLET = /^0x[0-9a-fA-F]{40}$/;
 const DIGEST = /^0x[0-9a-f]{64}$/;
 const MAX_DIGESTS = 10_000;
@@ -259,9 +272,54 @@ export function createControlServer(deps: Deps): Server {
       throw new HttpError(403, 'account not permitted');
     }
     const account = store.ensureAccount(wallet, now());
+    return { ...issueKey(account.id, body.label), wallet: account.wallet };
+  }
+
+  /** A new API key for the account; shown once, stored as its SHA-256 with a label and a short hint. */
+  function issueKey(accountId: number, label: unknown) {
+    if (label !== undefined && (typeof label !== 'string' || label.length > 64)) throw new HttpError(400, 'label must be a string of at most 64 characters');
     const apiKey = newApiKey();
-    store.addApiKey(account.id, hashApiKey(apiKey), now());
-    return { apiKey, wallet: account.wallet };
+    const keyHash = hashApiKey(apiKey);
+    store.addApiKey(accountId, keyHash, now(), label as string | undefined, `${apiKey.slice(0, 9)}…`);
+    return { apiKey, id: keyHash.slice(0, 16), label: (label as string | undefined) ?? null };
+  }
+
+  function sessionNonce(url: URL) {
+    const wallet = url.searchParams.get('wallet') ?? '';
+    if (!WALLET.test(wallet)) throw new HttpError(400, 'wallet must be a 0x address');
+    const nonce = newNonce();
+    const issuedAt = new Date(now() * 1000).toISOString();
+    store.putNonce(nonce, wallet, now() + NONCE_TTL);
+    return { nonce, issuedAt, message: manageMessage(wallet, nonce, issuedAt) };
+  }
+
+  /** A management session for a wallet, on a signed message; screened like a sign-in. */
+  async function startSession(body: Record<string, unknown>) {
+    const { wallet, nonce, issuedAt, signature } = body as Record<string, string>;
+    if (!WALLET.test(wallet ?? '') || !nonce || !issuedAt || !signature) {
+      throw new HttpError(400, 'wallet, nonce, issuedAt and signature are required');
+    }
+    let signer: string;
+    try {
+      signer = recoverSigner(manageMessage(wallet, nonce, issuedAt), signature);
+    } catch {
+      throw new HttpError(401, 'invalid signature');
+    }
+    if (signer !== wallet.toLowerCase()) throw new HttpError(401, 'signature does not match wallet');
+    let blocked: boolean;
+    try {
+      blocked = await screening.check(wallet);
+    } catch (err) {
+      if (err instanceof ScreeningUnavailable) throw new HttpError(503, 'sanctions screening unavailable, try again shortly');
+      throw err;
+    }
+    if (!store.takeNonce(nonce, wallet, now())) throw new HttpError(401, 'nonce expired or already used');
+    if (blocked) throw new HttpError(403, 'account not permitted');
+    const account = store.ensureAccount(wallet, now());
+    const session = newSessionToken();
+    const expiresAt = now() + SESSION_TTL;
+    store.putSession(hashApiKey(session), account.id, now(), expiresAt);
+    return { session, expiresAt, wallet: account.wallet };
   }
 
   const proofs = new ProofService(store);
@@ -392,10 +450,22 @@ export function createControlServer(deps: Deps): Server {
     return { wallet: account.wallet, balanceMicros: account.balanceMicros, allowanceTodayMicros: total, allowanceLeftMicros: left };
   }
 
+  const corsOrigins = new Set(config.corsOrigins ?? []);
+
   return createServer(async (req, res) => {
     try {
       const url = new URL(req.url ?? '/', 'http://control');
       const route = `${req.method} ${url.pathname}`;
+      // The app calls the client-facing API from the browser; only listed origins may.
+      const origin = req.headers.origin;
+      if (origin && corsOrigins.has(origin)) {
+        res.setHeader('access-control-allow-origin', origin);
+        res.setHeader('vary', 'Origin');
+        res.setHeader('access-control-allow-headers', 'authorization, content-type');
+        res.setHeader('access-control-allow-methods', 'GET, POST');
+        res.setHeader('access-control-max-age', '600');
+      }
+      if (req.method === 'OPTIONS') return void res.writeHead(204).end();
       const gateway = () => {
         if (!tokenMatches(req.headers.authorization, config.controlToken)) throw new HttpError(401, 'unauthorized');
       };
@@ -425,12 +495,34 @@ export function createControlServer(deps: Deps): Server {
         admin();
         return send(res, 200, await accountView(store.accountByWallet(url.searchParams.get('wallet') ?? '')));
       }
+      const bearer = req.headers.authorization?.startsWith('Bearer ') ? req.headers.authorization.slice(7) : '';
+      const session = () => {
+        const account = bearer.startsWith('envs_') ? store.accountBySession(hashApiKey(bearer), now()) : undefined;
+        if (!account) throw new HttpError(401, 'sign in to manage this account');
+        return account;
+      };
       if (route === 'GET /account') {
-        const key = req.headers.authorization?.startsWith('Bearer ') ? req.headers.authorization.slice(7) : '';
-        const account = key ? store.accountByKeyHash(hashApiKey(key)) : undefined;
+        const account = bearer.startsWith('envs_') ? store.accountBySession(hashApiKey(bearer), now())
+          : bearer ? store.accountByKeyHash(hashApiKey(bearer)) : undefined;
         if (!account) throw new HttpError(401, 'invalid API key');
         return send(res, 200, await accountView(account));
       }
+      if (route === 'GET /auth/session/nonce') return send(res, 200, sessionNonce(url));
+      if (route === 'POST /auth/session') return send(res, 200, await startSession(await readJson(req)));
+      if (route === 'POST /auth/session/end') { session(); store.endSession(hashApiKey(bearer)); return send(res, 200, { ended: true }); }
+      if (route === 'GET /account/keys') return send(res, 200, { keys: store.keysOf(session().id) });
+      if (route === 'POST /account/keys') { const a = session(); return send(res, 200, issueKey(a.id, (await readJson(req)).label)); }
+      if (route === 'POST /account/keys/revoke') {
+        const a = session();
+        const id = String((await readJson(req)).id ?? '');
+        if (!store.revokeKey(a.id, id, now())) throw new HttpError(404, 'no live key with that id');
+        return send(res, 200, { id, revoked: true });
+      }
+      if (route === 'GET /account/usage') {
+        const limit = Math.min(Math.max(Number(url.searchParams.get('limit') ?? 100) || 100, 1), 500);
+        return send(res, 200, { usage: store.usageOf(session().id, limit) });
+      }
+      if (route === 'GET /account/deposits') return send(res, 200, { deposits: store.depositsOf(session().id) });
       if (route === 'GET /admin/refunds') {
         admin();
         return send(res, 200, { refunds: store.refunds(url.searchParams.get('status') ?? undefined) });

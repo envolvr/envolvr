@@ -37,6 +37,8 @@ export interface Config {
   backup?: BackupConfig;
   /** Receipt anchoring on chain (anchoring.ts); needs `chain`. Off when absent. */
   anchoring?: AnchoringConfig;
+  /** Origins allowed to call the client-facing API from a browser (the app), e.g. https://envolvr.xyz. */
+  corsOrigins?: string[];
   /** Bearer token the gateway presents (middleware.control_token). */
   controlToken: string;
   /** Bearer token for /admin endpoints. */

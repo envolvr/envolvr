@@ -18,6 +18,22 @@ export function newApiKey(): string {
   return `envk_${randomBytes(32).toString('base64url')}`;
 }
 
+/** A management session token (the app's): manages the account, cannot run inference. */
+export function newSessionToken(): string {
+  return `envs_${randomBytes(32).toString('base64url')}`;
+}
+
+/** What a wallet signs to manage its account in the app. Distinct from sign-in and closing. */
+export function manageMessage(wallet: string, nonce: string, issuedAt: string): string {
+  return [
+    'envolvr: sign in to manage this account.',
+    '',
+    `Wallet: ${wallet.toLowerCase()}`,
+    `Nonce: ${nonce}`,
+    `Issued At: ${issuedAt}`,
+  ].join('\n');
+}
+
 export function newNonce(): string {
   return randomBytes(16).toString('hex');
 }

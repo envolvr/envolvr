@@ -120,6 +120,12 @@ export class Store {
         value TEXT NOT NULL,
         updated_at INTEGER NOT NULL
       );
+      CREATE TABLE IF NOT EXISTS sessions (
+        token_hash TEXT PRIMARY KEY,
+        account_id INTEGER NOT NULL REFERENCES accounts(id),
+        created_at INTEGER NOT NULL,
+        expires_at INTEGER NOT NULL
+      );
       CREATE TABLE IF NOT EXISTS refunds (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         account_id INTEGER NOT NULL REFERENCES accounts(id),
@@ -152,6 +158,10 @@ export class Store {
     if (!depositColumns.some((c) => c.name === 'held')) {
       this.db.exec('ALTER TABLE deposits ADD COLUMN held INTEGER NOT NULL DEFAULT 0');
     }
+    // Added with the app: a key's label and the first characters of the key, to tell keys apart.
+    const keyColumns = this.db.prepare('PRAGMA table_info(api_keys)').all() as { name: string }[];
+    if (!keyColumns.some((c) => c.name === 'label')) this.db.exec('ALTER TABLE api_keys ADD COLUMN label TEXT');
+    if (!keyColumns.some((c) => c.name === 'hint')) this.db.exec('ALTER TABLE api_keys ADD COLUMN hint TEXT');
     // Added with the deposit fee: what was kept from each deposit (0 before it).
     if (!depositColumns.some((c) => c.name === 'fee_micros')) {
       this.db.exec('ALTER TABLE deposits ADD COLUMN fee_micros INTEGER NOT NULL DEFAULT 0');
@@ -205,9 +215,9 @@ export class Store {
   }
 
   /**
-   * Close an account: revoke its API keys and move its positive balance into a
-   * refund to `refundTo`, pending payout (or held, when screening flagged it).
-   * In one transaction. Returns the refund, if there was a balance to refund.
+   * Close an account: revoke its API keys, end its management sessions and move
+   * its positive balance into a refund to `refundTo`, pending payout (or held,
+   * when screening flagged it). In one transaction. Returns the refund, if there was a balance to refund.
    */
   closeAccount(accountId: number, refundTo: string, held: boolean, now: number): {
     revokedKeys: number; refund?: { id: number; amountMicros: bigint; status: 'pending' | 'held' };
@@ -219,6 +229,7 @@ export class Store {
       if (!account) throw new Error(`no account ${accountId}`);
       const revokedKeys = Number(this.db.prepare('UPDATE api_keys SET revoked_at = ? WHERE account_id = ? AND revoked_at IS NULL')
         .run(now, accountId).changes);
+      this.db.prepare('DELETE FROM sessions WHERE account_id = ?').run(accountId);
       const balance = BigInt(account.balance_micros);
       let refund: { id: number; amountMicros: bigint; status: 'pending' | 'held' } | undefined;
       if (balance > 0n) {
@@ -430,8 +441,70 @@ export class Store {
     return this.accountByWallet(wallet)!;
   }
 
-  addApiKey(accountId: number, keyHash: string, now: number): void {
-    this.db.prepare('INSERT INTO api_keys (key_hash, account_id, created_at) VALUES (?, ?, ?)').run(keyHash, accountId, now);
+  addApiKey(accountId: number, keyHash: string, now: number, label?: string, hint?: string): void {
+    this.db.prepare('INSERT INTO api_keys (key_hash, account_id, created_at, label, hint) VALUES (?, ?, ?, ?, ?)')
+      .run(keyHash, accountId, now, label ?? null, hint ?? null);
+  }
+
+  /** An account's keys: id (the first 16 hex of the key's SHA-256), label, hint, times. Never the key. */
+  keysOf(accountId: number): { id: string; label: string | null; hint: string | null; createdAt: number; revokedAt: number | null }[] {
+    return (this.db.prepare(`SELECT substr(key_hash, 1, 16) AS id, label, hint, created_at, revoked_at FROM api_keys
+      WHERE account_id = ? ORDER BY created_at DESC`).all(accountId) as
+      { id: string; label: string | null; hint: string | null; created_at: number; revoked_at: number | null }[])
+      .map((k) => ({ id: k.id, label: k.label, hint: k.hint, createdAt: k.created_at, revokedAt: k.revoked_at }));
+  }
+
+  /** Revoke one of the account's keys by id. False if no such live key. */
+  revokeKey(accountId: number, id: string, now: number): boolean {
+    if (!/^[0-9a-f]{16}$/.test(id)) return false;
+    return this.db.prepare(`UPDATE api_keys SET revoked_at = ? WHERE account_id = ? AND key_hash LIKE ? AND revoked_at IS NULL`)
+      .run(now, accountId, `${id}%`).changes === 1;
+  }
+
+  putSession(tokenHash: string, accountId: number, now: number, expiresAt: number): void {
+    this.db.prepare('DELETE FROM sessions WHERE expires_at <= ?').run(now);
+    this.db.prepare('INSERT INTO sessions (token_hash, account_id, created_at, expires_at) VALUES (?, ?, ?, ?)')
+      .run(tokenHash, accountId, now, expiresAt);
+  }
+
+  accountBySession(tokenHash: string, now: number): Account | undefined {
+    const row = this.db.prepare(`SELECT a.id, a.wallet, a.balance_micros FROM sessions s JOIN accounts a ON a.id = s.account_id
+      WHERE s.token_hash = ? AND s.expires_at > ?`).get(tokenHash, now) as
+      { id: number; wallet: string; balance_micros: number } | undefined;
+    return row && { id: row.id, wallet: row.wallet, balanceMicros: BigInt(row.balance_micros) };
+  }
+
+  endSession(tokenHash: string): void {
+    this.db.prepare('DELETE FROM sessions WHERE token_hash = ?').run(tokenHash);
+  }
+
+  /** The account's most recent usage, newest first. */
+  usageOf(accountId: number, limit: number): {
+    at: number; requestId: string; model: string; route: string | null; status: number;
+    costMicros: bigint; fromAllowanceMicros: bigint; fromBalanceMicros: bigint;
+  }[] {
+    return (this.db.prepare(`SELECT created_at, request_id, model, route, status, cost_micros, from_allowance_micros,
+      from_balance_micros FROM usage_reports WHERE account_id = ? ORDER BY created_at DESC, rowid DESC LIMIT ?`)
+      .all(accountId, limit) as {
+        created_at: number; request_id: string; model: string; route: string | null; status: number; cost_micros: number;
+        from_allowance_micros: number; from_balance_micros: number;
+      }[]).map((r) => ({
+      at: r.created_at, requestId: r.request_id, model: r.model, route: r.route, status: r.status,
+      costMicros: BigInt(r.cost_micros), fromAllowanceMicros: BigInt(r.from_allowance_micros),
+      fromBalanceMicros: BigInt(r.from_balance_micros),
+    }));
+  }
+
+  depositsOf(accountId: number): {
+    txHash: string; logIndex: number; amountMicros: bigint; feeMicros: bigint; held: boolean; blockNumber: number;
+  }[] {
+    return (this.db.prepare(`SELECT tx_hash, log_index, amount_micros, fee_micros, held, block_number FROM deposits
+      WHERE account_id = ? ORDER BY block_number DESC, log_index DESC`).all(accountId) as {
+        tx_hash: string; log_index: number; amount_micros: number; fee_micros: number; held: number; block_number: number;
+      }[]).map((d) => ({
+      txHash: d.tx_hash, logIndex: d.log_index, amountMicros: BigInt(d.amount_micros), feeMicros: BigInt(d.fee_micros),
+      held: d.held === 1, blockNumber: d.block_number,
+    }));
   }
 
   credit(accountId: number, micros: bigint): void {
