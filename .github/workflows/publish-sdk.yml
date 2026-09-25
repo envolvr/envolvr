@@ -31,4 +31,7 @@ jobs:
           test "sdk-v$(node -p 'require("./package.json").version')" = "$GITHUB_REF_NAME"
           npx --yes pnpm@10.13.1 install --frozen-lockfile
           npx --yes pnpm@10.13.1 test
+          # Build first: npm validates bin paths before its lifecycle scripts run,
+          # and would drop the envolvr command if dist/cli.js did not exist yet.
+          npx --yes pnpm@10.13.1 run build
           npm publish --access public
