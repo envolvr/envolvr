@@ -20,7 +20,7 @@
   },
   "chain": {
     "rpcUrl": "https://rpc.testnet.chain.robinhood.com/rpc",
-    "stakingAllowance": "0xB14F681DD0589993750DE02C45132f40BC2e72Af"
+    "stakingAllowance": "0xFA4296E49055185aD188fd64c9af28F7Db1135F4"
   },
   "blockedWallets": []
 }

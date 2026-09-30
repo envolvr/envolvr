@@ -190,7 +190,7 @@ services:
         npx --yes pnpm@10.13.1 install --frozen-lockfile --prod
         exec node --disable-warning=ExperimentalWarning src/main.ts
     configs:
-      - source: control-config-r7
+      - source: control-config-r8
         target: /etc/envolvr/control.json
     environment:
       CONTROL_CONFIG: /etc/envolvr/control.json
@@ -300,7 +300,7 @@ configs:
         }
       ]
 
-  control-config-r7:
+  control-config-r8:
     content: |
       {
         "port": 8787,
@@ -326,7 +326,7 @@ configs:
         },
         "chain": {
           "rpcUrl": "https://rpc.testnet.chain.robinhood.com/rpc",
-          "stakingAllowance": "0xB14F681DD0589993750DE02C45132f40BC2e72Af",
+          "stakingAllowance": "0xFA4296E49055185aD188fd64c9af28F7Db1135F4",
           "creditVault": "0x2aaB804f3eB6B436CB542d56D171d020bC2d7c51",
           "depositStartBlock": 123339348,
           "confirmations": 1

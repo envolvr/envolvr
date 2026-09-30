@@ -53,7 +53,8 @@ payer = "sha256:" + hex(sha256("billing.payer.v1:" + hex(sha256(api_key)) + ":" 
 - RPC: https://rpc.testnet.chain.robinhood.com/rpc
 - USDG (test token, open mint(address,uint256)): 0xF7326a325aED45a1BF5D1268982f519BeCe941b6
 - CreditVault: 0x2aaB804f3eB6B436CB542d56D171d020bC2d7c51
-- StakingAllowance: 0xB14F681DD0589993750DE02C45132f40BC2e72Af
+- NVLR (test token): 0xC6cc1Df277d9d95ebFbCd4B9DC90804E491dB15a
+- StakingAllowance: 0xFA4296E49055185aD188fd64c9af28F7Db1135F4
 - ReceiptAnchor: 0xff179938C830134D8E2922dAe7e16Ee4F0E33853
 - Gateway provider id: 0x86b99987cd8f8ebddc2dd0efa61ed52b5db594430f12446db424da0d9c4b831f
 

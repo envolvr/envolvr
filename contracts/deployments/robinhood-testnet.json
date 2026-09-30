@@ -8,15 +8,22 @@
   "contracts": {
     "ReceiptAnchor": "0xff179938C830134D8E2922dAe7e16Ee4F0E33853",
     "WeightsRegistry": "0xb8508AcC964b91145aB17A0884aFcBEa128dDC82",
-    "EnvolvrToken": "0x4EbF132fe56ca80A467DCb5f64EcB30d82221b33",
-    "StakingAllowance": "0xB14F681DD0589993750DE02C45132f40BC2e72Af",
+    "EnvolvrToken": "0xC6cc1Df277d9d95ebFbCd4B9DC90804E491dB15a",
+    "StakingAllowance": "0xFA4296E49055185aD188fd64c9af28F7Db1135F4",
     "CreditVault": "0x2aaB804f3eB6B436CB542d56D171d020bC2d7c51",
     "MockUSDG": "0xF7326a325aED45a1BF5D1268982f519BeCe941b6"
   },
   "stakingParams": {
     "cooldownSeconds": 604800,
-    "budgetNoticeSeconds": 604800,
-    "note": "test token, placeholder supply 1e9"
+    "budgetNoticeSeconds": 0,
+    "deployedAt": "2026-09-30",
+    "deployBlock": 126587218,
+    "note": "test token, placeholder supply 1e9, symbol NVLR; no budget notice on testnet",
+    "replaced": {
+      "EnvolvrToken": "0x4EbF132fe56ca80A467DCb5f64EcB30d82221b33",
+      "StakingAllowance": "0xB14F681DD0589993750DE02C45132f40BC2e72Af",
+      "reason": "symbol was ENVOLVR; 7-day budget notice"
+    }
   },
   "anchoring": [
     {

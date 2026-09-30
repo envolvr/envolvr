@@ -19,8 +19,8 @@ export const chain = defineChain({
 export const contracts = {
   usdg: '0xF7326a325aED45a1BF5D1268982f519BeCe941b6',
   creditVault: '0x2aaB804f3eB6B436CB542d56D171d020bC2d7c51',
-  nvlr: '0x4EbF132fe56ca80A467DCb5f64EcB30d82221b33',
-  staking: '0xB14F681DD0589993750DE02C45132f40BC2e72Af',
+  nvlr: '0xC6cc1Df277d9d95ebFbCd4B9DC90804E491dB15a',
+  staking: '0xFA4296E49055185aD188fd64c9af28F7Db1135F4',
 } as const;
 
 export const TESTNET = true;
