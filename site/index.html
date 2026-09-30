@@ -16,7 +16,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="styles.css?v=20260930">
 <script>document.documentElement.classList.add('js');</script>
 </head>
 <body>
@@ -50,7 +50,6 @@
 <main id="top">
 
   <section class="hero">
-    <div class="hero-img" aria-hidden="true"></div>
     <div class="wrap hero-grid">
       <div class="hero-copy reveal">
         <p class="eyebrow"><span class="dot"></span> Built for agents on Robinhood Chain</p>
@@ -67,32 +66,8 @@
         <p class="hero-note mono">OpenAI-compatible · settles in USDG · one line to integrate</p>
       </div>
 
-      <div class="hero-panel reveal">
-        <div class="receipt" id="receipt">
-          <div class="receipt-head">
-            <span class="status status-idle" id="rcptStatus"><span class="pulse-idle"></span> unverified</span>
-            <span class="mono dim">rcpt-2bb7…8262</span>
-          </div>
-          <dl class="receipt-rows">
-            <div><dt>provider</dt><dd class="mono">phala · tdx</dd></div>
-            <div><dt>gpu</dt><dd class="mono">h200 · confidential</dd></div>
-            <div><dt>model</dt><dd class="mono">glm-5.3</dd></div>
-            <div><dt>session</dt><dd class="mono hl">6367…fe6b attested</dd></div>
-            <div><dt>keyset</dt><dd class="mono hl">sha256:f5d8…b5d4</dd></div>
-            <div><dt>prompt</dt><dd class="mono">commitment d845…b493</dd></div>
-            <div><dt>billed</dt><dd class="mono">$0.000012 · 36 tokens</dd></div>
-            <div><dt>anchor</dt><dd class="mono">rhc · batch 2 · 11:40 utc</dd></div>
-          </dl>
-          <div class="receipt-foot">
-            <button class="verify-btn mono" id="verifyBtn" type="button">verify independently</button>
-            <span class="seal">
-              <svg viewBox="0 0 32 32" aria-hidden="true">
-                <path d="M16 2.75 27.25 9.1v13.8L16 29.25 4.75 22.9V9.1z" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linejoin="round"/>
-                <path d="M4.75 9.1 16 19.7 27.25 9.1" fill="none" stroke="var(--volt)" stroke-width="2.1" stroke-linejoin="round" stroke-linecap="round"/>
-              </svg>
-            </span>
-          </div>
-        </div>
+      <div class="hero-visual reveal" aria-hidden="true">
+        <canvas id="heroArt"></canvas>
       </div>
     </div>
 
@@ -243,45 +218,57 @@
         <span class="sec-num mono">03</span>
         <span class="rail-line"></span>
       </div>
-      <div class="sec-body split">
-        <div class="reveal">
-          <h2 class="sec-title">The receipt is the product.</h2>
-          <p class="body">
-            Privacy covers one half of the claim. The other half is proving which
-            model, served by which attested enclave, produced a specific output, and
-            what it cost, checkable by anyone, without trusting envolvr or the
-            provider. The proof is rooted in the silicon itself: Intel TDX and
-            NVIDIA Confidential Computing.
-          </p>
-          <p class="body">
-            The verifier is open source and deterministic. Run it yourself, or hand
-            it to your auditor. Receipt hashes are anchored on Robinhood Chain in an
-            append-only log, so a provider's entire history stays auditable.
-          </p>
-          <ul class="ticks">
-            <li>Attestation quote validation</li>
-            <li>Model and provider binding</li>
-            <li>Prompt commitment for selective disclosure</li>
-            <li>Billing record, recomputable to the micro-dollar</li>
-            <li>On-chain anchoring and per-provider history</li>
-          </ul>
-        </div>
-        <div class="reveal">
-          <div class="code-panel">
-            <div class="code-head">
-              <span class="mono dim">$ envolvr verify --last</span>
-            </div>
-            <pre class="mono"><span class="ok">✓</span> receipt signature    attested key
-<span class="ok">✓</span> keyset               bound into the tdx quote
-<span class="ok">✓</span> workload             measured, public source
-<span class="ok">✓</span> provider session     6367…fe6b verified
-<span class="ok">✓</span> prompt commitment    matches the request
-<span class="ok">✓</span> response commitment  matches the response
-<span class="ok">✓</span> billing              $0.000012 · charged to this key
-<span class="ok">✓</span> anchor               rhc · batch 2 · 11:40:01 utc
+      <div class="sec-body">
+        <h2 class="sec-title reveal">The receipt is the product.</h2>
 
-<span class="dim">verdict:</span> <span class="ok">VERIFIED</span>
-<span class="dim">root of trust:</span> intel tdx · nvidia cc</pre>
+        <div class="split">
+          <div class="reveal">
+            <p class="body">
+              Privacy covers one half of the claim. The other half is proving which
+              model, served by which attested enclave, produced a specific output, and
+              what it cost, checkable by anyone, without trusting envolvr or the
+              provider. The proof is rooted in the silicon itself: Intel TDX and
+              NVIDIA Confidential Computing.
+            </p>
+            <p class="body">
+              The verifier is open source and deterministic. Run it yourself, or hand
+              it to your auditor. Receipt hashes are anchored on Robinhood Chain in an
+              append-only log, so a provider's entire history stays auditable.
+            </p>
+            <ul class="ticks">
+              <li>Attestation quote validation</li>
+              <li>Model and provider binding</li>
+              <li>Prompt commitment for selective disclosure</li>
+              <li>Billing record, recomputable to the micro-dollar</li>
+              <li>On-chain anchoring and per-provider history</li>
+            </ul>
+          </div>
+          <div class="reveal">
+            <div class="receipt" id="receipt">
+              <div class="receipt-head">
+                <span class="status status-idle" id="rcptStatus"><span class="pulse-idle"></span> unverified</span>
+                <span class="mono dim">rcpt-2bb7…8262</span>
+              </div>
+              <dl class="receipt-rows">
+                <div><dt>provider</dt><dd class="mono">phala · tdx</dd></div>
+                <div><dt>gpu</dt><dd class="mono">h200 · confidential</dd></div>
+                <div><dt>model</dt><dd class="mono">glm-5.3</dd></div>
+                <div><dt>session</dt><dd class="mono hl">6367…fe6b attested</dd></div>
+                <div><dt>keyset</dt><dd class="mono hl">sha256:f5d8…b5d4</dd></div>
+                <div><dt>prompt</dt><dd class="mono">commitment d845…b493</dd></div>
+                <div><dt>billed</dt><dd class="mono">$0.000012 · 36 tokens</dd></div>
+                <div><dt>anchor</dt><dd class="mono">rhc · batch 2 · 11:40 utc</dd></div>
+              </dl>
+              <div class="receipt-foot">
+                <button class="verify-btn mono" id="verifyBtn" type="button">verify independently</button>
+                <span class="seal">
+                  <svg viewBox="0 0 32 32" aria-hidden="true">
+                    <path d="M16 2.75 27.25 9.1v13.8L16 29.25 4.75 22.9V9.1z" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linejoin="round"/>
+                    <path d="M4.75 9.1 16 19.7 27.25 9.1" fill="none" stroke="var(--volt)" stroke-width="2.1" stroke-linejoin="round" stroke-linecap="round"/>
+                  </svg>
+                </span>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -359,7 +346,7 @@
     </div>
   </section>
 
-  <section class="section section-invert" id="guarantees">
+  <section class="section" id="guarantees">
     <div class="wrap sec-grid">
       <div class="sec-rail" aria-hidden="true">
         <span class="sec-num mono">05</span>
@@ -525,6 +512,6 @@
   </div>
 </footer>
 
-<script src="main.js"></script>
+<script src="main.js?v=20260930"></script>
 </body>
 </html>
