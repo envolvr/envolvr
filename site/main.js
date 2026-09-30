@@ -154,7 +154,7 @@
   // ---- charts, built from the model table ----
   var table = $('#modelTable');
   if (table) {
-    var COLORS = { phala: '#1baf7a', near: '#8842fd', chutes: '#eb6834' };
+    var COLORS = { phala: 'var(--t1)', near: 'var(--t2)', chutes: 'var(--t3)' };
     var rows = $$('tbody tr', table).map(function (tr) {
       var d = tr.dataset;
       var inp = parseFloat(d['in']);
