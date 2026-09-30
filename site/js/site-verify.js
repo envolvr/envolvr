@@ -1,13 +1,13 @@
 // Runs the receipt verifier (verifier.js, built from site/src/verifier.ts) for
 // the hero card and the "Verify" section. Every check happens in this browser.
-import { verify, parseBundle, digestOf } from './verifier.js?v=20261001f';
+import { verify, parseBundle, digestOf } from './verifier.js?v=20261001g';
 
 const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 const GATEWAY = 'https://api.envolvr.xyz';
 const sleep = (ms) => new Promise((r) => setTimeout(r, reduce ? 0 : ms));
 
 let samplePromise;
-const sample = () => (samplePromise ??= fetch('data/sample-receipt.json?v=20261001f').then((r) => r.json()));
+const sample = () => (samplePromise ??= fetch('data/sample-receipt.json?v=20261001g').then((r) => r.json()));
 
 /** Animate a verification run into a .vcard. Resolves to the verdict. */
 async function run(card, bundle, { pace = 260 } = {}) {
