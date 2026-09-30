@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>envolvr docs · Private inference. Verifiable.</title>
 <meta name="description" content="How an agent uses envolvr: sign in with a wallet, deposit USDG, call an OpenAI-compatible API inside attested enclaves, and verify every receipt on Robinhood Chain.">
-<meta name="theme-color" content="#03080a">
+<meta name="theme-color" content="#ffffff">
 <link rel="icon" href="../favicon.svg" type="image/svg+xml">
 <meta property="og:title" content="envolvr docs">
 <meta property="og:description" content="Private inference your agent can prove: quickstart, API, receipts and verification.">
@@ -13,31 +13,34 @@
 <link rel="alternate" type="text/plain" href="/llms.txt" title="Docs for language models">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="../styles.css?v=20260930b">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../styles.css?v=20261001c">
 <style>
-  .docs{display:grid;grid-template-columns:220px minmax(0,1fr);gap:56px;padding:124px 0 96px}
-  .toc{position:sticky;top:92px;align-self:start;font-size:13.5px}
-  .toc p{color:var(--muted-2);letter-spacing:.16em;font-size:10.5px;margin:0 0 12px;font-family:var(--mono)}
-  .toc a{display:block;padding:5px 0;color:var(--muted)}
-  .toc a:hover{color:var(--text)}
-  .doc{max-width:760px}
-  .doc h1{font-family:var(--serif);font-size:clamp(34px,4.6vw,54px);line-height:1.05;letter-spacing:-.015em;margin-bottom:18px}
-  .doc h2{font-family:var(--serif);font-size:30px;letter-spacing:-.01em;margin:72px 0 16px;scroll-margin-top:90px}
-  .doc h3{font-weight:600;font-size:16px;letter-spacing:-.01em;margin:32px 0 10px}
-  .doc p,.doc li{color:var(--muted);font-size:15px;line-height:1.72}
-  .doc p strong,.doc li strong{color:var(--text);font-weight:500}
+  .docs{display:grid;grid-template-columns:220px minmax(0,1fr);gap:56px;padding:56px 24px 96px}
+  .toc{position:sticky;top:86px;align-self:start;font-size:14px}
+  .toc p{color:var(--muted);letter-spacing:.14em;font-size:11px;margin:0 0 12px;font-family:var(--mono)}
+  .toc a{display:block;padding:5px 0 5px 12px;margin-left:-12px;color:var(--text-2);border-left:2px solid transparent}
+  .toc a:hover{color:var(--ink);border-left-color:var(--volt-2)}
+  .doc{max-width:780px}
+  .doc .pill{margin-bottom:18px}
+  .doc h1{font-size:clamp(34px,4.6vw,52px);line-height:1.05;letter-spacing:-.04em;margin-bottom:18px}
+  .doc h2{font-size:28px;letter-spacing:-.03em;margin:64px 0 14px;padding-top:24px;border-top:1px solid var(--line-2);scroll-margin-top:80px}
+  .doc h3{font-size:16px;letter-spacing:-.01em;margin:32px 0 10px}
+  .doc p,.doc li{color:var(--text-2);font-size:15.5px;line-height:1.72}
+  .doc p + p{margin-top:12px}
+  .doc p strong,.doc li strong{color:var(--ink);font-weight:600}
   .doc ul,.doc ol{padding-left:20px}
-  .doc a{color:var(--volt)}
-  .doc code{font-family:var(--mono);font-size:.86em;color:var(--text);background:var(--card-hi);padding:1px 5px;border-radius:5px}
-  .doc pre{background:var(--ink-2);border:1px solid var(--line);border-radius:var(--r);padding:18px 20px;overflow-x:auto;margin:16px 0 22px}
-  .doc pre code{background:none;padding:0;font-size:13px;line-height:1.7;color:#e6ebe0}
-  .doc table{width:100%;border-collapse:collapse;margin:16px 0 22px;font-size:14px}
-  .doc th,.doc td{text-align:left;padding:10px 12px;border-bottom:1px solid var(--line-soft);color:var(--muted);vertical-align:top}
-  .doc th{color:var(--text);font-weight:500}
-  .note{border:1px solid var(--volt-border);background:var(--volt-subtle);border-radius:var(--r);padding:14px 18px;margin:18px 0}
-  .note p{margin:0}
-  @media (max-width:900px){.docs{grid-template-columns:1fr;gap:24px;padding-top:100px}.toc{position:static}}
+  .doc a{color:var(--ink);text-decoration:underline;text-decoration-color:var(--volt-2);text-decoration-thickness:2px;text-underline-offset:3px}
+  .doc a:hover{background:var(--volt-soft)}
+  .doc code{overflow-wrap:anywhere;font-family:var(--mono);font-size:.86em;color:var(--ink);background:var(--bg-2);border:1px solid var(--line-2);padding:1px 5px;border-radius:5px}
+  .doc pre{background:var(--code-bg);border-radius:var(--r);padding:18px 20px;overflow-x:auto;margin:16px 0 22px}
+  .doc pre code{background:none;border:0;padding:0;font-size:13px;line-height:1.7;color:var(--code-text)}
+  .doc table{width:100%;border-collapse:collapse;margin:16px 0 22px;font-size:14px;display:block;overflow-x:auto}
+  .doc th,.doc td{text-align:left;padding:10px 12px;border-bottom:1px solid var(--line-2);color:var(--text-2);vertical-align:top}
+  .doc th{color:var(--ink);font-weight:600;background:var(--bg-2);border-bottom-color:var(--line)}
+  .note{border:1px solid var(--volt-2);background:var(--volt-soft);border-radius:var(--r);padding:14px 18px;margin:18px 0}
+  .note p{margin:0;color:var(--text)}
+  @media (max-width:900px){.docs{grid-template-columns:minmax(0,1fr);gap:24px;padding:32px 16px 64px}.toc{position:static}}
 </style>
 </head>
 <body>
@@ -45,9 +48,12 @@
 <header class="nav scrolled" id="nav">
   <div class="wrap nav-inner">
     <a class="brand" href="/" aria-label="envolvr home">
-      <svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true">
-        <path d="M16 2.75 27.25 9.1v13.8L16 29.25 4.75 22.9V9.1z" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linejoin="round"/>
-        <path d="M4.75 9.1 16 19.7 27.25 9.1" fill="none" stroke="var(--volt)" stroke-width="2.1" stroke-linejoin="round" stroke-linecap="round"/>
+      <svg class="brand-mark" viewBox="0 0 64 64" aria-hidden="true">
+        <rect width="64" height="64" rx="14" fill="#03080a"/>
+        <g transform="translate(32 32) scale(1.52) translate(-16 -16)">
+          <path d="M16 2.75 27.25 9.1v13.8L16 29.25 4.75 22.9V9.1z" fill="none" stroke="#fff" stroke-width="2.3" stroke-linejoin="round"/>
+          <path d="M4.75 9.1 16 19.7 27.25 9.1" fill="none" stroke="#c8ff00" stroke-width="2.3" stroke-linejoin="round" stroke-linecap="round"/>
+        </g>
       </svg>
       <span class="brand-word">envolvr</span>
     </a>
@@ -59,12 +65,13 @@
       <a href="#pricing">Pricing</a>
     </nav>
     <div class="nav-actions">
-      <a class="btn btn-ghost" href="https://github.com/envolvr/envolvr">GitHub</a>
+      <a class="btn btn-outline" href="https://github.com/envolvr/envolvr">GitHub</a>
+      <a class="btn btn-dark" href="/app/">Open app</a>
     </div>
   </div>
 </header>
 
-<main class="wrap docs">
+<main class="docs" style="max-width:1240px;margin:0 auto">
   <aside class="toc" aria-label="Contents">
     <p>DOCS</p>
     <a href="#overview">Overview</a>
@@ -82,7 +89,7 @@
   </aside>
 
   <article class="doc">
-    <p class="eyebrow"><span class="dot"></span> Testnet · Robinhood Chain</p>
+    <span class="pill"><span class="dot"></span>Testnet · Robinhood Chain</span>
     <h1>Private inference your agent can prove.</h1>
     <p>envolvr is an OpenAI-compatible inference API that runs inside hardware-attested enclaves. Every response comes with a signed receipt, and every receipt is anchored on Robinhood Chain. Your agent can prove what ran, where, and what it paid, and anyone can check the proof without trusting envolvr.</p>
 
@@ -261,7 +268,7 @@ const receiptId = res.response.headers.get('x-receipt-id');   // fetch it within
 <footer class="footer">
   <div class="wrap footer-legal">
     <p>envolvr is a pre-launch protocol on testnet. Nothing here is financial, legal or investment advice. The attestation guarantee is limited to what is described in the protocol spec.</p>
-    <p class="mono dim">© 2026 envolvr</p>
+    <p class="mono">© 2026 envolvr</p>
   </div>
 </footer>
 </body>

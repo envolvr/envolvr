@@ -1,9 +1,10 @@
 // Receipts: what each one says about billing, whether it was charged to you,
 // and whether it is anchored on Robinhood Chain. Nothing here trusts envolvr:
 // digests and commitments are computed locally, and the anchor is checked
-// against the contract itself.
+// against the contract itself. No Node built-ins, so the site's in-browser
+// verifier bundles this same file.
 
-import { createHash } from 'node:crypto';
+import { sha256 } from '@noble/hashes/sha2';
 import { keccak_256 } from '@noble/hashes/sha3';
 import { bytesToHex, concatBytes, hexToBytes, utf8ToBytes } from '@noble/hashes/utils';
 import canonicalize from 'canonicalize';
@@ -15,7 +16,7 @@ export type Receipt = Record<string, unknown> & { receipt_id: string; event_log:
 export function receiptDigest(receipt: unknown): `0x${string}` {
   const jcs = canonicalize(receipt);
   if (jcs === undefined) throw new Error('receipt is not JSON');
-  return `0x${createHash('sha256').update(jcs).digest('hex')}`;
+  return `0x${bytesToHex(sha256(utf8ToBytes(jcs)))}`;
 }
 
 export interface Billing {
@@ -42,8 +43,8 @@ export function billingOf(receipt: Receipt): Billing | undefined {
 
 /** The payer commitment a receipt charged to `apiKey` carries. */
 export function payerCommitment(apiKey: string, receiptId: string): string {
-  const keyHash = createHash('sha256').update(apiKey, 'utf8').digest('hex');
-  return `sha256:${createHash('sha256').update(`billing.payer.v1:${keyHash}:${receiptId}`).digest('hex')}`;
+  const keyHash = bytesToHex(sha256(utf8ToBytes(apiKey)));
+  return `sha256:${bytesToHex(sha256(utf8ToBytes(`billing.payer.v1:${keyHash}:${receiptId}`)))}`;
 }
 
 export function chargedTo(receipt: Receipt, apiKey: string): boolean {
