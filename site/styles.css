@@ -99,8 +99,6 @@ ul,ol,dl,dd,dt{margin:0;padding:0;list-style:none}
 }
 .hero-grid{display:grid;grid-template-columns:1.06fr .94fr;gap:70px;align-items:center}
 
-.hero-visual{position:relative;width:100%;aspect-ratio:1/1;max-width:560px;justify-self:center}
-.hero-visual canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
 
 .eyebrow{
   display:inline-flex;align-items:center;gap:9px;
@@ -174,9 +172,10 @@ ul,ol,dl,dd,dt{margin:0;padding:0;list-style:none}
   -webkit-mask-image:linear-gradient(90deg,transparent,#000 12%,#000 88%,transparent);
   mask-image:linear-gradient(90deg,transparent,#000 12%,#000 88%,transparent);
 }
-.marquee-track{display:flex;align-items:center;width:max-content;animation:marquee 46s linear infinite}
-.marquee-track span{font-size:11.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted-2);padding:19px 0;white-space:nowrap}
-.marquee-track i{width:3px;height:3px;border-radius:50%;background:var(--volt);opacity:.6;margin:0 30px;flex:none}
+.marquee-track{display:flex;align-items:center;width:max-content;animation:marquee 60s linear infinite}
+.partner{display:inline-flex;align-items:center;gap:11px;margin-right:64px;padding:24px 0;color:var(--muted);font-size:17px;font-weight:600;letter-spacing:-.02em;white-space:nowrap}
+.partner svg{flex:none;fill:currentColor}
+.partner svg .k{fill:var(--ink)}
 @keyframes marquee{from{transform:translateX(0)}to{transform:translateX(-50%)}}
 
 .section{padding:120px 0;position:relative}
@@ -289,6 +288,14 @@ ul,ol,dl,dd,dt{margin:0;padding:0;list-style:none}
   transform:rotate(-45deg);
 }
 
+.code-panel{border-radius:var(--r);overflow:hidden;background:var(--ink-2);border:1px solid var(--line)}
+.code-head{padding:14px 20px;border-bottom:1px solid var(--line-soft)}
+.code-head .mono{font-size:11.5px}
+.code-panel pre{
+  margin:0;padding:24px 20px;font-family:var(--mono);font-size:12.5px;
+  line-height:2;color:#c9cdd2;overflow-x:auto;
+}
+
 .note{
   margin-top:24px;border-radius:var(--r);padding:26px 30px;
   background:var(--card);border:1px solid var(--line);border-left:2px solid var(--volt);
@@ -348,7 +355,7 @@ html.js .reveal.in{opacity:1;transform:none}
 
 @media (max-width:1040px){
   .hero-grid{grid-template-columns:1fr;gap:52px}
-  .hero-visual{order:2;max-width:420px}
+  .hero-panel{order:2}
   .cards.three{grid-template-columns:repeat(2,1fr)}
   .layers li{grid-template-columns:44px 1fr;gap:20px}
   .layer-spec{display:none}
