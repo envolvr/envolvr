@@ -14,7 +14,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,400;6..72,500&family=Inter+Tight:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="../styles.css?v=20261001e">
+<link rel="stylesheet" href="../styles.css?v=20261001f">
 <style>
   .docs{display:grid;grid-template-columns:218px minmax(0,1fr);gap:20px;padding:40px 20px 96px;max-width:1440px;margin:0 auto}
   .toc{position:sticky;top:100px;align-self:start;display:flex;flex-direction:column}
@@ -51,7 +51,7 @@
 <header class="top" id="nav">
   <a class="logo-pill" href="/" aria-label="envolvr home">
     <svg viewBox="0 0 32 32" aria-hidden="true"><path d="M16 2.75 27.25 9.1v13.8L16 29.25 4.75 22.9V9.1z" fill="none" stroke="#fff" stroke-width="2.6" stroke-linejoin="round"/><path d="M4.75 9.1 16 19.7 27.25 9.1" fill="none" stroke="#c8ff00" stroke-width="2.6" stroke-linejoin="round" stroke-linecap="round"/></svg>
-    <span>envolvr</span>
+    <span class="logo-word">envolvr</span>
   </a>
   <nav class="pillnav" aria-label="Docs">
     <div class="pillgroup">
@@ -66,14 +66,38 @@
   <div class="top-actions">
     <a class="btn btn-plum" href="/app/">Open app</a>
     <a class="btn btn-black" href="https://github.com/envolvr/envolvr">GitHub</a>
+    <button class="icon-btn icon-menu" id="navToggle" type="button" aria-label="Menu" aria-expanded="false" aria-controls="sheet">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="M5 7h14M5 12h14M5 17h14"/></svg>
+    </button>
   </div>
-  <button class="nav-toggle" id="navToggle" type="button" aria-label="Menu" aria-expanded="false"><span></span><span></span></button>
 </header>
+<div class="sheet" id="sheet" hidden>
+  <div class="sheet-backdrop" data-sheet-close></div>
+  <nav class="sheet-panel" aria-label="Menu">
+    <span class="sheet-handle" aria-hidden="true"></span>
+    <a href="/">Home</a>
+    <a href="#quickstart">Quickstart <svg viewBox="0 0 16 16" aria-hidden="true"><path d="m6 3.5 4.5 4.5L6 12.5" fill="none" stroke="currentColor" stroke-width="1.5"/></svg></a>
+    <a href="#api">API reference <svg viewBox="0 0 16 16" aria-hidden="true"><path d="m6 3.5 4.5 4.5L6 12.5" fill="none" stroke="currentColor" stroke-width="1.5"/></svg></a>
+    <a href="#receipts">Receipts <svg viewBox="0 0 16 16" aria-hidden="true"><path d="m6 3.5 4.5 4.5L6 12.5" fill="none" stroke="currentColor" stroke-width="1.5"/></svg></a>
+    <a href="#verify">Verify <svg viewBox="0 0 16 16" aria-hidden="true"><path d="m6 3.5 4.5 4.5L6 12.5" fill="none" stroke="currentColor" stroke-width="1.5"/></svg></a>
+    <a href="#pricing">Pricing <svg viewBox="0 0 16 16" aria-hidden="true"><path d="m6 3.5 4.5 4.5L6 12.5" fill="none" stroke="currentColor" stroke-width="1.5"/></svg></a>
+    <a href="/app/">Open app <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M5 11 11 5M6 5h5v5" fill="none" stroke="currentColor" stroke-width="1.5"/></svg></a>
+  </nav>
+</div>
 <script>
-  document.getElementById('navToggle').addEventListener('click', function () {
-    var open = document.getElementById('nav').classList.toggle('open');
-    this.setAttribute('aria-expanded', open ? 'true' : 'false');
-  });
+  (function () {
+    var toggle = document.getElementById('navToggle');
+    var sheet = document.getElementById('sheet');
+    function set(open) {
+      if (open) { sheet.hidden = false; requestAnimationFrame(function () { requestAnimationFrame(function () { sheet.classList.add('open'); }); }); }
+      else { sheet.classList.remove('open'); setTimeout(function () { if (!sheet.classList.contains('open')) sheet.hidden = true; }, 300); }
+      toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+      document.documentElement.style.overflow = open ? 'hidden' : '';
+    }
+    toggle.addEventListener('click', function () { set(sheet.hidden); });
+    sheet.querySelectorAll('[data-sheet-close], a').forEach(function (el) { el.addEventListener('click', function () { set(false); }); });
+    document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && !sheet.hidden) set(false); });
+  })();
 </script>
 
 <main class="docs">

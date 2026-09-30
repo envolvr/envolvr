@@ -3,16 +3,25 @@
   var $ = function (sel, root) { return (root || document).querySelector(sel); };
   var $$ = function (sel, root) { return Array.prototype.slice.call((root || document).querySelectorAll(sel)); };
 
-  // ---- top bar ----
-  var nav = $('#nav');
+  // ---- menu: a bottom sheet below 1280px ----
   var toggle = $('#navToggle');
-  toggle.addEventListener('click', function () {
-    var open = nav.classList.toggle('open');
+  var sheet = $('#sheet');
+  function setSheet(open) {
+    if (open) {
+      sheet.hidden = false;
+      requestAnimationFrame(function () { requestAnimationFrame(function () { sheet.classList.add('open'); }); });
+    } else {
+      sheet.classList.remove('open');
+      setTimeout(function () { if (!sheet.classList.contains('open')) sheet.hidden = true; }, reduce ? 0 : 300);
+    }
     toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
-  });
-  $$('a', nav).forEach(function (a) {
-    a.addEventListener('click', function () { nav.classList.remove('open'); toggle.setAttribute('aria-expanded', 'false'); });
-  });
+    document.documentElement.style.overflow = open ? 'hidden' : '';
+  }
+  if (toggle && sheet) {
+    toggle.addEventListener('click', function () { setSheet(sheet.hidden); });
+    $$('[data-sheet-close], a', sheet).forEach(function (el) { el.addEventListener('click', function () { setSheet(false); }); });
+    document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && !sheet.hidden) setSheet(false); });
+  }
 
   // ---- copy buttons ----
   function flash(btn, label) {

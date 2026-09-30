@@ -16,7 +16,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,400;6..72,500&family=Inter+Tight:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="styles.css?v=20261001e">
+<link rel="stylesheet" href="styles.css?v=20261001f">
 <script>document.documentElement.classList.add('js');</script>
 </head>
 <body>
@@ -24,7 +24,7 @@
 <header class="top" id="nav">
   <a class="logo-pill" href="#top" aria-label="envolvr home">
     <svg viewBox="0 0 32 32" aria-hidden="true"><path d="M16 2.75 27.25 9.1v13.8L16 29.25 4.75 22.9V9.1z" fill="none" stroke="#fff" stroke-width="2.6" stroke-linejoin="round"/><path d="M4.75 9.1 16 19.7 27.25 9.1" fill="none" stroke="#c8ff00" stroke-width="2.6" stroke-linejoin="round" stroke-linecap="round"/></svg>
-    <span>envolvr</span>
+    <span class="logo-word">envolvr</span>
   </a>
   <nav class="pillnav" aria-label="Main">
     <div class="pillgroup">
@@ -39,15 +39,34 @@
   <div class="top-actions">
     <a class="btn btn-plum" href="/app/">Open app</a>
     <a class="btn btn-black" href="/docs/#quickstart">Start building</a>
-    <a class="icon-btn" href="https://github.com/envolvr/envolvr" aria-label="envolvr on GitHub">
+    <a class="icon-btn icon-gh" href="https://github.com/envolvr/envolvr" aria-label="envolvr on GitHub">
       <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .5a11.5 11.5 0 0 0-3.64 22.41c.58.1.79-.25.79-.56v-2c-3.2.7-3.87-1.37-3.87-1.37-.53-1.33-1.28-1.69-1.28-1.69-1.05-.72.08-.7.08-.7 1.16.08 1.77 1.19 1.77 1.19 1.03 1.77 2.7 1.26 3.36.96.1-.75.4-1.26.73-1.55-2.55-.29-5.24-1.28-5.24-5.69 0-1.26.45-2.28 1.19-3.09-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.17 1.18a11 11 0 0 1 5.77 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.59.23 2.76.11 3.05.74.81 1.19 1.83 1.19 3.09 0 4.42-2.69 5.39-5.26 5.68.41.36.78 1.06.78 2.14v3.17c0 .31.21.67.8.56A11.5 11.5 0 0 0 12 .5z"/></svg>
     </a>
-    <button class="icon-btn" type="button" data-share aria-label="Copy link to this page">
+    <button class="icon-btn icon-menu" id="navToggle" type="button" aria-label="Menu" aria-expanded="false" aria-controls="sheet">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="M5 7h14M5 12h14M5 17h14"/></svg>
+    </button>
+    <button class="icon-btn icon-share" type="button" data-share aria-label="Copy link to this page">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="18" cy="5" r="2.5"/><circle cx="6" cy="12" r="2.5"/><circle cx="18" cy="19" r="2.5"/><path d="m8.2 10.8 7.6-4.4M8.2 13.2l7.6 4.4"/></svg>
     </button>
   </div>
-  <button class="nav-toggle" id="navToggle" type="button" aria-label="Menu" aria-expanded="false"><span></span><span></span></button>
 </header>
+
+<!-- Phone and tablet menu: a bottom sheet -->
+<div class="sheet" id="sheet" hidden>
+  <div class="sheet-backdrop" data-sheet-close></div>
+  <nav class="sheet-panel" aria-label="Menu">
+    <span class="sheet-handle" aria-hidden="true"></span>
+    <a href="/app/">Open app <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M5 11 11 5M6 5h5v5" fill="none" stroke="currentColor" stroke-width="1.5"/></svg></a>
+    <a href="#top">Home</a>
+    <a href="#models">Models <svg viewBox="0 0 16 16" aria-hidden="true"><path d="m6 3.5 4.5 4.5L6 12.5" fill="none" stroke="currentColor" stroke-width="1.5"/></svg></a>
+    <a href="#how">How it works <svg viewBox="0 0 16 16" aria-hidden="true"><path d="m6 3.5 4.5 4.5L6 12.5" fill="none" stroke="currentColor" stroke-width="1.5"/></svg></a>
+    <a href="#verify">Verify <svg viewBox="0 0 16 16" aria-hidden="true"><path d="m6 3.5 4.5 4.5L6 12.5" fill="none" stroke="currentColor" stroke-width="1.5"/></svg></a>
+    <a href="#pricing">Pricing <svg viewBox="0 0 16 16" aria-hidden="true"><path d="m6 3.5 4.5 4.5L6 12.5" fill="none" stroke="currentColor" stroke-width="1.5"/></svg></a>
+    <a href="#developers">Developers <svg viewBox="0 0 16 16" aria-hidden="true"><path d="m6 3.5 4.5 4.5L6 12.5" fill="none" stroke="currentColor" stroke-width="1.5"/></svg></a>
+    <a href="/docs/">Docs <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M5 11 11 5M6 5h5v5" fill="none" stroke="currentColor" stroke-width="1.5"/></svg></a>
+    <a href="https://github.com/envolvr/envolvr">GitHub <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M5 11 11 5M6 5h5v5" fill="none" stroke="currentColor" stroke-width="1.5"/></svg></a>
+  </nav>
+</div>
 
 <main id="top">
 
@@ -515,7 +534,7 @@ npx @envolvr/sdk chat <span class="s">"Close the arb?"</span>
   </div>
 </footer>
 <a class="to-top" href="#top" aria-label="Back to top"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 13V3M3.5 7.5 8 3l4.5 4.5" fill="none" stroke="currentColor" stroke-width="1.5"/></svg></a>
-<script src="main.js?v=20261001e"></script>
-<script type="module" src="js/site-verify.js?v=20261001e"></script>
+<script src="main.js?v=20261001f"></script>
+<script type="module" src="js/site-verify.js?v=20261001f"></script>
 </body>
 </html>
