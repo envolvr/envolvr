@@ -243,26 +243,26 @@ code,.mono{font-family:var(--mono);font-size:.9em}
 .legend{display:flex;flex-wrap:wrap;gap:6px 16px;margin:18px 0 4px;font-size:13.5px}
 .legend i{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:6px}
 .chart{position:relative}
-.chart.big{height:390px;margin-top:8px}
-.chart.mini{height:300px;margin-top:10px}
+.chart.big{height:400px;margin-top:8px}
+.chart.mini{height:318px;margin-top:10px}
 .chart-in{position:relative;height:100%}
-.chart-plot{position:absolute;left:0;right:0;top:22px;bottom:92px}
-.chart.mini .chart-plot{bottom:88px}
+/* Bar geometry after AA's charts: 30px bars (up to 44px on the wide chart)
+   with the rest of each slot as the gap, 4px rounded tops, a 16px supplier
+   mark 8px under the baseline, and labels at -60deg in an 80px box whose right
+   edge pivots under the bar's center, 11px, up to three balanced lines. */
+.chart-plot{position:absolute;left:0;right:0;top:22px;bottom:112px}
 .gridlines{position:absolute;inset:0}
-.gridlines i{position:absolute;left:0;right:0;border-top:1px dotted #cfcfcf}
-.gridlines i.base{border-top:1px solid var(--n200)}
+.gridlines i{position:absolute;left:0;right:0;height:1px;background:repeating-linear-gradient(90deg,#cfcfcf 0 3px,transparent 3px 6px)}
 .bars{position:absolute;inset:0;display:flex;align-items:flex-end}
-.bar{position:relative;flex:1;min-width:0;height:100%;display:flex;align-items:flex-end;justify-content:center;border:0;background:none;padding:0 3px}
-.chart.mini .bar{padding:0 2px}
-.bar i{display:block;width:100%;max-width:64px;height:var(--h);background:var(--c);border-radius:2px 2px 0 0;transition:height .6s cubic-bezier(.2,.7,.2,1),filter .15s}
-.bar:hover i,.bar:focus-visible i{filter:brightness(.9)}
-.bar .v{position:absolute;left:-6px;right:-6px;bottom:calc(var(--h) + 4px);text-align:center;font-size:11.5px;color:var(--black);transition:bottom .6s cubic-bezier(.2,.7,.2,1)}
-.chart.mini .bar .v{font-size:10.5px}
-.chart.mini .bar i{max-width:40px}
-.bar .x{position:absolute;top:100%;left:50%;width:0;padding-top:8px;display:flex;flex-direction:column;align-items:center}
-.bar .x svg{width:14px;height:14px;flex:none;fill:currentColor;color:var(--black);--logo-cut:#fff}
-.bar .x span{position:absolute;top:30px;right:-4px;white-space:nowrap;font-size:11.5px;color:var(--black);transform:rotate(-45deg);transform-origin:right top;line-height:1.2;text-align:right}
-.chart.mini .bar .x span{font-size:10.5px}
+.bar{position:relative;flex:1;min-width:0;height:100%;display:flex;align-items:flex-end;justify-content:center;border:0;background:none;padding:0}
+.bar i{display:block;width:74%;max-width:44px;height:var(--h);background:var(--c);border-radius:4px 4px 0 0;transition:height .6s cubic-bezier(.2,.7,.2,1),filter .15s}
+.chart.mini .bar i{max-width:30px}
+.bar:hover i,.bar:focus-visible i{filter:brightness(.92)}
+.bar .v{position:absolute;left:-8px;right:-8px;bottom:calc(var(--h) + 5px);text-align:center;font-size:11px;line-height:1;color:var(--black);font-variant-numeric:tabular-nums;transition:bottom .6s cubic-bezier(.2,.7,.2,1)}
+.bar .x{position:absolute;top:100%;left:50%;width:0;height:0}
+.bar .x svg{position:absolute;left:-6.5px;top:9px;width:13px;height:13px;fill:currentColor;color:var(--black);--logo-cut:#fff}
+.bar .x span{position:absolute;right:0;top:38px;width:80px;font-size:11px;line-height:1;color:var(--black);text-align:right;text-wrap:balance;word-break:break-word;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;transform:translateY(-50%) rotate(-60deg);transform-origin:100% 50%}
+@media (max-width:767px){.chart.mini .chart-plot{left:12px}.chart.mini .bar .x span{width:58px}}
 .tip{position:absolute;z-index:5;pointer-events:none;min-width:180px;padding:10px 12px;border-radius:8px;background:#fff;border:1px solid var(--n200);box-shadow:0 8px 24px -8px rgba(0,0,0,.25);font-size:12.5px;line-height:1.5;opacity:0;transform:translate(-50%,-100%);transition:opacity .12s}
 .tip.on{opacity:1}
 .tip b{display:block;font-weight:500;margin-bottom:4px}
