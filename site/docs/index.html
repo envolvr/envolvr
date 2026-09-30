@@ -13,65 +13,70 @@
 <link rel="alternate" type="text/plain" href="/llms.txt" title="Docs for language models">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="../styles.css?v=20261001c">
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,400;6..72,500&family=Inter+Tight:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../styles.css?v=20261001e">
 <style>
-  .docs{display:grid;grid-template-columns:220px minmax(0,1fr);gap:56px;padding:56px 24px 96px}
-  .toc{position:sticky;top:86px;align-self:start;font-size:14px}
-  .toc p{color:var(--muted);letter-spacing:.14em;font-size:11px;margin:0 0 12px;font-family:var(--mono)}
-  .toc a{display:block;padding:5px 0 5px 12px;margin-left:-12px;color:var(--text-2);border-left:2px solid transparent}
-  .toc a:hover{color:var(--ink);border-left-color:var(--volt-2)}
-  .doc{max-width:780px}
-  .doc .pill{margin-bottom:18px}
-  .doc h1{font-size:clamp(34px,4.6vw,52px);line-height:1.05;letter-spacing:-.04em;margin-bottom:18px}
-  .doc h2{font-size:28px;letter-spacing:-.03em;margin:64px 0 14px;padding-top:24px;border-top:1px solid var(--line-2);scroll-margin-top:80px}
-  .doc h3{font-size:16px;letter-spacing:-.01em;margin:32px 0 10px}
-  .doc p,.doc li{color:var(--text-2);font-size:15.5px;line-height:1.72}
+  .docs{display:grid;grid-template-columns:218px minmax(0,1fr);gap:20px;padding:40px 20px 96px;max-width:1440px;margin:0 auto}
+  .toc{position:sticky;top:100px;align-self:start;display:flex;flex-direction:column}
+  .toc p{font-size:14.5px;font-weight:500;margin:0 0 10px}
+  .toc a{display:flex;align-items:center;gap:10px;padding:5px 0;font-size:13px;color:var(--n700)}
+  .toc a::before{content:"";width:8px;height:8px;background:var(--n500);flex:none}
+  .toc a:hover{color:#000}
+  .toc a:hover::before{background:#000}
+  .doc{max-width:820px}
+  .doc .pill-new{display:inline-flex;align-items:center;height:22px;padding:0 9px;border-radius:999px;background:var(--plum-2);color:#fff;font-size:12.5px;margin-bottom:20px}
+  .doc h1{font-family:var(--serif);font-size:clamp(40px,5vw,64px);line-height:1.02;letter-spacing:-.02em;margin-bottom:22px}
+  .doc h2{display:flex;align-items:center;gap:14px;font-family:var(--serif);font-size:32px;line-height:1.1;margin:72px 0 16px;scroll-margin-top:90px}
+  .doc h2::before{content:"";width:20px;height:20px;background:#000;flex:none}
+  .doc h3{font-family:var(--serif);font-size:22px;margin:32px 0 10px}
+  .doc p,.doc li{color:var(--n700);font-size:15.5px;line-height:1.7}
   .doc p + p{margin-top:12px}
-  .doc p strong,.doc li strong{color:var(--ink);font-weight:600}
+  .doc p strong,.doc li strong{color:#000;font-weight:500}
   .doc ul,.doc ol{padding-left:20px}
-  .doc a{color:var(--ink);text-decoration:underline;text-decoration-color:var(--volt-2);text-decoration-thickness:2px;text-underline-offset:3px}
-  .doc a:hover{background:var(--volt-soft)}
-  .doc code{overflow-wrap:anywhere;font-family:var(--mono);font-size:.86em;color:var(--ink);background:var(--bg-2);border:1px solid var(--line-2);padding:1px 5px;border-radius:5px}
-  .doc pre{background:var(--code-bg);border-radius:var(--r);padding:18px 20px;overflow-x:auto;margin:16px 0 22px}
-  .doc pre code{background:none;border:0;padding:0;font-size:13px;line-height:1.7;color:var(--code-text)}
-  .doc table{width:100%;border-collapse:collapse;margin:16px 0 22px;font-size:14px;display:block;overflow-x:auto}
-  .doc th,.doc td{text-align:left;padding:10px 12px;border-bottom:1px solid var(--line-2);color:var(--text-2);vertical-align:top}
-  .doc th{color:var(--ink);font-weight:600;background:var(--bg-2);border-bottom-color:var(--line)}
-  .note{border:1px solid var(--volt-2);background:var(--volt-soft);border-radius:var(--r);padding:14px 18px;margin:18px 0}
-  .note p{margin:0;color:var(--text)}
-  @media (max-width:900px){.docs{grid-template-columns:minmax(0,1fr);gap:24px;padding:32px 16px 64px}.toc{position:static}}
+  .doc a{color:var(--plum-2);text-decoration:underline;text-underline-offset:3px}
+  .doc code{overflow-wrap:anywhere;font-family:var(--mono);font-size:.85em;color:#000;background:var(--n100);padding:1px 5px;border-radius:4px}
+  .doc pre{background:#111;border-radius:var(--r);padding:18px 20px;overflow-x:auto;margin:16px 0 22px}
+  .doc pre code{background:none;padding:0;font-size:13px;line-height:1.7;color:#e6e6e6;overflow-wrap:normal}
+  .doc table{width:100%;border-collapse:collapse;margin:16px 0 22px;font-size:14px;display:block;overflow-x:auto;border:1px solid var(--n200);border-radius:var(--r)}
+  .doc th,.doc td{text-align:left;padding:10px 14px;border-bottom:1px solid var(--n100);color:var(--n700);vertical-align:top}
+  .doc th{color:var(--n600);font-weight:500;font-size:12.5px;background:var(--n50);border-bottom-color:var(--n200)}
+  .note{border:1px solid var(--n200);background:var(--n150);border-radius:var(--r);padding:14px 18px;margin:18px 0}
+  .note p{margin:0;color:#000}
+  .footer .footer-legal{grid-template-columns:minmax(0,1fr) minmax(0,2fr);padding-top:32px;padding-bottom:40px}
+  @media (max-width:1060px){.docs{grid-template-columns:minmax(0,1fr);gap:24px;padding:24px 16px 64px}.toc{position:static}}
 </style>
 </head>
 <body>
 
-<header class="nav scrolled" id="nav">
-  <div class="wrap nav-inner">
-    <a class="brand" href="/" aria-label="envolvr home">
-      <svg class="brand-mark" viewBox="0 0 64 64" aria-hidden="true">
-        <rect width="64" height="64" rx="14" fill="#03080a"/>
-        <g transform="translate(32 32) scale(1.52) translate(-16 -16)">
-          <path d="M16 2.75 27.25 9.1v13.8L16 29.25 4.75 22.9V9.1z" fill="none" stroke="#fff" stroke-width="2.3" stroke-linejoin="round"/>
-          <path d="M4.75 9.1 16 19.7 27.25 9.1" fill="none" stroke="#c8ff00" stroke-width="2.3" stroke-linejoin="round" stroke-linecap="round"/>
-        </g>
-      </svg>
-      <span class="brand-word">envolvr</span>
-    </a>
-    <nav class="nav-links" aria-label="Docs">
+<header class="top" id="nav">
+  <a class="logo-pill" href="/" aria-label="envolvr home">
+    <svg viewBox="0 0 32 32" aria-hidden="true"><path d="M16 2.75 27.25 9.1v13.8L16 29.25 4.75 22.9V9.1z" fill="none" stroke="#fff" stroke-width="2.6" stroke-linejoin="round"/><path d="M4.75 9.1 16 19.7 27.25 9.1" fill="none" stroke="#c8ff00" stroke-width="2.6" stroke-linejoin="round" stroke-linecap="round"/></svg>
+    <span>envolvr</span>
+  </a>
+  <nav class="pillnav" aria-label="Docs">
+    <div class="pillgroup">
       <a href="#quickstart">Quickstart</a>
       <a href="#api">API</a>
       <a href="#receipts">Receipts</a>
       <a href="#verify">Verify</a>
       <a href="#pricing">Pricing</a>
-    </nav>
-    <div class="nav-actions">
-      <a class="btn btn-outline" href="https://github.com/envolvr/envolvr">GitHub</a>
-      <a class="btn btn-dark" href="/app/">Open app</a>
     </div>
+    <a class="pillsolo" href="/">Home</a>
+  </nav>
+  <div class="top-actions">
+    <a class="btn btn-plum" href="/app/">Open app</a>
+    <a class="btn btn-black" href="https://github.com/envolvr/envolvr">GitHub</a>
   </div>
+  <button class="nav-toggle" id="navToggle" type="button" aria-label="Menu" aria-expanded="false"><span></span><span></span></button>
 </header>
+<script>
+  document.getElementById('navToggle').addEventListener('click', function () {
+    var open = document.getElementById('nav').classList.toggle('open');
+    this.setAttribute('aria-expanded', open ? 'true' : 'false');
+  });
+</script>
 
-<main class="docs" style="max-width:1240px;margin:0 auto">
+<main class="docs">
   <aside class="toc" aria-label="Contents">
     <p>DOCS</p>
     <a href="#overview">Overview</a>
@@ -89,7 +94,7 @@
   </aside>
 
   <article class="doc">
-    <span class="pill"><span class="dot"></span>Testnet · Robinhood Chain</span>
+    <span class="pill-new">Testnet · Robinhood Chain</span>
     <h1>Private inference your agent can prove.</h1>
     <p>envolvr is an OpenAI-compatible inference API that runs inside hardware-attested enclaves. Every response comes with a signed receipt, and every receipt is anchored on Robinhood Chain. Your agent can prove what ran, where, and what it paid, and anyone can check the proof without trusting envolvr.</p>
 
@@ -267,8 +272,8 @@ const receiptId = res.response.headers.get('x-receipt-id');   // fetch it within
 
 <footer class="footer">
   <div class="wrap footer-legal">
+    <p>© 2026 envolvr</p>
     <p>envolvr is a pre-launch protocol on testnet. Nothing here is financial, legal or investment advice. The attestation guarantee is limited to what is described in the protocol spec.</p>
-    <p class="mono">© 2026 envolvr</p>
   </div>
 </footer>
 </body>

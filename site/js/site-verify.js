@@ -1,13 +1,13 @@
 // Runs the receipt verifier (verifier.js, built from site/src/verifier.ts) for
 // the hero card and the "Verify" section. Every check happens in this browser.
-import { verify, parseBundle, digestOf } from './verifier.js?v=20261001c';
+import { verify, parseBundle, digestOf } from './verifier.js?v=20261001e';
 
 const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 const GATEWAY = 'https://api.envolvr.xyz';
 const sleep = (ms) => new Promise((r) => setTimeout(r, reduce ? 0 : ms));
 
 let samplePromise;
-const sample = () => (samplePromise ??= fetch('data/sample-receipt.json?v=20261001c').then((r) => r.json()));
+const sample = () => (samplePromise ??= fetch('data/sample-receipt.json?v=20261001e').then((r) => r.json()));
 
 /** Animate a verification run into a .vcard. Resolves to the verdict. */
 async function run(card, bundle, { pace = 260 } = {}) {
@@ -56,10 +56,8 @@ if (hero) {
     busy = true;
     try {
       const b = await sample();
-      const answer = JSON.parse(b.response).choices?.[0]?.message?.content;
-      if (answer) hero.querySelector('[data-answer]').textContent = answer;
       const v = await run(hero, b, { pace: 300 });
-      foot.textContent = v.verified ? 'Verified in your browser, just now.' : 'Checked in your browser, just now.';
+      foot.textContent = v.verified ? 'Verified in your browser, just now' : 'Checked in your browser, just now';
     } catch {
       foot.textContent = 'Could not load the sample receipt.';
     } finally {
