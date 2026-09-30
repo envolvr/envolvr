@@ -11,11 +11,21 @@
       {"upstream": "near-ai", "inputCostPerToken": "0.00000015", "outputCostPerToken": "0.0000005", "endpoints": ["/v1/chat/completions"]}
     ] },
     "qwen/qwen3.8-27b": { "routes": [
-      {"upstream": "redpill", "inputCostPerToken": "0.00000024", "outputCostPerToken": "0.0000025"},
+      {"upstream": "chutes", "inputCostPerToken": "0.00000024", "outputCostPerToken": "0.0000022", "endpoints": ["/v1/chat/completions"]},
+      {"upstream": "redpill", "inputCostPerToken": "0.00000024", "outputCostPerToken": "0.0000025", "optIn": true},
       {"upstream": "near-ai", "inputCostPerToken": "0.00000044", "outputCostPerToken": "0.0000033", "endpoints": ["/v1/chat/completions"], "optIn": true}
     ] },
     "qwen/qwen3.6-35b-a3b": { "routes": [
       {"upstream": "near-ai", "inputCostPerToken": "0.00000017", "outputCostPerToken": "0.0000011", "endpoints": ["/v1/chat/completions"]}
+    ] },
+    "deepseek/deepseek-v4-flash": { "routes": [
+      {"upstream": "chutes", "inputCostPerToken": "0.00000044", "outputCostPerToken": "0.00000132", "endpoints": ["/v1/chat/completions"]}
+    ] },
+    "deepseek/deepseek-v3.2": { "routes": [
+      {"upstream": "chutes", "inputCostPerToken": "0.000001", "outputCostPerToken": "0.000001", "endpoints": ["/v1/chat/completions"]}
+    ] },
+    "moonshotai/kimi-k2.6": { "routes": [
+      {"upstream": "chutes", "inputCostPerToken": "0.0000005", "outputCostPerToken": "0.00000285", "endpoints": ["/v1/chat/completions"]}
     ] }
   },
   "chain": {

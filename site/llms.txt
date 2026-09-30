@@ -26,13 +26,16 @@
 
 ## Call a model
 
-POST https://api.envolvr.xyz/v1/chat/completions with an OpenAI chat body. Optional routing: "provider": {"only": ["near-ai"]} or {"order": ["redpill","near-ai"], "allow_fallbacks": true}. Providers: redpill (Phala), near-ai (NEAR AI Cloud). The response header x-receipt-id names the receipt; usage.cost is the cost in USD.
+POST https://api.envolvr.xyz/v1/chat/completions with an OpenAI chat body. Optional routing: "provider": {"only": ["near-ai"]} or {"order": ["redpill","near-ai"], "allow_fallbacks": true}. Providers: redpill (Phala), near-ai (NEAR AI Cloud), chutes (Chutes on Bittensor; each machine verified individually, requests end-to-end encrypted to its attested key). The response header x-receipt-id names the receipt; usage.cost is the cost in USD.
 
 Models at launch (input / output USD per 1M tokens; GET /v1/models is authoritative):
 - z-ai/glm-5.3: Phala via RedPill, 1.40 / 4.40
 - z-ai/glm-5.3-flash: NEAR AI (non-streamed responses signed by the model enclave), 0.15 / 0.50
-- qwen/qwen3.8-27b: Phala via RedPill 0.24 / 2.50; NEAR AI on request 0.44 / 3.30
+- qwen/qwen3.8-27b: Chutes 0.24 / 2.20; on request Phala via RedPill 0.24 / 2.50 or NEAR AI 0.44 / 3.30
 - qwen/qwen3.6-35b-a3b: NEAR AI, 0.17 / 1.10
+- deepseek/deepseek-v4-flash: Chutes, 0.44 / 1.32
+- deepseek/deepseek-v3.2: Chutes, 1.00 / 1.00
+- moonshotai/kimi-k2.6: Chutes, 0.50 / 2.85
 
 ## Receipts
 

@@ -169,10 +169,14 @@ const receiptId = res.response.headers.get('x-receipt-id');   // fetch it within
       <tr><th>Model</th><th>Provider</th><th>Input / output per 1M tokens</th></tr>
       <tr><td><code>z-ai/glm-5.3</code></td><td>Phala (RedPill)</td><td>$1.40 / $4.40</td></tr>
       <tr><td><code>z-ai/glm-5.3-flash</code></td><td>NEAR AI, enclave-signed</td><td>$0.15 / $0.50</td></tr>
-      <tr><td><code>qwen/qwen3.8-27b</code></td><td>Phala (RedPill); NEAR AI on request</td><td>$0.24 / $2.50 (NEAR: $0.44 / $3.30)</td></tr>
+      <tr><td><code>qwen/qwen3.8-27b</code></td><td>Chutes, end-to-end encrypted; Phala (RedPill) or NEAR AI on request</td><td>$0.24 / $2.20 (RedPill: $0.24 / $2.50, NEAR: $0.44 / $3.30)</td></tr>
       <tr><td><code>qwen/qwen3.6-35b-a3b</code></td><td>NEAR AI, enclave-signed</td><td>$0.17 / $1.10</td></tr>
+      <tr><td><code>deepseek/deepseek-v4-flash</code></td><td>Chutes, end-to-end encrypted</td><td>$0.44 / $1.32</td></tr>
+      <tr><td><code>deepseek/deepseek-v3.2</code></td><td>Chutes, end-to-end encrypted</td><td>$1.00 / $1.00</td></tr>
+      <tr><td><code>moonshotai/kimi-k2.6</code></td><td>Chutes, end-to-end encrypted</td><td>$0.50 / $2.85</td></tr>
     </table>
-    <p>Choose providers per request with an OpenRouter-style block: <code>"provider": {"only": ["near-ai"]}</code>, or <code>{"order": ["redpill", "near-ai"], "allow_fallbacks": true}</code>. Provider names are <code>redpill</code> and <code>near-ai</code>. A route marked opt-in in <code>/v1/models</code> is used only when you name it.</p>
+    <p>Choose providers per request with an OpenRouter-style block: <code>"provider": {"only": ["near-ai"]}</code>, or <code>{"order": ["redpill", "near-ai"], "allow_fallbacks": true}</code>. Provider names are <code>redpill</code>, <code>near-ai</code> and <code>chutes</code>. A route marked opt-in in <code>/v1/models</code> is used only when you name it.</p>
+    <p>Chutes runs on Bittensor's open GPU network, where independent operators run the machines. envolvr verifies each machine on its own (Intel TDX quote, NVIDIA GPU attestation) and encrypts every request end to end to that machine's attested key, so neither Chutes nor the operator sees your prompt. Hardware limits are set out in the protocol spec.</p>
 
     <h2 id="api">API reference</h2>
     <table>
