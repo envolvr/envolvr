@@ -14,7 +14,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,500&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="../styles.css?v=20261001r">
+<link rel="stylesheet" href="../styles.css?v=20261001s">
 <style>
   .docs{display:grid;grid-template-columns:minmax(0,1fr);gap:24px;max-width:1320px;margin:0 auto;padding:48px var(--px) 96px}
   @media (min-width:1100px){.docs{grid-template-columns:170px minmax(0,1fr);gap:56px}}
@@ -25,7 +25,7 @@
   .doc-toc a:hover{border-left-color:var(--ink);color:var(--ink)}
   .doc{max-width:820px}
   .doc .pill-new{display:inline-flex;align-items:center;gap:8px;font-size:13.5px;padding:5px 12px 5px 5px;border:1px solid var(--line);border-radius:999px;margin-bottom:24px}
-  .doc .pill-new::before{content:"TESTNET";font-size:11px;letter-spacing:.04em;background:var(--lime);padding:3px 8px;border-radius:999px}
+  .doc .pill-new::before{content:"MAINNET";font-size:11px;letter-spacing:.04em;background:var(--lime);padding:3px 8px;border-radius:999px}
   .doc h1{font-family:var(--serif);font-weight:500;font-size:calc(clamp(48px,5vw,64px) * var(--serif-scale));line-height:1;letter-spacing:var(--serif-track);margin-bottom:16px;text-wrap:balance}
   .doc h2{display:flex;align-items:center;gap:14px;font-family:var(--serif);font-weight:500;font-size:calc(30px * var(--serif-scale));line-height:36px;letter-spacing:var(--serif-track);margin:72px 0 16px;scroll-margin-top:90px}
   .doc h2::before{content:"";flex:none;width:22px;height:22px;background:var(--ink);clip-path:polygon(50% 4%,90% 27%,90% 73%,50% 96%,10% 73%,10% 27%)}
@@ -64,6 +64,7 @@
       <a href="/docs/#receipts">Receipts</a>
       <a href="/docs/#verify">Verify</a>
       <a href="/docs/#pricing">Pricing</a>
+      <a href="/token/">Token</a>
       <a class="dim" href="/">Home</a>
     </nav>
     <a class="hdr-gh" href="https://github.com/envolvr/envolvr" aria-label="GitHub" title="GitHub"><svg viewBox="0 0 16 16" width="19" height="19" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg></a>
@@ -78,6 +79,7 @@
     <a href="/docs/#receipts">Receipts<span>→</span></a>
     <a href="/docs/#verify">Verify<span>→</span></a>
     <a href="/docs/#pricing">Pricing<span>→</span></a>
+    <a href="/token/">Token<span>→</span></a>
     <a href="https://github.com/envolvr/envolvr">GitHub<span>↗</span></a>
     <div class="menu-cta"><a class="ink" href="/app/">Open app</a><a class="volt" href="/docs/#quickstart">Start building</a></div>
   </nav>
@@ -192,12 +194,12 @@
       <nav class="foot-links" aria-label="Footer">
         <div><span>Product</span><a href="/#models">Models</a><a href="/#verify">Verify a receipt</a><a href="/#pricing">Pricing</a><a href="/app/">Account app</a></div>
         <div><span>Developers</span><a href="/docs/">Documentation</a><a href="/docs/#quickstart">Quickstart</a><a href="/llms.txt">llms.txt</a><a href="https://www.npmjs.com/package/@envolvr/sdk">SDK on npm</a></div>
-        <div><span>Protocol</span><a href="/#how">How it works</a><a href="/#privacy">Why private inference</a><a href="/app/">Stake NVLR</a><a href="https://github.com/envolvr/envolvr">GitHub</a></div>
+        <div><span>Protocol</span><a href="/#how">How it works</a><a href="/#privacy">Why private inference</a><a href="/token/">NVLR token</a><a href="https://github.com/envolvr/envolvr">GitHub</a></div>
       </nav>
     </div>
     <div class="foot-legal">
       <span class="foot-legal-links">© 2026 envolvr<a href="/terms/">Terms of Service</a><a href="/privacy/">Privacy Policy</a></span>
-      <p>envolvr is a pre-launch protocol. Nothing on this site is financial, legal or investment advice, and nothing here is an offer to sell securities. NVLR is intended as prepaid access to compute. Availability is restricted by jurisdiction and any token launch is subject to legal review. The attestation guarantee is limited to what is described in the protocol spec.</p>
+      <p>Nothing on this site is financial, legal or investment advice, and nothing here is an offer to sell securities. NVLR is intended as prepaid access to compute. Availability may be restricted in some jurisdictions. The attestation guarantee is limited to what is described in the protocol spec.</p>
     </div>
     <div class="foot-mark" aria-hidden="true">
       <svg viewBox="0 0 24 24"><path d="M12 2.5l8.5 4.8v9.4L12 21.5l-8.5-4.8V7.3z" fill="none" stroke="#0f1110" stroke-width="2.4" stroke-linejoin="round"/><path d="M7.8 10.4l4.2 3.4 4.2-3.4" fill="none" stroke="#0f1110" stroke-width="2.4" stroke-linejoin="round"/></svg>

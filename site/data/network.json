@@ -1,0 +1,15 @@
+{
+  "_comment": "Robinhood Chain mainnet. Fill the addresses and the trade link at launch; the token page reads this file.",
+  "chainId": 4663,
+  "rpcUrl": "https://rpc.mainnet.chain.robinhood.com",
+  "explorer": "https://robinhoodchain.blockscout.com",
+  "contracts": {
+    "token": null,
+    "staking": null,
+    "creditVault": null,
+    "receiptAnchor": null
+  },
+  "links": {
+    "trade": null
+  }
+}

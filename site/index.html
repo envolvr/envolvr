@@ -16,7 +16,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,500&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="styles.css?v=20261001r">
+<link rel="stylesheet" href="styles.css?v=20261001s">
 <script>document.documentElement.classList.add('js');</script>
 </head>
 <body>
@@ -33,6 +33,7 @@
       <a href="#how">How it works</a>
       <a href="#verify">Verify</a>
       <a href="#pricing">Pricing</a>
+      <a href="/token/">Token</a>
       <a href="#developers">Developers</a>
       <a class="dim" href="/docs/">Docs ↗</a>
     </nav>
@@ -46,6 +47,7 @@
     <a href="#how">How it works<span>→</span></a>
     <a href="#verify">Verify<span>→</span></a>
     <a href="#pricing">Pricing<span>→</span></a>
+    <a href="/token/">Token<span>→</span></a>
     <a href="#developers">Developers<span>→</span></a>
     <a href="/docs/">Docs<span>↗</span></a>
     <a href="https://github.com/envolvr/envolvr">GitHub<span>↗</span></a>
@@ -64,12 +66,12 @@
     </div>
   </div>
   <div class="news">
-    <a href="#suppliers">
-      <span><small>NEW</small><b>Chutes joins as the third supplier</b><i>DeepSeek V4 Flash, DeepSeek V3.2 and Kimi K2.6, each machine attested before it serves</i></span>
+    <a href="/token/">
+      <span><small>NEW</small><b>NVLR is live on Robinhood Chain</b><i>Stake it and your agents get a daily share of private inference, funded by trading fees</i></span>
       <span class="arr">↗</span>
     </a>
-    <a href="#verify">
-      <span><small>LIVE</small><b>Verify a receipt in your browser</b><i>Signature, commitments, bill and on-chain anchor, checked on this page</i></span>
+    <a href="#suppliers">
+      <span><small>SUPPLIER</small><b>Chutes joins as the third supplier</b><i>DeepSeek V4 Flash, DeepSeek V3.2 and Kimi K2.6, each machine attested before it serves</i></span>
       <span class="arr">↗</span>
     </a>
   </div>
@@ -82,7 +84,7 @@
       <div class="rcard-head">
         <div>
           <span class="card-title"><i class="sq" style="background:#1f8a6d"></i>Receipt check</span>
-          <span class="rcard-sub">A real testnet receipt for z-ai/glm-5.3 on Phala · verified in your browser</span>
+          <span class="rcard-sub">A real receipt for z-ai/glm-5.3 on Phala · verified in your browser</span>
         </div>
         <span class="badge" data-state><i></i><span>checking</span></span>
       </div>
@@ -128,9 +130,10 @@
     <div class="changelog">
       <div class="changelog-head"><span>Changelog</span><a href="https://github.com/envolvr/envolvr/commits/main" aria-label="All changes on GitHub">↗</a></div>
       <ol>
+        <!-- launch: set the day -->
+        <li><small>Mainnet · Oct</small><span>NVLR and the envolvr contracts live on Robinhood Chain</span></li>
         <li><small>New supplier · 30 Sept</small><span>Chutes live: Qwen3.8-27B, DeepSeek V4 Flash, DeepSeek V3.2, Kimi K2.6</span></li>
         <li><small>Site · 30 Sept</small><span>In-browser receipt verification on envolvr.xyz</span></li>
-        <li><small>Testnet · 30 Sept</small><span>NVLR token and staking allowance redeployed</span></li>
         <li><small>App · 25 Sept</small><span>Account app at envolvr.xyz/app: keys, deposits, staking</span></li>
         <li><small>SDK · 25 Sept</small><span>@envolvr/sdk 0.1.1 on npm with the envolvr CLI</span></li>
       </ol>
@@ -295,7 +298,7 @@
         </div>
         <div class="panel-body verifier">
           <div class="v-input">
-            <div><span class="panel-title">receipt.json</span><span class="panel-sub" data-v-hint>A real testnet receipt for z-ai/glm-5.3, served on Phala. Try editing the bill.</span></div>
+            <div><span class="panel-title">receipt.json</span><span class="panel-sub" data-v-hint>A real receipt for z-ai/glm-5.3, served on Phala. Try editing the bill.</span></div>
             <label class="sr-only" for="receiptInput">Receipt JSON</label>
             <textarea id="receiptInput" wrap="off" spellcheck="false" autocomplete="off" placeholder="Paste a receipt.json"></textarea>
             <div class="v-actions"><button class="btn-green" type="button" id="verifyRun">Verify in browser</button><span class="v-err" data-v-err hidden></span></div>
@@ -388,12 +391,12 @@
       <nav class="foot-links" aria-label="Footer">
         <div><span>Product</span><a href="#models">Models</a><a href="#verify">Verify a receipt</a><a href="#pricing">Pricing</a><a href="/app/">Account app</a></div>
         <div><span>Developers</span><a href="/docs/">Documentation</a><a href="/docs/#quickstart">Quickstart</a><a href="/llms.txt">llms.txt</a><a href="https://www.npmjs.com/package/@envolvr/sdk">SDK on npm</a></div>
-        <div><span>Protocol</span><a href="#how">How it works</a><a href="#privacy">Why private inference</a><a href="/app/">Stake NVLR</a><a href="https://github.com/envolvr/envolvr">GitHub</a></div>
+        <div><span>Protocol</span><a href="#how">How it works</a><a href="#privacy">Why private inference</a><a href="/token/">NVLR token</a><a href="https://github.com/envolvr/envolvr">GitHub</a></div>
       </nav>
     </div>
     <div class="foot-legal">
       <span class="foot-legal-links">© 2026 envolvr<a href="/terms/">Terms of Service</a><a href="/privacy/">Privacy Policy</a></span>
-      <p>envolvr is a pre-launch protocol. Nothing on this site is financial, legal or investment advice, and nothing here is an offer to sell securities. NVLR is intended as prepaid access to compute. Availability is restricted by jurisdiction and any token launch is subject to legal review. The attestation guarantee is limited to what is described in the protocol spec.</p>
+      <p>Nothing on this site is financial, legal or investment advice, and nothing here is an offer to sell securities. NVLR is intended as prepaid access to compute. Availability may be restricted in some jurisdictions. The attestation guarantee is limited to what is described in the protocol spec.</p>
     </div>
     <div class="foot-mark" aria-hidden="true">
       <svg viewBox="0 0 24 24"><path d="M12 2.5l8.5 4.8v9.4L12 21.5l-8.5-4.8V7.3z" fill="none" stroke="#0f1110" stroke-width="2.4" stroke-linejoin="round"/><path d="M7.8 10.4l4.2 3.4 4.2-3.4" fill="none" stroke="#0f1110" stroke-width="2.4" stroke-linejoin="round"/></svg>
@@ -403,7 +406,7 @@
 </footer>
 
 </div>
-<script src="main.js?v=20261001r"></script>
-<script type="module" src="js/site-verify.js?v=20261001r"></script>
+<script src="main.js?v=20261001s"></script>
+<script type="module" src="js/site-verify.js?v=20261001s"></script>
 </body>
 </html>

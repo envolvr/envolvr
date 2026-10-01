@@ -1,6 +1,6 @@
 # envolvr
 
-> Private, verifiable AI inference for agents on Robinhood Chain. An OpenAI-compatible API that runs inside hardware-attested enclaves (Intel TDX gateway, confidential-GPU providers). Every response comes with a signed receipt (model, attested provider session, request and response commitments, amount billed), and receipts are anchored on Robinhood Chain every 10 minutes. Testnet.
+> Private, verifiable AI inference for agents on Robinhood Chain. An OpenAI-compatible API that runs inside hardware-attested enclaves (Intel TDX gateway, confidential-GPU providers). Every response comes with a signed receipt (model, attested provider session, request and response commitments, amount billed), and receipts are anchored on Robinhood Chain every 10 minutes.
 
 ## Endpoints
 
@@ -51,15 +51,19 @@ payer = "sha256:" + hex(sha256("billing.payer.v1:" + hex(sha256(api_key)) + ":" 
 - Anchor: digest = "0x" + hex(sha256(JCS(receipt))) (RFC 8785). GET https://auth.envolvr.xyz/receipts/<digest>/proof -> {status, batchIndex, leafIndex, root, proof, txHash}. Then call ReceiptAnchor.verifyReceipt(providerId, batchIndex, digest, proof) -> true. Anchored in 10-minute UTC slots, seconds after each slot ends.
 - The SDK does all of it: `npx @envolvr/sdk verify --last` (npm package @envolvr/sdk; also signin, deposit, chat, close). Always use the scoped name with npx.
 
-## Robinhood Chain testnet (chain id 46630)
+## Robinhood Chain (chain id 4663)
 
-- RPC: https://rpc.testnet.chain.robinhood.com/rpc
-- USDG (test token, open mint(address,uint256)): 0xF7326a325aED45a1BF5D1268982f519BeCe941b6
-- CreditVault: 0x2aaB804f3eB6B436CB542d56D171d020bC2d7c51
-- NVLR (test token): 0xC6cc1Df277d9d95ebFbCd4B9DC90804E491dB15a
-- StakingAllowance: 0xFA4296E49055185aD188fd64c9af28F7Db1135F4
-- ReceiptAnchor: 0xff179938C830134D8E2922dAe7e16Ee4F0E33853
+- RPC: https://rpc.mainnet.chain.robinhood.com
+- Explorer: https://robinhoodchain.blockscout.com
+- USDG, CreditVault, NVLR, StakingAllowance, ReceiptAnchor: addresses at https://envolvr.xyz/token/#contracts
 - Gateway provider id: 0x86b99987cd8f8ebddc2dd0efa61ed52b5db594430f12446db424da0d9c4b831f
+
+## NVLR
+
+- ERC-20 on Robinhood Chain, 1,000,000,000 supply. Staking is optional: USDG pay-per-request needs no token.
+- Stake NVLR in StakingAllowance for a daily allowance: budget(day) * stake / totalStake, from a snapshot at 00:00 UTC, spent before the USDG balance. Unused allowance does not roll over; unstaking has a cooldown.
+- The daily budget is funded by NVLR trading fees and written to the staking contract before each day starts.
+- Details: https://envolvr.xyz/token/
 
 ## Pricing
 

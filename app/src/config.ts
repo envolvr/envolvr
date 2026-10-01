@@ -1,4 +1,4 @@
-// Robinhood Chain testnet until mainnet. The same values as @envolvr/sdk's TESTNET.
+// Robinhood Chain mainnet. The same values as @envolvr/sdk's MAINNET.
 import { defineChain } from 'viem';
 
 /** The control plane. A page may name another one in <meta name="envolvr-control"> (local testing). */
@@ -8,19 +8,21 @@ export const CONTROL = document.querySelector('meta[name="envolvr-control"]')?.g
 export const WALLETCONNECT_PROJECT_ID = '973fa1356cbee48ff81102e84d7b9a60';
 
 export const chain = defineChain({
-  id: 46630,
-  name: 'Robinhood Chain Testnet',
+  id: 4663,
+  name: 'Robinhood Chain',
   nativeCurrency: { name: 'Ether', symbol: 'ETH', decimals: 18 },
-  rpcUrls: { default: { http: ['https://rpc.testnet.chain.robinhood.com/rpc'] } },
-  blockExplorers: { default: { name: 'Explorer', url: 'https://explorer.testnet.chain.robinhood.com' } },
-  testnet: true,
+  rpcUrls: { default: { http: ['https://rpc.mainnet.chain.robinhood.com'] } },
+  blockExplorers: { default: { name: 'Blockscout', url: 'https://robinhoodchain.blockscout.com' } },
 });
 
+// LAUNCH: fill in the mainnet addresses (also site/data/network.json and the docs' contract table).
+const PENDING = '0x0000000000000000000000000000000000000000';
 export const contracts = {
-  usdg: '0xF7326a325aED45a1BF5D1268982f519BeCe941b6',
-  creditVault: '0x2aaB804f3eB6B436CB542d56D171d020bC2d7c51',
-  nvlr: '0xC6cc1Df277d9d95ebFbCd4B9DC90804E491dB15a',
-  staking: '0xFA4296E49055185aD188fd64c9af28F7Db1135F4',
+  usdg: PENDING,
+  creditVault: PENDING,
+  nvlr: PENDING,
+  staking: PENDING,
 } as const;
 
-export const TESTNET = true;
+/** Testnet adds the test USDG mint button. */
+export const TESTNET = false;
