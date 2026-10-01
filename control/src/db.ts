@@ -331,6 +331,44 @@ export class Store {
     }
   }
 
+  /**
+   * What the vault's USDG owes to users, in micro-USD: positive balances, refunds
+   * not yet paid (pending or held), and deposits held by screening (in full: a
+   * held deposit is either credited net of its fee or returned whole). Negative
+   * balances, where a request cost more than was left, are reported apart and
+   * never offset what is owed to others.
+   */
+  liabilities(): {
+    balancesMicros: bigint; overdrawnMicros: bigint; refundsPendingMicros: bigint; refundsHeldMicros: bigint;
+    depositsHeldMicros: bigint; owedMicros: bigint;
+  } {
+    const one = (sql: string) => BigInt((this.db.prepare(sql).get() as { v: number | null }).v ?? 0);
+    const balancesMicros = one('SELECT SUM(MAX(balance_micros, 0)) AS v FROM accounts');
+    const overdrawnMicros = -one('SELECT SUM(MIN(balance_micros, 0)) AS v FROM accounts');
+    const refundsPendingMicros = one("SELECT SUM(amount_micros) AS v FROM refunds WHERE status = 'pending'");
+    const refundsHeldMicros = one("SELECT SUM(amount_micros) AS v FROM refunds WHERE status = 'held'");
+    const depositsHeldMicros = one('SELECT SUM(amount_micros) AS v FROM deposits WHERE held = 1');
+    return {
+      balancesMicros, overdrawnMicros, refundsPendingMicros, refundsHeldMicros, depositsHeldMicros,
+      owedMicros: balancesMicros + refundsPendingMicros + refundsHeldMicros + depositsHeldMicros,
+    };
+  }
+
+  /**
+   * What was billed per upstream (the route id's prefix, `<upstream>:<model>`) per
+   * UTC day since `since` (unix seconds), allowance and balance together. Billed
+   * prices are the suppliers' list prices plus any configured margin, so this is
+   * an upper bound on what each supplier was paid.
+   */
+  spendByUpstream(since: number): { upstream: string; dayStart: number; billedMicros: bigint; requests: number }[] {
+    const rows = this.db.prepare(`SELECT substr(route, 1, instr(route, ':') - 1) AS upstream,
+        (created_at / 86400) * 86400 AS day_start, SUM(cost_micros) AS billed, COUNT(*) AS requests
+      FROM usage_reports WHERE created_at >= ? AND route IS NOT NULL AND instr(route, ':') > 0 AND cost_micros > 0
+      GROUP BY upstream, day_start ORDER BY day_start, upstream`).all(since) as
+      { upstream: string; day_start: number; billed: number; requests: number }[];
+    return rows.map((r) => ({ upstream: r.upstream, dayStart: r.day_start, billedMicros: BigInt(r.billed), requests: r.requests }));
+  }
+
   /** Record receipt digests (0x + 64 lowercase hex). Returns how many were new. */
   addReceiptDigests(digests: string[], now: number): number {
     const insert = this.db.prepare('INSERT OR IGNORE INTO receipt_digests (digest, received_at) VALUES (?, ?)');
