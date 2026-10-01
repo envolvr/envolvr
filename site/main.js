@@ -2,103 +2,64 @@
   var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   var $ = function (sel, root) { return (root || document).querySelector(sel); };
   var $$ = function (sel, root) { return Array.prototype.slice.call((root || document).querySelectorAll(sel)); };
+  var esc = function (s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); };
 
-  // ---- menu: a bottom sheet below 1280px ----
+  // ---- menu: a dropdown card under the header below 1000px ----
   var toggle = $('#navToggle');
-  var sheet = $('#sheet');
-  function setSheet(open) {
-    if (open) {
-      sheet.hidden = false;
-      requestAnimationFrame(function () { requestAnimationFrame(function () { sheet.classList.add('open'); }); });
-    } else {
-      sheet.classList.remove('open');
-      setTimeout(function () { if (!sheet.classList.contains('open')) sheet.hidden = true; }, reduce ? 0 : 300);
-    }
+  var menu = $('#menu');
+  function setMenu(open) {
+    menu.hidden = !open;
     toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
-    document.documentElement.style.overflow = open ? 'hidden' : '';
   }
-  if (toggle && sheet) {
-    toggle.addEventListener('click', function () { setSheet(sheet.hidden); });
-    $$('[data-sheet-close], a', sheet).forEach(function (el) { el.addEventListener('click', function () { setSheet(false); }); });
-    document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && !sheet.hidden) setSheet(false); });
-  }
+  toggle.addEventListener('click', function () { setMenu(menu.hidden); });
+  $$('a', menu).forEach(function (a) { a.addEventListener('click', function () { setMenu(false); }); });
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && !menu.hidden) { setMenu(false); toggle.focus(); } });
+  window.addEventListener('resize', function () { if (window.innerWidth >= 1000 && !menu.hidden) setMenu(false); });
 
-  // ---- copy buttons ----
-  function flash(btn, label) {
-    var old = btn.textContent;
-    btn.classList.add('done');
-    if (label) btn.textContent = label;
-    setTimeout(function () { btn.classList.remove('done'); if (label) btn.textContent = old; }, 1400);
+  // ---- copy buttons: the label reads "Copied" for 1.4s ----
+  function copy(text, btn) {
+    var done = function () {
+      var old = btn.textContent;
+      btn.textContent = 'Copied';
+      setTimeout(function () { btn.textContent = old; }, 1400);
+    };
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(done, function () {});
   }
-  function copy(text, btn, label) {
-    if (navigator.clipboard) navigator.clipboard.writeText(text).then(function () { flash(btn, label); }, function () {});
-  }
-  $$('[data-copy]').forEach(function (btn) {
-    btn.addEventListener('click', function () { copy(btn.getAttribute('data-copy'), btn, 'Copied'); });
-  });
-  var share = $('[data-share]');
-  if (share) share.addEventListener('click', function () { copy(location.origin + location.pathname, share); });
+  $$('[data-copy]').forEach(function (b) { b.addEventListener('click', function () { copy(b.getAttribute('data-copy'), b); }); });
 
-  // ---- code tabs ----
-  var code = $('#code');
-  if (code) {
-    var langTabs = $$('[data-lang]', $('.tabs', code));
-    langTabs.forEach(function (tab) {
-      tab.addEventListener('click', function () {
-        var lang = tab.getAttribute('data-lang');
-        langTabs.forEach(function (t) { t.setAttribute('aria-selected', t === tab ? 'true' : 'false'); });
-        $$('pre[data-lang]', code).forEach(function (pre) { pre.hidden = pre.getAttribute('data-lang') !== lang; });
+  // ---- numbered sidebar follows the section in view ----
+  var tocLinks = $$('.toc a');
+  if ('IntersectionObserver' in window && tocLinks.length) {
+    var tocIo = new IntersectionObserver(function (entries) {
+      entries.forEach(function (e) {
+        if (!e.isIntersecting) return;
+        tocLinks.forEach(function (a) { a.classList.toggle('on', a.getAttribute('href') === '#' + e.target.id); });
       });
-    });
-    var copyCode = $('[data-copy-code]', code);
-    copyCode.addEventListener('click', function () {
-      var pre = $$('pre[data-lang]', code).filter(function (p) { return !p.hidden; })[0];
-      copy(pre.textContent, copyCode, 'Copied');
-    });
+    }, { rootMargin: '-35% 0px -60% 0px' });
+    tocLinks.forEach(function (a) { var s = $(a.getAttribute('href')); if (s) tocIo.observe(s); });
   }
 
-  // ---- side nav follows the section in view; back-to-top button ----
-  var sideLinks = $$('.sidenav a');
-  var toTop = $('.to-top');
-  function onScroll() {
-    var y = window.scrollY + window.innerHeight * 0.3;
-    var current = null;
-    sideLinks.forEach(function (a) {
-      var sec = document.querySelector(a.getAttribute('href'));
-      if (sec && sec.getBoundingClientRect().top + window.scrollY <= y) current = a;
-    });
-    sideLinks.forEach(function (a) { a.classList.toggle('on', a === current); });
-    if (toTop) toTop.classList.toggle('on', window.scrollY > 900);
-  }
-  window.addEventListener('scroll', onScroll, { passive: true });
-  onScroll();
-
-  // ---- privacy: the prompt seals as its card scrolls up the screen ----
+  // ---- privacy: hosted model vs envolvr; the prompt seals when the card comes into view ----
   var seal = $('#seal');
   if (seal) {
     var textEl = $('[data-seal-text]', seal);
     var plain = textEl.textContent;
     var HEX = '0123456789abcdef';
     // Uniform groups of four, so no word length shows through.
-    var cipher = plain.split('').map(function (ch, i) {
-      if (i % 5 === 4) return ' ';
-      return HEX[(i * 7 + ch.charCodeAt(0) * 13) % 16];
-    });
-    var order = plain.split('').map(function (_, i) { return i; }).sort(function (a, b) {
-      return ((a * 37) % 101) - ((b * 37) % 101);
-    });
+    var cipher = plain.split('').map(function (ch, i) { return i % 5 === 4 ? ' ' : HEX[(i * 7 + ch.charCodeAt(0) * 13) % 16]; });
+    var order = plain.split('').map(function (_, i) { return i; }).sort(function (a, b) { return ((a * 37) % 101) - ((b * 37) % 101); });
     var rank = [];
     order.forEach(function (idx, r) { rank[idx] = r / order.length; });
     var bar = $('[data-seal-bar]', seal);
-    var state = $('[data-seal-state]', seal);
+    var badge = $('[data-seal-state]', seal);
     var note = $('[data-seal-note]', seal);
     var who = $('[data-seal-who]', seal);
     var viewBtns = $$('[data-view]', seal);
-    var metas = $$('dd[data-a]', seal);
+    var metas = $$('b[data-a]', seal);
     var last = -1;
-    var manual = false;
+    var touched = false;
+    var anim = 0;
 
-    function esc(ch) { return ch === '&' ? '&amp;' : ch === '<' ? '&lt;' : ch; }
     function render(p) {
       p = Math.max(0, Math.min(1, p));
       if (Math.abs(p - last) < 0.004) return;
@@ -113,217 +74,237 @@
       var sealed = p >= 0.999;
       var half = p > 0.5;
       seal.classList.toggle('sealed', sealed);
-      state.className = 'vstate' + (sealed ? ' ok' : p > 0 ? ' running' : '');
-      state.textContent = sealed ? 'sealed' : p > 0 ? 'sealing' : 'readable';
-      who.textContent = half ? 'What the envolvr operator sees' : 'What a hosted model reads';
-      note.textContent = sealed
+      badge.className = 'badge ' + (half ? 'ok' : 'badge-red');
+      $('span', badge).textContent = sealed ? 'sealed' : p > 0 ? 'sealing' : 'readable';
+      who.textContent = half ? 'What the envolvr operator sees' : 'What the hosted provider sees';
+      note.textContent = half
         ? 'ⓘ The operator sees ciphertext, a model name and a measurement. The reasoning stays sealed.'
-        : 'ⓘ Position, intent and timing, readable at the point of inference.';
-      metas.forEach(function (dd) { dd.textContent = half ? dd.getAttribute('data-b') : dd.getAttribute('data-a'); });
+        : 'ⓘ Position, intent and timing, all readable at the point of inference.';
+      metas.forEach(function (b) { b.textContent = half ? b.getAttribute('data-b') : b.getAttribute('data-a'); });
       viewBtns.forEach(function (b) { b.setAttribute('aria-pressed', (b.getAttribute('data-view') === 'sealed') === half ? 'true' : 'false'); });
     }
-
-    // Sealed by the time the card's top reaches the upper third of the screen.
-    function progress() {
-      if (manual || reduce) return;
-      var r = seal.getBoundingClientRect();
-      var vh = window.innerHeight;
-      render((vh * 0.85 - r.top) / (vh * 0.55));
+    function animateTo(target) {
+      cancelAnimationFrame(anim);
+      if (reduce) { render(target); return; }
+      var from = last < 0 ? 0 : last;
+      var t0 = performance.now();
+      (function step(now) {
+        var k = Math.min(1, (now - t0) / 1000);
+        render(from + (target - from) * k);
+        if (k < 1) anim = requestAnimationFrame(step);
+      })(t0);
     }
-    window.addEventListener('scroll', progress, { passive: true });
-    window.addEventListener('resize', progress);
-    progress();
-    if (reduce) render(0);
-
+    render(0);
     viewBtns.forEach(function (b) {
-      b.addEventListener('click', function () {
-        var target = b.getAttribute('data-view') === 'sealed' ? 1 : 0;
-        manual = true;
-        if (reduce) { render(target); return; }
-        var from = last < 0 ? 0 : last;
-        var t0 = performance.now();
-        (function step(now) {
-          var k = Math.min(1, (now - t0) / 900);
-          render(from + (target - from) * k);
-          if (k < 1) requestAnimationFrame(step);
-        })(t0);
-      });
+      b.addEventListener('click', function () { touched = true; animateTo(b.getAttribute('data-view') === 'sealed' ? 1 : 0); });
     });
+    if (reduce || !('IntersectionObserver' in window)) {
+      render(1);
+    } else {
+      new IntersectionObserver(function (entries, obs) {
+        if (!entries[0].isIntersecting) return;
+        obs.disconnect();
+        setTimeout(function () { if (!touched) animateTo(1); }, 450);
+      }, { threshold: 0.55 }).observe(seal);
+    }
   }
 
   // ---- charts, built from the model table ----
   var table = $('#modelTable');
   if (table) {
-    var COLORS = { phala: 'var(--t1)', near: 'var(--t2)', chutes: 'var(--t3)' };
     var rows = $$('tbody tr', table).map(function (tr) {
       var d = tr.dataset;
       var inp = parseFloat(d['in']);
       var out = parseFloat(d.out);
       var blend = (3 * inp + out) / 4;
       $('[data-blend]', tr).textContent = '$' + blend.toFixed(2);
-      return { tr: tr, model: d.model, label: d.label, sup: d.sup, supName: d.supName, in: inp, out: out, blend: blend };
+      return { tr: tr, label: d.label, sup: d.sup, supName: d.supName, in: inp, out: out, blend: blend };
     });
+    var money = function (v) { return '$' + v.toFixed(2); };
+    var tile = function (sup) { return '<span class="tile ' + sup + '"><svg aria-hidden="true"><use href="images/suppliers.svg#' + sup + '"/></svg></span>'; };
 
-    // A round step, so the gridlines sit at 0, 0.5, 1, 1.5 … and never 0.63.
-    function axis(v) {
-      var steps = [0.1, 0.2, 0.25, 0.5, 1, 2, 5];
-      for (var i = 0; i < steps.length; i++) if (Math.ceil(v / steps[i]) <= 5) return { step: steps[i], n: Math.ceil(v / steps[i]) };
-      return { step: 10, n: Math.ceil(v / 10) };
+    // Bars reach 84% of the plot at the highest value across every endpoint, so filters keep the scale.
+    function draw(el, metric, list, animate) {
+      var max = Math.max.apply(null, rows.map(function (r) { return r[metric]; }));
+      var shown = list.slice().sort(function (a, b) { return a[metric] - b[metric]; });
+      el.innerHTML = '<div class="plot">' + shown.map(function (r) {
+        return '<div class="col" title="' + esc(r.label + ' · ' + r.supName + ' · input ' + money(r.in) + ', output ' + money(r.out)) + '">'
+          + '<span class="val">' + money(r[metric]) + '</span>'
+          + '<span class="bar" style="--c:var(--' + { phala: 't1', near: 't2', chutes: 't3' }[r.sup] + ')" data-h="' + Math.max(2, r[metric] / max * 84).toFixed(2) + '%"></span></div>';
+      }).join('') + '</div><div class="labels" aria-hidden="true">' + shown.map(function (r) {
+        return '<div class="lcol">' + tile(r.sup) + '<span>' + esc(r.label) + '</span></div>';
+      }).join('') + '</div>';
+      el.setAttribute('role', 'img');
+      el.setAttribute('aria-label', shown.map(function (r) { return r.label + ' on ' + r.supName + ' ' + money(r[metric]); }).join(', '));
+      var bars = $$('.bar', el);
+      var set = function () { bars.forEach(function (b) { b.style.height = b.getAttribute('data-h'); }); };
+      if (animate && !reduce) requestAnimationFrame(function () { requestAnimationFrame(set); });
+      else { bars.forEach(function (b) { b.style.transition = 'none'; }); set(); }
     }
-    function money(v) { return '$' + v.toFixed(2); }
-
-    function makeChart(el) {
-      el.innerHTML = '<div class="chart-in"><div class="chart-plot"><div class="gridlines"></div><div class="bars"></div></div><div class="tip" role="tooltip"></div></div>';
-      var grid = $('.gridlines', el);
-      var barsEl = $('.bars', el);
-      var tip = $('.tip', el);
-      var host = $('.chart-in', el);
-      var bars = {};
-
-      function showTip(r, b) {
-        tip.innerHTML = '<b>' + r.label + ' · ' + r.supName + '</b>'
-          + '<div><span>Input</span><span>' + money(r.in) + '</span></div>'
-          + '<div><span>Output</span><span>' + money(r.out) + '</span></div>'
-          + '<div><span>Blended 3:1</span><span>' + money(r.blend) + '</span></div>';
-        var hr = host.getBoundingClientRect();
-        var br = b.getBoundingClientRect();
-        var top = $('i', b).getBoundingClientRect().top;
-        var x = Math.max(96, Math.min(hr.width - 96, br.left + br.width / 2 - hr.left));
-        tip.style.left = x + 'px';
-        tip.style.top = (top - hr.top - 24) + 'px';
-        tip.classList.add('on');
-      }
-      function hideTip() { tip.classList.remove('on'); }
-
-      return function draw(metric, sup) {
-        var shown = rows.filter(function (r) { return sup === 'all' || r.sup === sup; })
-          .sort(function (a, b) { return a[metric] - b[metric]; });
-        var ax = axis(Math.max.apply(null, shown.map(function (r) { return r[metric]; })));
-        var max = ax.step * ax.n;
-        grid.innerHTML = '';
-        for (var g = 0; g <= ax.n; g++) {
-          var line = document.createElement('i');
-          line.style.bottom = (g / ax.n * 100) + '%';
-          if (g === 0) line.className = 'base';
-          grid.appendChild(line);
-        }
-        $$('.bar', barsEl).forEach(function (b) { b.style.display = 'none'; });
-        shown.forEach(function (r) {
-          var key = r.model + '@' + r.sup;
-          var b = bars[key];
-          if (!b) {
-            b = document.createElement('button');
-            b.type = 'button';
-            b.className = 'bar';
-            b.style.setProperty('--c', COLORS[r.sup]);
-            b.style.setProperty('--h', '0%');
-            b.innerHTML = '<span class="v"></span><i></i><span class="x"><svg aria-hidden="true"><use href="images/suppliers.svg#' + r.sup + '"/></svg><span>' + r.label + '</span></span>';
-            b.addEventListener('mouseenter', function () { showTip(r, b); });
-            b.addEventListener('focus', function () { showTip(r, b); });
-            b.addEventListener('mouseleave', hideTip);
-            b.addEventListener('blur', hideTip);
-            bars[key] = b;
-          }
-          barsEl.appendChild(b);
-          b.style.display = '';
-          b.setAttribute('aria-label', r.label + ' on ' + r.supName + ': ' + money(r[metric]) + ' per 1M tokens');
-          $('.v', b).textContent = money(r[metric]);
-          var h = (r[metric] / max * 100).toFixed(2) + '%';
-          requestAnimationFrame(function () { requestAnimationFrame(function () { b.style.setProperty('--h', h); }); });
-        });
-      };
-    }
-
     function whenVisible(el, fn) {
-      if (!('IntersectionObserver' in window) || reduce) { fn(); return; }
+      if (reduce || !('IntersectionObserver' in window)) { fn(false); return; }
       new IntersectionObserver(function (entries, obs) {
         if (!entries[0].isIntersecting) return;
         obs.disconnect();
-        fn();
+        fn(true);
       }, { threshold: 0.2 }).observe(el);
     }
-
     $$('[data-chart="in"], [data-chart="out"]').forEach(function (el) {
-      var draw = makeChart(el);
-      whenVisible(el, function () { draw(el.getAttribute('data-chart'), 'all'); });
+      whenVisible(el, function (a) { draw(el, el.getAttribute('data-chart'), rows, a); });
     });
 
     var mainEl = $('[data-chart="main"]');
     if (mainEl) {
-      var drawMain = makeChart(mainEl);
       var metric = 'blend';
-      var sup = 'all';
+      var off = {};
       var titles = { blend: 'Blended price per 1M tokens', in: 'Input price per 1M tokens', out: 'Output price per 1M tokens' };
       var subs = {
         blend: 'USD per 1M tokens, 3 parts input to 1 part output · Lower is better',
         in: 'USD per 1M input tokens · Lower is better',
         out: 'USD per 1M output tokens · Lower is better',
       };
-      var redraw = function () {
-        drawMain(metric, sup);
+      var redraw = function (animate) {
+        var shown = rows.filter(function (r) { return !off[r.sup]; });
+        draw(mainEl, metric, shown, animate);
         $('[data-chart-title]').textContent = titles[metric];
         $('[data-chart-sub]').textContent = subs[metric];
-        rows.forEach(function (r) { r.tr.hidden = !(sup === 'all' || r.sup === sup); });
+        $('[data-count]').textContent = shown.length + ' of ' + rows.length + ' endpoints';
+        var tbody = $('tbody', table);
+        shown.slice().sort(function (a, b) { return a[metric] - b[metric]; }).forEach(function (r) { tbody.appendChild(r.tr); });
+        rows.forEach(function (r) { r.tr.hidden = !!off[r.sup]; });
       };
       $$('[data-metric]').forEach(function (t, _, all) {
         t.addEventListener('click', function () {
           metric = t.getAttribute('data-metric');
           all.forEach(function (x) { x.setAttribute('aria-selected', x === t ? 'true' : 'false'); });
-          redraw();
+          redraw(true);
         });
       });
-      var select = $('[data-sup-select]');
-      select.addEventListener('change', function () { sup = select.value; redraw(); });
+      $$('[data-sup]', $('.chips')).forEach(function (c) {
+        c.addEventListener('click', function () {
+          var s = c.getAttribute('data-sup');
+          off[s] = !off[s];
+          c.setAttribute('aria-pressed', off[s] ? 'false' : 'true');
+          redraw(true);
+        });
+      });
       whenVisible(mainEl, redraw);
     }
   }
 
-  // ---- how it works: one request, hop by hop ----
-  var flow = $('#flow');
-  if (flow) {
-    var STEPS = [
-      { what: 'The client checks the gateway’s attestation quote against a known build, then encrypts the prompt to a key that exists only inside that enclave.',
-        proof: 'The enclave is genuine and runs a measured, public build.' },
-      { what: 'envolvr’s gateway opens the request inside Intel TDX, verifies the GPU provider’s attestation, and forwards only over a channel bound to it.',
-        proof: 'Nothing outside the enclaves sees plaintext. That includes us.' },
-      { what: 'The model runs on a confidential GPU that the gateway verified before it forwarded a single byte.',
-        proof: 'The operator holds the hardware, not the key.' },
-      { what: 'The gateway signs the model, the attested session, commitments to the exact request and response, and the bill.',
-        proof: 'Every response is bound to its model and its attested provider.' },
-      { what: 'Receipt digests are batched into a Merkle root on Robinhood Chain every ten minutes.',
-        proof: 'Anyone can check it, any time, without trusting envolvr.' },
-    ];
-    var tabs = $$('.node', flow);
-    var nodes = $$('.flow-node', flow);
-    var what = $('[data-flow-what]', flow);
-    var proofEl = $('[data-flow-proof]', flow);
-    var k = $('[data-flow-k]', flow);
-    var lineI = $('[data-flow-line]', flow);
-    var packet = $('[data-flow-packet]', flow);
-    var cur = 0;
-    var timer = null;
-    var auto = !reduce;
+  // ---- how it works: tabs and a row of hops on wide screens, an accordion on phones ----
+  var HOPS = [
+    ['Agent', 'sdk · verifying proxy', '◉', 'The SDK and the verifying proxy pull the gateway’s attestation quote and check it against a known build. If it does not match, the prompt never leaves the machine.', 'You are talking to the measured gateway, not an impostor.'],
+    ['Gateway', 'intel tdx', '⬡', 'envolvr’s gateway opens the request inside Intel TDX, verifies the GPU provider’s attestation, and forwards only over a channel bound to it.', 'Nothing outside the enclaves sees plaintext. That includes us.'],
+    ['GPU enclave', 'nvidia cc', '▣', 'Inference runs on a GPU TEE the gateway verified before forwarding a single byte. The operator holds the machine, not the data.', 'The session that served the model is attested, and the receipt cites it.'],
+    ['Receipt', 'ed25519 · signed', '▤', 'The gateway signs a receipt that binds the model, the attested session, commitments to the exact request and response, and the bill.', 'Change one character of the exchange and verification fails.'],
+    ['Robinhood Chain', 'merkle anchor', '⛬', 'Receipt digests go on chain in Merkle batches every ten minutes, with an inclusion proof for every receipt.', 'The full receipt history stays auditable by anyone.'],
+  ];
+  var hopTabs = $('[data-hop-tabs]');
+  var hopRow = $('[data-hop-row]');
+  var hopList = $('[data-hop-list]');
+  if (hopTabs && hopRow && hopList) {
+    var hop = 1;
+    hopTabs.innerHTML = HOPS.map(function (h, i) { return '<button type="button" role="tab" data-hop="' + i + '">' + esc(h[0]) + '</button>'; }).join('');
+    hopRow.innerHTML = HOPS.map(function (h, i) {
+      return '<div class="hop">' + (i < 4 ? '<span class="link"></span>' : '')
+        + '<button class="hop-box" type="button" data-hop="' + i + '" aria-label="' + esc(h[0]) + '">' + h[2] + '</button>'
+        + '<span class="name">' + esc(h[0]) + '</span><span class="tech">' + esc(h[1]) + '</span></div>';
+    }).join('');
+    hopList.innerHTML = HOPS.map(function (h, i) {
+      return '<div class="hopi" data-i="' + i + '"><div class="hopi-rail"><i></i><button class="hop-box" type="button" data-hop="' + i + '" aria-label="' + esc(h[0]) + '">' + h[2] + '</button><i></i></div>'
+        + '<div class="hopi-main"><button class="hopi-toggle" type="button" data-hop="' + i + '" aria-expanded="false"><span><b>' + esc(h[0]) + '</b><small>' + esc(h[1]) + '</small></span><span class="chev" aria-hidden="true">▾</span></button>'
+        + '<div class="hopi-body"><div><span class="kicker">HOP ' + (i + 1) + ' OF 5 · WHAT HAPPENS</span><p>' + esc(h[3]) + '</p></div>'
+        + '<div><span class="kicker">WHAT IT PROVES</span><p class="proof">' + esc(h[4]) + '</p></div></div></div></div>';
+    }).join('');
+    var showHop = function (i) {
+      hop = i;
+      $$('button', hopTabs).forEach(function (b, j) { b.setAttribute('aria-selected', j === i ? 'true' : 'false'); });
+      $$('.hop', hopRow).forEach(function (el, j) {
+        var box = $('.hop-box', el);
+        box.classList.toggle('on', j === i);
+        box.classList.toggle('done', j < i);
+        var link = $('.link', el);
+        if (link) link.classList.toggle('done', j < i);
+      });
+      $('[data-hop-k]').textContent = 'HOP ' + (i + 1) + ' OF 5 · WHAT HAPPENS';
+      $('[data-hop-what]').textContent = HOPS[i][3];
+      $('[data-hop-proof]').textContent = HOPS[i][4];
+      $$('.hopi', hopList).forEach(function (el, j) {
+        el.classList.toggle('open', j === i);
+        $('.hopi-toggle', el).setAttribute('aria-expanded', j === i ? 'true' : 'false');
+        var box = $('.hop-box', el);
+        box.classList.toggle('on', j === i);
+        box.classList.toggle('done', j < i);
+        var rails = $$('.hopi-rail > i', el);
+        rails[0].className = j === 0 ? 'none' : j <= i ? 'done' : '';
+        rails[1].className = j === 4 ? 'none' : j < i ? 'done' : '';
+      });
+    };
+    $$('[data-hop]').forEach(function (b) { b.addEventListener('click', function () { showHop(+b.getAttribute('data-hop')); }); });
+    showHop(hop);
+  }
 
-    function show(i) {
-      cur = i;
-      tabs.forEach(function (t, j) { t.setAttribute('aria-selected', j === i ? 'true' : 'false'); });
-      nodes.forEach(function (n, j) { n.classList.toggle('on', j === i); n.classList.toggle('done', j < i); });
-      k.textContent = 'Hop ' + (i + 1) + ' of 5 · What happens';
-      what.textContent = STEPS[i].what;
-      proofEl.textContent = STEPS[i].proof;
-      lineI.style.width = (i / 4 * 100) + '%';
-      packet.style.left = (10 + i * 20) + '%';
-    }
-    function tick() { timer = setTimeout(function () { show((cur + 1) % 5); tick(); }, 3600); }
-    tabs.forEach(function (t, i) {
-      t.addEventListener('click', function () { auto = false; clearTimeout(timer); show(i); });
+  // ---- developers: code tabs, the base_url line highlighted ----
+  var CODE = {
+    Python: ['import os', 'from openai import OpenAI', '', 'client = OpenAI(', '    base_url="https://api.envolvr.xyz/v1",', '    api_key=os.environ["ENVOLVR_API_KEY"],', ')', 'r = client.chat.completions.with_raw_response.create(', '    model="z-ai/glm-5.3",', '    messages=[{"role": "user", "content": "Close the arb?"}],', ')', '# the signed receipt for this exact exchange', 'print(r.headers["x-receipt-id"])'],
+    TypeScript: ['import OpenAI from "openai";', '', 'const client = new OpenAI({', '  baseURL: "https://api.envolvr.xyz/v1",', '  apiKey: process.env.ENVOLVR_API_KEY,', '});', 'const { response } = await client.chat.completions', '  .create({ model: "z-ai/glm-5.3", messages: [{ role: "user", content: "Close the arb?" }] })', '  .withResponse();', '// the signed receipt for this exact exchange', 'console.log(response.headers.get("x-receipt-id"));'],
+    curl: ['curl https://api.envolvr.xyz/v1/chat/completions \\', '  -H "Authorization: Bearer $ENVOLVR_API_KEY" \\', '  -H "Content-Type: application/json" \\', '  -d \'{"model":"z-ai/glm-5.3","messages":[{"role":"user","content":"Close the arb?"}]}\' \\', '  -D - | grep x-receipt-id', '# the signed receipt for this exact exchange'],
+    CLI: ['$ npx @envolvr/sdk signin --save', '$ npx @envolvr/sdk deposit 10', '$ npx @envolvr/sdk chat "Close the arb?"', '$ npx @envolvr/sdk verify --last', '# signature, commitments, bill and anchor, checked locally'],
+  };
+  var codeTabs = $('[data-code-tabs]');
+  var codeLines = $('[data-code-lines]');
+  if (codeTabs && codeLines) {
+    var lang = 'Python';
+    codeTabs.innerHTML = Object.keys(CODE).map(function (k) { return '<button type="button" role="tab" data-lang="' + k + '">' + k + '</button>'; }).join('');
+    var showCode = function (k) {
+      lang = k;
+      $$('button', codeTabs).forEach(function (b) { b.setAttribute('aria-selected', b.getAttribute('data-lang') === k ? 'true' : 'false'); });
+      codeLines.innerHTML = CODE[k].map(function (t) {
+        var cls = /^\s*(#|\/\/)/.test(t) ? 'cm' : t.indexOf('api.envolvr.xyz/v1') >= 0 && t.indexOf('curl') !== 0 ? 'url' : '';
+        return '<div' + (cls ? ' class="' + cls + '"' : '') + '>' + (t ? esc(t) : ' ') + '</div>';
+      }).join('');
+    };
+    $$('button', codeTabs).forEach(function (b) { b.addEventListener('click', function () { showCode(b.getAttribute('data-lang')); }); });
+    showCode(lang);
+    var codeCopy = $('[data-copy-code]');
+    codeCopy.addEventListener('click', function () { copy(CODE[lang].join('\n'), codeCopy); });
+  }
+
+  // ---- scroll reveal: headings slide in from the left, cards rise; off under reduced motion ----
+  if (!reduce && Element.prototype.animate) {
+    var ease = 'cubic-bezier(.2,.7,.2,1)';
+    var h1 = $('#h1');
+    if (h1) h1.animate([{ opacity: 0, transform: 'translateY(18px)' }, { opacity: 1, transform: 'none' }], { duration: 900, easing: ease });
+    var items = new Map();
+    var add = function (el, from, delay) { if (!el) return; el.style.opacity = '0'; items.set(el, { from: from, delay: delay }); };
+    var reveal = function (el) {
+      var it = items.get(el);
+      if (!it) return;
+      items.delete(el);
+      var a = el.animate([{ opacity: 0, transform: it.from }, { opacity: 1, transform: 'none' }], { duration: 800, delay: it.delay, easing: ease, fill: 'backwards' });
+      el.style.opacity = '';
+      a.onfinish = function () { a.cancel(); };
+    };
+    $$('.sec').forEach(function (sec) {
+      var head = $('.sec-head', sec);
+      if (!head) return;
+      add($('h2', head), 'translateX(-56px)', 0);
+      add($('p', head), 'translateX(-28px)', 120);
+      var el = head.nextElementSibling;
+      var d = 220;
+      while (el) { add(el, 'translateY(28px)', d); d += 100; el = el.nextElementSibling; }
     });
-    show(0);
-    if ('IntersectionObserver' in window) {
-      new IntersectionObserver(function (entries) {
-        clearTimeout(timer);
-        if (entries[0].isIntersecting && auto) tick();
-      }, { threshold: 0.4 }).observe(flow);
-    }
+    var rio = 'IntersectionObserver' in window ? new IntersectionObserver(function (entries) {
+      entries.forEach(function (en) { if (en.isIntersecting) { reveal(en.target); rio.unobserve(en.target); } });
+    }, { rootMargin: '0px 0px -10% 0px' }) : null;
+    items.forEach(function (_, el) {
+      var r = el.getBoundingClientRect();
+      if (!rio || (r.top < window.innerHeight && r.bottom > 0)) reveal(el); else rio.observe(el);
+    });
+    // Fast scrolls and anchor jumps: reveal anything already above the fold.
+    window.addEventListener('scroll', function () {
+      items.forEach(function (_, el) { if (el.getBoundingClientRect().top < window.innerHeight) reveal(el); });
+    }, { passive: true });
   }
 })();

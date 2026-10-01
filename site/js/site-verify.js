@@ -1,79 +1,74 @@
 // Runs the receipt verifier (verifier.js, built from site/src/verifier.ts) for
-// the hero card and the "Verify" section. Every check happens in this browser.
-import { verify, parseBundle, digestOf } from './verifier.js?v=20261001h';
+// the receipt check card and the "Verify" section. Every check happens in this browser.
+import { verify, parseBundle, digestOf } from './verifier.js?v=20261001j';
 
 const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 const GATEWAY = 'https://api.envolvr.xyz';
 const sleep = (ms) => new Promise((r) => setTimeout(r, reduce ? 0 : ms));
 
 let samplePromise;
-const sample = () => (samplePromise ??= fetch('data/sample-receipt.json?v=20261001h').then((r) => r.json()));
+const sample = () => (samplePromise ??= fetch('data/sample-receipt.json?v=20261001j').then((r) => r.json()));
 
-/** Animate a verification run into a .vcard. Resolves to the verdict. */
-async function run(card, bundle, { pace = 260 } = {}) {
+function setBadge(el, cls, text) {
+  el.className = `badge ${cls}`;
+  el.querySelector('span').textContent = text;
+}
+
+/** Tick the rows of a card one by one as the checks come back. Resolves to the counts. */
+async function run(card, bundle, { pace, onTick }) {
   const rows = [...card.querySelectorAll('.vrow')];
-  const state = card.querySelector('[data-state]');
-  const defaults = rows.map((r) => r.dataset.dt ??= r.querySelector('.dt').textContent);
-  rows.forEach((r, i) => { r.className = 'vrow'; r.querySelector('.dt').textContent = defaults[i]; });
-  card.classList.remove('is-verified');
-  state.className = 'vstate running';
-  state.textContent = 'verifying';
-
+  const defaults = rows.map((r) => (r.dataset.dt ??= r.querySelector('.dt').textContent));
+  rows.forEach((r, i) => { r.classList.remove('pass', 'fail', 'skip'); r.querySelector('.dt').textContent = defaults[i]; });
   const results = [];
-  let i = 0;
   const started = performance.now();
-  rows[0]?.classList.add('wait');
   for await (const step of verify(bundle)) {
-    const row = card.querySelector(`.vrow[data-id="${step.id}"]`);
-    const wait = pace - (performance.now() - started - i * pace);
+    const wait = pace * (results.length + 1) - (performance.now() - started);
     if (wait > 0) await sleep(wait);
+    const row = card.querySelector(`.vrow[data-id="${step.id}"]`);
     if (row) {
-      row.className = `vrow ${step.status}`;
+      row.classList.add(step.status);
       row.querySelector('.dt').textContent = step.detail;
       row.title = step.detail;
     }
     results.push(step);
-    i += 1;
-    rows[i]?.classList.add('wait');
+    onTick?.(results.length, rows.length);
   }
-  await sleep(pace);
   const failed = results.filter((s) => s.status === 'fail').length;
   const passed = results.filter((s) => s.status === 'pass').length;
-  const verified = failed === 0 && passed > 0;
-  state.className = `vstate ${verified ? 'ok' : 'bad'}`;
-  state.textContent = verified ? 'verified' : `${failed} check${failed === 1 ? '' : 's'} failed`;
-  card.classList.toggle('is-verified', verified);
-  return { verified, failed, passed, skipped: results.length - failed - passed };
+  return { verified: failed === 0 && passed > 0, failed, passed, skipped: results.length - failed - passed };
 }
 
-// ---- hero: the sample receipt, verified when it scrolls into view ----
+// ---- receipt check card: the sample receipt, verified on load ----
 const hero = document.getElementById('heroCard');
 if (hero) {
+  const badge = hero.querySelector('[data-state]');
   const foot = hero.querySelector('[data-foot]');
+  const more = hero.querySelector('[data-more]');
+  const extras = [...hero.querySelectorAll('.vrow.extra')];
+  more.addEventListener('click', () => {
+    const show = extras[0].hidden;
+    extras.forEach((r) => { r.hidden = !show; });
+    more.textContent = show ? 'Show fewer' : '+ 2 more checks: billing, anchor';
+  });
   let busy = false;
   const go = async () => {
     if (busy) return;
     busy = true;
+    setBadge(badge, '', 'checking 0/7');
+    foot.textContent = 'Checking in your browser…';
     try {
-      const b = await sample();
-      const v = await run(hero, b, { pace: 300 });
+      const v = await run(hero, await sample(), { pace: 220, onTick: (n, total) => setBadge(badge, '', `checking ${n}/${total}`) });
+      setBadge(badge, v.verified ? 'ok' : 'bad', v.verified ? 'verified' : `${v.failed} failed`);
       foot.textContent = v.verified ? 'Verified in your browser, just now' : 'Checked in your browser, just now';
     } catch {
-      foot.textContent = 'Could not load the sample receipt.';
+      setBadge(badge, 'idle', 'unavailable');
+      foot.textContent = 'Could not load the sample receipt';
     } finally {
       busy = false;
     }
   };
   hero.querySelector('[data-rerun]').addEventListener('click', go);
-  if ('IntersectionObserver' in window) {
-    new IntersectionObserver((entries, obs) => {
-      if (!entries[0].isIntersecting) return;
-      obs.disconnect();
-      setTimeout(go, reduce ? 0 : 500);
-    }, { threshold: 0.4 }).observe(hero);
-  } else {
-    go();
-  }
+  go();
 }
 
 // ---- verify section ----
@@ -83,27 +78,24 @@ if (card && input) {
   const btn = document.getElementById('verifyRun');
   const hint = document.querySelector('[data-v-hint]');
   const err = document.querySelector('[data-v-err]');
-  const idEl = card.querySelector('[data-id]');
+  const title = card.querySelector('[data-id]');
   const digestEl = card.querySelector('[data-digest]');
-  const verdict = card.querySelector('[data-verdict]');
+  const badge = card.querySelector('[data-state]');
   const tabs = [...document.querySelectorAll('[data-src]')];
   const hints = {
     sample: 'A real testnet receipt for z-ai/glm-5.3, served on Phala. Try editing the bill.',
     own: 'Paste receipt.json, or a bundle with its report, request, response and session from envolvr-receipts/.',
   };
   let own = '';
+  setBadge(badge, 'idle', 'waiting');
 
-  const showSample = async () => {
-    const b = await sample();
-    input.value = JSON.stringify(b.receipt, null, 2);
-  };
+  const showSample = async () => { input.value = JSON.stringify((await sample()).receipt, null, 2); };
   tabs.forEach((t) => t.addEventListener('click', async () => {
-    const src = t.dataset.src;
     const was = tabs.find((x) => x.getAttribute('aria-selected') === 'true')?.dataset.src;
     if (was === 'own') own = input.value;
     tabs.forEach((x) => x.setAttribute('aria-selected', x === t ? 'true' : 'false'));
-    hint.textContent = hints[src];
-    if (src === 'sample') await showSample();
+    hint.textContent = hints[t.dataset.src];
+    if (t.dataset.src === 'sample') await showSample();
     else { input.value = own; input.focus(); }
   }));
 
@@ -112,9 +104,7 @@ if (card && input) {
   const bundleFrom = async (text) => {
     const b = parseBundle(text);
     const s = await sample();
-    if (b.receipt.receipt_id === s.receipt.receipt_id && !b.report) {
-      return { ...s, receipt: b.receipt };
-    }
+    if (b.receipt.receipt_id === s.receipt.receipt_id && !b.report) return { ...s, receipt: b.receipt };
     if (!b.report && typeof b.receipt.workload_keyset_digest === 'string') {
       // The live gateway's report, if it still serves the receipt's keyset.
       try {
@@ -133,16 +123,17 @@ if (card && input) {
     try {
       bundle = await bundleFrom(input.value);
     } catch (e) {
-      err.textContent = `Could not read that: ${e.message}`;
+      err.textContent = `receipt.json does not parse: ${e.message}`;
       err.hidden = false;
       return;
     }
     btn.disabled = true;
-    idEl.textContent = `${bundle.receipt.receipt_id} · ${bundle.receipt.model ?? ''}`;
-    try { digestEl.textContent = `${digestOf(bundle.receipt).slice(0, 10)}…`; } catch { digestEl.textContent = '—'; }
-    verdict.textContent = '';
-    const v = await run(card, bundle, { pace: 320 });
-    verdict.textContent = v.verified ? (v.skipped ? `VERIFIED · ${v.skipped} skipped` : 'VERIFIED') : 'FAILED';
+    title.textContent = 'Checking…';
+    try { const d = digestOf(bundle.receipt).replace(/^0x/, ''); digestEl.textContent = `${d.slice(0, 4)}…${d.slice(-4)}`; } catch { digestEl.textContent = '–'; }
+    setBadge(badge, '', 'checking');
+    const v = await run(card, bundle, { pace: 140 });
+    title.textContent = v.verified ? 'Receipt verified' : 'Receipt rejected';
+    setBadge(badge, v.verified ? 'ok' : 'bad', v.verified ? 'verified' : `${v.failed} failed`);
     btn.disabled = false;
   });
 
