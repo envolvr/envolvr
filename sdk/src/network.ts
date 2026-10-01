@@ -1,4 +1,4 @@
-// Where envolvr runs. Robinhood Chain testnet until mainnet.
+// Where envolvr runs: Robinhood Chain mainnet, and the testnet.
 
 export interface Network {
   /** OpenAI-compatible inference gateway (attested TDX VM). */
@@ -27,6 +27,29 @@ export const TESTNET: Network = {
   receiptAnchor: '0xff179938C830134D8E2922dAe7e16Ee4F0E33853',
   providerId: '0x86b99987cd8f8ebddc2dd0efa61ed52b5db594430f12446db424da0d9c4b831f',
 };
+
+/** The mainnet contract addresses are published at launch; until then they are this placeholder. */
+export const PENDING_ADDRESS = '0x0000000000000000000000000000000000000000';
+
+export const MAINNET: Network = {
+  gateway: 'https://api.envolvr.xyz',
+  control: 'https://auth.envolvr.xyz',
+  chainId: 4663,
+  rpcUrl: 'https://rpc.mainnet.chain.robinhood.com',
+  explorer: 'https://robinhoodchain.blockscout.com',
+  // LAUNCH: the mainnet addresses (also site/data/network.json and app/src/config.ts).
+  usdg: PENDING_ADDRESS,
+  creditVault: PENDING_ADDRESS,
+  receiptAnchor: PENDING_ADDRESS,
+  providerId: '0x86b99987cd8f8ebddc2dd0efa61ed52b5db594430f12446db424da0d9c4b831f',
+};
+
+/** Throws before any on-chain step on a network whose contracts are not published yet. */
+export function assertContracts(network: Network): void {
+  if ([network.usdg, network.creditVault].includes(PENDING_ADDRESS)) {
+    throw new Error(`the contracts on chain ${network.chainId} are published at launch: see https://envolvr.xyz/token/#contracts`);
+  }
+}
 
 /** USDG and envolvr balances have 6 decimals: "1.5" -> 1500000n. */
 export function toMicros(amount: string | number): bigint {

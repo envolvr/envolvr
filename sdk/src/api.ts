@@ -2,7 +2,7 @@
 // and the pricing, and move USDG into the credit vault.
 
 import { decodeWords, encodeCall, Rpc } from './evm.ts';
-import { type Network, TESTNET } from './network.ts';
+import { assertContracts, type Network, TESTNET } from './network.ts';
 import type { Signer } from './wallet.ts';
 
 async function json<T>(res: Response): Promise<T> {
@@ -106,6 +106,7 @@ export async function depositUsdg(opts: { signer: Signer; amountMicros: bigint; 
   const { signer, amountMicros } = opts;
   if (!signer.sendTransaction) throw new Error('this signer cannot send transactions');
   if (amountMicros <= 0n) throw new Error('the amount must be positive');
+  assertContracts(network);
   const rpc = new Rpc(network.rpcUrl);
   const view = async (to: string, sig: string, args: (bigint | string)[]) =>
     BigInt(decodeWords(await rpc.call<string>('eth_call', [{ to, data: encodeCall(sig, args) }, 'latest']))[0]);

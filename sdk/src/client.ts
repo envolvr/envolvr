@@ -9,6 +9,7 @@ import { join } from 'node:path';
 import { getAccount, getPricing } from './api.ts';
 import { auditReceipt, type AuditSummary, fetchAttestationReport, type PapResult, summarizeAudit } from './attest.ts';
 import { type Network, TESTNET } from './network.ts';
+import { AutoTopUp, type AutoTopUpOptions } from './topup.ts';
 import { type Anchor, billingOf, type Billing, chargedTo, type Receipt, verifyAnchor } from './receipts.ts';
 
 export interface SavedReceipt {
@@ -34,11 +35,17 @@ export class Envolvr {
   readonly network: Network;
   private apiKey: string;
   private receiptDir: string | undefined;
+  private topUp: AutoTopUp | undefined;
 
-  constructor(opts: { apiKey: string; network?: Network; receiptDir?: string }) {
+  /**
+   * `autoTopUp` keeps the account funded from a wallet: see AutoTopUpOptions.
+   * It covers chat(); a client built from `openai` handles its own 402s.
+   */
+  constructor(opts: { apiKey: string; network?: Network; receiptDir?: string; autoTopUp?: AutoTopUpOptions }) {
     this.apiKey = opts.apiKey;
     this.network = opts.network ?? TESTNET;
     this.receiptDir = opts.receiptDir;
+    if (opts.autoTopUp) this.topUp = new AutoTopUp(opts.autoTopUp, this.apiKey, this.network);
   }
 
   /** Settings for the OpenAI SDK: `new OpenAI(envolvr.openai)`. Receipts are then yours to fetch. */
@@ -67,6 +74,19 @@ export class Envolvr {
    * to pin providers.
    */
   async chat(body: Record<string, unknown>): Promise<{ response: any; receiptId: string | null; saved?: SavedReceipt }> {
+    await this.topUp?.beforeRequest();
+    try {
+      return await this.chatOnce(body);
+    } catch (err) {
+      // Out of credit: top up once and retry, when auto top-up is on and could add funds.
+      if ((err as { status?: number }).status === 402 && this.topUp && (await this.topUp.afterInsufficientCredit())) {
+        return this.chatOnce(body);
+      }
+      throw err;
+    }
+  }
+
+  private async chatOnce(body: Record<string, unknown>): Promise<{ response: any; receiptId: string | null; saved?: SavedReceipt }> {
     const request = JSON.stringify({ ...body, stream: false });
     const res = await fetch(`${this.network.gateway}/v1/chat/completions`, {
       method: 'POST', headers: { authorization: `Bearer ${this.apiKey}`, 'content-type': 'application/json' }, body: request,
