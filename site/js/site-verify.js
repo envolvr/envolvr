@@ -1,13 +1,13 @@
 // Runs the receipt verifier (verifier.js, built from site/src/verifier.ts) for
 // the receipt check card and the "Verify" section. Every check happens in this browser.
-import { verify, parseBundle, digestOf } from './verifier.js?v=20261001j';
+import { verify, parseBundle, digestOf } from './verifier.js?v=20261001k';
 
 const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 const GATEWAY = 'https://api.envolvr.xyz';
 const sleep = (ms) => new Promise((r) => setTimeout(r, reduce ? 0 : ms));
 
 let samplePromise;
-const sample = () => (samplePromise ??= fetch('data/sample-receipt.json?v=20261001j').then((r) => r.json()));
+const sample = () => (samplePromise ??= fetch('data/sample-receipt.json?v=20261001k').then((r) => r.json()));
 
 function setBadge(el, cls, text) {
   el.className = `badge ${cls}`;
