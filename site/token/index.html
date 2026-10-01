@@ -16,7 +16,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,500&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/styles.css?v=20261001t">
+<link rel="stylesheet" href="/styles.css?v=20261001v">
 <script>document.documentElement.classList.add('js');</script>
 </head>
 <body>
@@ -116,6 +116,33 @@
   </div>
 </section>
 
+<section class="sec" id="burn">
+  <div class="panel burn">
+    <div class="burn-copy">
+      <span class="tok-k">Ongoing</span>
+      <h2>Buyback and burn</h2>
+      <p>envolvr uses a portion of protocol revenue to buy back NVLR and burn it, on an ongoing basis.</p>
+      <p class="burn-sub">The more agents run private inference, the more revenue flows back into NVLR.</p>
+    </div>
+    <div class="fly" role="img" aria-label="Flywheel: agents run private inference, the protocol earns revenue, a portion buys back NVLR, the NVLR bought back is burned, and the cycle repeats.">
+      <svg class="fly-ring" viewBox="0 0 400 400" aria-hidden="true">
+        <defs><marker id="flyarr" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 10 5 0 10z" fill="#111512"/></marker></defs>
+        <circle cx="200" cy="200" r="110" fill="none" stroke="rgba(17,21,18,.14)" stroke-width="2"/>
+        <path d="M237.6 96.6 A110 110 0 0 1 303.4 162.4" fill="none" stroke="#111512" stroke-width="2" marker-end="url(#flyarr)"/>
+        <path d="M303.4 237.6 A110 110 0 0 1 237.6 303.4" fill="none" stroke="#111512" stroke-width="2" marker-end="url(#flyarr)"/>
+        <path d="M162.4 303.4 A110 110 0 0 1 96.6 237.6" fill="none" stroke="#111512" stroke-width="2" marker-end="url(#flyarr)"/>
+        <path d="M96.6 162.4 A110 110 0 0 1 162.4 96.6" fill="none" stroke="#111512" stroke-width="2" marker-end="url(#flyarr)"/>
+        <path d="M200 170l26 15v30l-26 15-26-15v-30z" fill="#111512"/>
+        <path d="M189 197l11 9 11-9" fill="none" stroke="#ccff00" stroke-width="5" stroke-linejoin="round"/>
+      </svg>
+      <div class="fly-node n1"><b>1</b>Agents run private inference</div>
+      <div class="fly-node n2"><b>2</b>The protocol earns revenue</div>
+      <div class="fly-node n3"><b>3</b>A portion buys back NVLR</div>
+      <div class="fly-node n4"><b>4</b>The NVLR bought back is burned</div>
+    </div>
+  </div>
+</section>
+
 <section class="sec" id="tokenomics">
   <div class="sec-head">
     <h2><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M12 2.5l8.5 4.8v9.4L12 21.5l-8.5-4.8V7.3z" fill="#f2b705"/></svg>Tokenomics</h2>
@@ -185,6 +212,7 @@
     <details><summary>What do I get for staking?</summary><p>A daily share of private inference for your agents, in proportion to your stake. Each day's budget is funded by NVLR trading fees, so it moves with trading activity.</p></details>
     <details><summary>Do I need NVLR to use envolvr?</summary><p>No. Anyone can pay per request in USDG. NVLR is for those who want a daily allowance and a stake in where the network goes.</p></details>
     <details><summary>What comes next?</summary><p>An open network: independent providers stake NVLR to serve, misbehaviour proven by receipts is slashed, holders can delegate, and protocol fees can be switched to burn and rewards. It opens when network volume supports it.</p></details>
+    <details><summary>Does envolvr buy back NVLR?</summary><p>Yes. A portion of protocol revenue is used to buy back NVLR and burn it, on an ongoing basis.</p></details>
     <details><summary>How do I unstake?</summary><p>Request it in the app. Your tokens can be withdrawn after the cooldown shown there.</p></details>
     <details><summary>Is NVLR an investment?</summary><p>No. NVLR is prepaid access to compute. It is not a share in envolvr, its revenue or its profits.</p></details>
   </div>
@@ -217,6 +245,6 @@
     </div>
   </div>
 </footer>
-<script src="/js/token.js?v=20261001t"></script>
+<script src="/js/token.js?v=20261001v"></script>
 </body>
 </html>
