@@ -1,47 +1,88 @@
-/* The account app, on top of the site's tokens (../styles.css). */
+/* The account app, on the site's Landing v5 tokens and components (../styles.css). */
 [hidden]{display:none !important}
-.app{padding-top:112px;padding-bottom:80px}
-button.btn{font-family:inherit;cursor:pointer}
-.btn-ghost{background:transparent}
-.badge{border:1px solid var(--volt-border);color:var(--volt);border-radius:999px;padding:2px 10px;font-size:11px;letter-spacing:.08em}
-.panel{max-width:620px}
-.panel h1{font-family:var(--serif);font-size:clamp(34px,4.6vw,52px);line-height:1.05;margin-bottom:8px}
-.wallets{display:grid;gap:10px;margin-top:28px}
-.wallets button{display:flex;align-items:center;gap:12px;width:100%;padding:14px 16px;border-radius:12px;border:1px solid var(--line);background:var(--card);color:var(--text);font:inherit;cursor:pointer;text-align:left}
-.wallets button:hover{border-color:#fcfcfe2e;background:var(--card-hi)}
+
+/* Header: the site's bar, with a testnet tag and the wallet controls. */
+.net-tag{flex:none;font-size:12px;line-height:16px;padding:3px 8px;border-radius:6px;background:var(--volt);color:var(--ink);margin-right:8px}
+.app-hdr .hdr-nav{flex:1}
+.wallet-chip{flex:none;font-family:var(--mono);font-size:13px;letter-spacing:normal;padding:9px 12px;border-radius:9px;background:var(--chip);color:var(--ink)}
+.hdr-btn.line{all:unset;cursor:pointer;flex:none;white-space:nowrap;font-size:14px;padding:8px 13px;border-radius:9px;border:1px solid var(--line);background:#fff;color:var(--ink)}
+.hdr-btn.line:hover{background:var(--chip)}
+@media (max-width:999px){.app-hdr .hdr-nav{display:flex}.app-hdr .hdr-btn.line{display:block}.app-hdr .logo{margin-right:6px}}
+@media (max-width:599px){.app-hdr .hdr-nav,.wallet-chip{display:none !important}.app-hdr .logo{margin-right:auto}}
+
+.app{padding-top:64px;padding-bottom:96px}
+@media (max-width:819px){.app{padding-top:36px;padding-bottom:64px}}
+.app h1{font-family:var(--serif);font-weight:500;font-size:calc(48px * var(--serif-scale));line-height:48px;letter-spacing:var(--serif-track);text-wrap:balance}
+@media (min-width:768px){.app h1{font-size:calc(60px * var(--serif-scale));line-height:60px}}
+.lede{margin-top:16px;font-size:16px;line-height:24px;max-width:46ch;color:var(--text)}
+@media (min-width:768px){.lede{font-size:18px;line-height:28px}}
+
+/* Connect: intro beside the wallet panel. */
+.connect{display:grid;grid-template-columns:minmax(0,1fr);gap:32px;align-items:start}
+@media (min-width:900px){.connect{grid-template-columns:minmax(0,7fr) minmax(0,5fr);gap:64px}}
+.wallets{display:flex;flex-direction:column;gap:8px;margin-top:20px}
+.wallets button{all:unset;cursor:pointer;display:flex;align-items:center;gap:12px;padding:14px 16px;border-radius:10px;border:1px solid var(--lav-line);background:#fff;font-size:15px;line-height:20px;color:var(--ink);transition:border-color .15s,transform .15s}
+.wallets button::after{content:"→";margin-left:auto;color:var(--faint)}
+.wallets button:hover{border-color:var(--ink)}
+.wallets button:focus-visible{outline:2px solid var(--violet);outline-offset:2px}
 .wallets img{width:24px;height:24px;border-radius:6px}
-.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px}
+
+/* Signed in: panels in two columns. */
+.app-head{margin-bottom:40px}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px;align-items:start}
 .grid .wide{grid-column:1 / -1}
-.stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin:6px 0 16px}
-.stats strong{display:block;font-size:20px;font-weight:500;margin-top:4px;font-variant-numeric:tabular-nums}
-.small{font-size:13.5px;line-height:1.6}
-.dim{color:var(--muted)}
-.row{display:flex;gap:10px;flex-wrap:wrap;margin:10px 0}
-.field{display:flex;align-items:center;gap:10px;border:1px solid var(--line);border-radius:10px;padding:8px 12px;margin:12px 0 4px;background:var(--card)}
-.field span{color:var(--muted);font-size:13px;min-width:64px}
-.field em{font-style:normal;color:var(--muted);font-size:13px}
-input{flex:1;min-width:0;background:transparent;border:0;color:var(--text);font:inherit;font-family:var(--mono);font-size:14px;outline:none}
-.row input{border:1px solid var(--line);border-radius:10px;padding:9px 12px;background:var(--card)}
-.table{width:100%;border-collapse:collapse;font-size:13px;margin-top:10px}
-.table th,.table td{text-align:left;padding:8px 6px;border-bottom:1px solid var(--line-soft);color:var(--muted)}
-.table th{color:var(--text);font-weight:500}
-.table td.mono{font-family:var(--mono);font-size:12px}
-.table button{background:none;border:1px solid var(--line);color:var(--muted);border-radius:8px;padding:3px 9px;cursor:pointer;font:inherit;font-size:12px}
-.signin{border-top:1px solid var(--line-soft);margin-top:16px;padding-top:14px}
-.needs-session.locked{opacity:.45;pointer-events:none}
-button[disabled]{opacity:.45;cursor:not-allowed}
-.danger{border-color:#ff6b6b55;color:#ff9b9b}
-dialog{border:1px solid var(--line);border-radius:var(--r);background:var(--ink-2);color:var(--text);max-width:560px;padding:24px}
-dialog::backdrop{background:rgba(3,8,10,.7)}
-.key{display:block;word-break:break-all;font-family:var(--mono);font-size:13px;background:var(--card-hi);padding:12px;border-radius:8px;margin:12px 0}
-#toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:var(--ink-2);border:1px solid var(--line);border-radius:10px;padding:10px 16px;font-size:14px;max-width:92vw;z-index:50}
-#toast.error{border-color:#ff6b6b88}
-@media (max-width:860px){.grid{grid-template-columns:1fr}.stats{grid-template-columns:1fr 1fr}}
-/* The site hides the nav behind a menu toggle on phones; the app keeps its two controls in view. */
-@media (max-width:760px){
-  .app-nav .nav-inner{flex-wrap:nowrap;gap:10px}
-  .app-nav .brand{order:0}
-  .app-nav .brand-word,.app-nav #walletChip{display:none}
-  .app-nav .nav-links,.app-nav .nav-actions{display:flex}
-  .app{padding-top:92px}
-}
+@media (max-width:899px){.grid{grid-template-columns:minmax(0,1fr)}}
+.stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;margin:20px 0 14px}
+.stats span{display:block;font-size:12px;line-height:16px;color:var(--muted)}
+.stats strong{display:block;margin-top:4px;font-family:var(--mono);font-size:20px;line-height:28px;font-weight:500;letter-spacing:normal;font-variant-numeric:tabular-nums;color:var(--ink);overflow-wrap:anywhere}
+.panel.volt .stats span,.panel.volt .app-note{color:#3a443c}
+@media (max-width:479px){.stats{grid-template-columns:1fr 1fr}}
+.app-note{font-size:13px;line-height:20px;color:var(--muted);margin-top:8px}
+.app-note a,.panel-note a{text-decoration:underline;text-underline-offset:3px}
+
+.field{display:flex;align-items:center;gap:10px;margin:16px 0 0;padding:0 12px;height:44px;border:1px solid rgba(17,21,18,.14);border-radius:8px;background:#fff;transition:border-color .15s}
+.field:focus-within{border-color:var(--ink)}
+.field span{flex:none;min-width:64px;font-size:13px;color:var(--muted)}
+.field em{flex:none;font-style:normal;font-size:13px;color:var(--muted)}
+input{flex:1;min-width:0;background:transparent;border:0;outline:none;color:var(--ink);font-family:var(--mono);font-size:14px;letter-spacing:normal}
+input::placeholder{color:#a3a8a3}
+.key-row input{height:42px;padding:0 12px;border:1px solid rgba(17,21,18,.14);border-radius:8px;background:#fff;font-family:var(--sans);letter-spacing:var(--sans-track)}
+.key-row input:focus{border-color:var(--ink)}
+.row{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+
+.btn{all:unset;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;padding:10px 16px;border-radius:8px;font-size:14px;line-height:20px;white-space:nowrap;transition:background .15s,border-color .15s,color .15s}
+.btn-primary{background:var(--ink);color:#fff}
+.btn-primary:hover{background:var(--violet)}
+.btn-outline{background:#fff;color:var(--ink);box-shadow:inset 0 0 0 1px rgba(17,21,18,.18)}
+.btn-outline:hover{box-shadow:inset 0 0 0 1px var(--ink)}
+.btn:focus-visible{outline:2px solid var(--violet);outline-offset:2px}
+.btn[disabled],button[disabled]{opacity:.45;cursor:not-allowed}
+.btn.danger{color:var(--bad);box-shadow:inset 0 0 0 1px rgba(194,65,45,.4)}
+.btn.danger:hover{background:var(--bad);color:#fff;box-shadow:none}
+
+.signin{margin-top:18px;padding-top:16px;border-top:1px solid rgba(17,21,18,.12);display:flex;flex-direction:column;align-items:flex-start;gap:12px;font-size:14px;line-height:20px}
+.needs-session.locked{opacity:.5;pointer-events:none}
+
+/* Tables, as the site's model table. */
+.tbl{overflow-x:auto;margin:16px calc(-1 * var(--cp)) calc(-1 * var(--cp));border-top:1px solid var(--line)}
+.table{width:100%;border-collapse:collapse;font-size:14px;line-height:20px}
+.table th{text-align:left;font-weight:500;font-size:12px;line-height:16px;color:var(--muted);padding:10px 12px;background:#fafaf8;border-bottom:1px solid var(--line);white-space:nowrap}
+.table td{padding:10px 12px;border-bottom:1px solid #efefeb;color:var(--text);white-space:nowrap}
+.table th:first-child,.table td:first-child{padding-left:var(--cp)}
+.table th:last-child,.table td:last-child{padding-right:var(--cp)}
+.table tr:last-child td{border-bottom:0}
+.table td.mono{font-family:var(--mono);font-size:13px;letter-spacing:normal}
+.table td a{text-decoration:underline;text-underline-offset:3px}
+.table button{all:unset;cursor:pointer;font-size:12px;padding:4px 10px;border-radius:7px;box-shadow:inset 0 0 0 1px rgba(17,21,18,.18)}
+.table button:hover{box-shadow:inset 0 0 0 1px var(--bad);color:var(--bad)}
+
+dialog{border:1px solid var(--line);border-radius:14px;background:#fff;color:var(--ink);width:min(560px,calc(100vw - 32px));padding:24px;box-shadow:0 24px 60px -20px rgba(17,21,18,.35)}
+dialog::backdrop{background:rgba(17,21,18,.4)}
+.key{display:block;word-break:break-all;font-family:var(--mono);font-size:13px;letter-spacing:normal;background:var(--chip);padding:12px 14px;border-radius:8px;margin:14px 0 4px}
+#toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:var(--ink);color:#fff;border-radius:10px;padding:11px 16px;font-size:14px;line-height:20px;max-width:min(560px,92vw);z-index:50;box-shadow:0 12px 32px -12px rgba(17,21,18,.4)}
+#toast.error{background:var(--bad)}
+
+.app-foot{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px 24px;padding-top:24px;padding-bottom:32px;border-top:1px solid var(--line);font-size:13px;color:var(--muted)}
+.app-foot nav{display:flex;gap:20px}
+.app-foot a{color:var(--muted)}
+.app-foot a:hover{color:var(--ink)}
