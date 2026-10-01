@@ -1,13 +1,13 @@
 // Runs the receipt verifier (verifier.js, built from site/src/verifier.ts) for
 // the receipt check card and the "Verify" section. Every check happens in this browser.
-import { verify, parseBundle, digestOf } from './verifier.js?v=20261001k';
+import { verify, parseBundle, digestOf } from './verifier.js?v=20261001m';
 
 const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 const GATEWAY = 'https://api.envolvr.xyz';
 const sleep = (ms) => new Promise((r) => setTimeout(r, reduce ? 0 : ms));
 
 let samplePromise;
-const sample = () => (samplePromise ??= fetch('data/sample-receipt.json?v=20261001k').then((r) => r.json()));
+const sample = () => (samplePromise ??= fetch('data/sample-receipt.json?v=20261001m').then((r) => r.json()));
 
 function setBadge(el, cls, text) {
   el.className = `badge ${cls}`;
@@ -54,10 +54,10 @@ if (hero) {
   const go = async () => {
     if (busy) return;
     busy = true;
-    setBadge(badge, '', 'checking 0/7');
+    setBadge(badge, 'white', 'checking 0/7');
     foot.textContent = 'Checking in your browser…';
     try {
-      const v = await run(hero, await sample(), { pace: 220, onTick: (n, total) => setBadge(badge, '', `checking ${n}/${total}`) });
+      const v = await run(hero, await sample(), { pace: 220, onTick: (n, total) => setBadge(badge, 'white', `checking ${n}/${total}`) });
       setBadge(badge, v.verified ? 'ok' : 'bad', v.verified ? 'verified' : `${v.failed} failed`);
       foot.textContent = v.verified ? 'Verified in your browser, just now' : 'Checked in your browser, just now';
     } catch {

@@ -118,9 +118,14 @@
       var out = parseFloat(d.out);
       var blend = (3 * inp + out) / 4;
       $('[data-blend]', tr).textContent = '$' + blend.toFixed(2);
-      return { tr: tr, label: d.label, sup: d.sup, supName: d.supName, in: inp, out: out, blend: blend };
+      return { tr: tr, model: $('code', tr).textContent, label: d.label, sup: d.sup, supName: d.supName, in: inp, out: out, blend: blend };
     });
     var money = function (v) { return '$' + v.toFixed(2); };
+    // One colour per model (v5); a model served by several suppliers keeps its colour.
+    var MODEL_COLORS = {
+      'z-ai/glm-5.3': '#1c1c1c', 'z-ai/glm-5.3-flash': '#2f7bff', 'qwen/qwen3.8-27b': '#ff6a13', 'qwen/qwen3.6-35b-a3b': '#36b24a',
+      'deepseek/deepseek-v4-flash': '#1a2fd0', 'deepseek/deepseek-v3.2': '#00e0d0', 'moonshotai/kimi-k2.6': '#ff3d7f',
+    };
     var tile = function (sup) { return '<span class="tile ' + sup + '"><svg aria-hidden="true"><use href="images/suppliers.svg#' + sup + '"/></svg></span>'; };
 
     // Bars reach 84% of the plot at the highest value across every endpoint, so filters keep the scale.
@@ -130,7 +135,7 @@
       el.innerHTML = '<div class="plot">' + shown.map(function (r) {
         return '<div class="col" title="' + esc(r.label + ' · ' + r.supName + ' · input ' + money(r.in) + ', output ' + money(r.out)) + '">'
           + '<span class="val">' + money(r[metric]) + '</span>'
-          + '<span class="bar" style="--c:var(--' + { phala: 't1', near: 't2', chutes: 't3' }[r.sup] + ')" data-h="' + Math.max(2, r[metric] / max * 84).toFixed(2) + '%"></span></div>';
+          + '<span class="bar" style="--c:' + (MODEL_COLORS[r.model] || '#111512') + '" data-h="' + Math.max(2, r[metric] / max * 84).toFixed(2) + '%"></span></div>';
       }).join('') + '</div><div class="labels" aria-hidden="true">' + shown.map(function (r) {
         return '<div class="lcol">' + tile(r.sup) + '<span>' + esc(r.label) + '</span></div>';
       }).join('') + '</div>';
