@@ -9,6 +9,7 @@
 #   PRIVATE_AI_GATEWAY_ADMIN_TOKEN   gateway admin API
 #   ENVOLVR_CONTROL_TOKEN            gateway -> control plane bearer
 #   ENVOLVR_CONTROL_ADMIN_TOKEN      control plane /admin
+#   ENVOLVR_CONTROL_MONITOR_TOKEN    control plane read-only reports (the monitor); optional
 #   ENVOLVR_UPSTREAM_KEY             RedPill (Phala Cloud Confidential AI) API key
 #   ENVOLVR_NEAR_KEY                 NEAR AI Cloud API key
 #   ENVOLVR_CHUTES_KEY               Chutes API key
@@ -197,6 +198,7 @@ services:
       CONTROL_CONFIG: /etc/envolvr/control.json
       CONTROL_TOKEN: ${ENVOLVR_CONTROL_TOKEN:?set ENVOLVR_CONTROL_TOKEN}
       ADMIN_TOKEN: ${ENVOLVR_CONTROL_ADMIN_TOKEN:?set ENVOLVR_CONTROL_ADMIN_TOKEN}
+      MONITOR_TOKEN: ${ENVOLVR_CONTROL_MONITOR_TOKEN:-}
       BACKUP_ACCESS_KEY_ID: ${ENVOLVR_BACKUP_ACCESS_KEY_ID:?set ENVOLVR_BACKUP_ACCESS_KEY_ID}
       BACKUP_SECRET_ACCESS_KEY: ${ENVOLVR_BACKUP_SECRET_ACCESS_KEY:?set ENVOLVR_BACKUP_SECRET_ACCESS_KEY}
     volumes:

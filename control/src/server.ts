@@ -26,7 +26,7 @@
 //   GET  /pricing                 the deposit fee and how prices are set
 //   GET  /account/close/nonce?wallet=0x…&refundTo=0x…   message to sign to close
 //   POST /account/close           signed message -> keys revoked, sessions ended, balance to a refund
-// Operator (bearer: adminToken):
+// Operator (bearer: adminToken; the two read-only reports also take monitorToken):
 //   POST /admin/credit            credit a wallet's USDG balance
 //   GET  /admin/account?wallet=   balance and today's allowance
 //   GET  /admin/deposits/held     deposits held by sanctions screening
@@ -35,6 +35,9 @@
 //   GET  /admin/refunds?status=   refunds from closed accounts (pending, held, paid)
 //   POST /admin/refunds/paid      record a refund paid ({id, txHash}) after the vault owner sent it
 //   POST /admin/refunds/release   release a held refund for payout, after review
+//   GET  /admin/reserves          the vault's USDG against what it owes users, and what
+//                                 the owner may withdraw for suppliers and the treasury
+//   GET  /admin/spend?days=       billed per upstream per UTC day, and the daily average
 //
 // Sanctions screening (screening.ts) gates sign-in (fails closed, 503 while
 // screening is unavailable) and every consult (403 for a blocked wallet).
@@ -47,7 +50,7 @@ import { timingSafeEqual } from 'node:crypto';
 import {
   closeAccountMessage, hashApiKey, manageMessage, newApiKey, newNonce, newSessionToken, recoverSigner, signInMessage,
 } from './auth.ts';
-import type { AllowanceSource } from './chain.ts';
+import type { AllowanceSource, ReserveSource } from './chain.ts';
 import type { Config } from './config.ts';
 import type { Store } from './db.ts';
 import { ProofService } from './anchoring.ts';
@@ -68,6 +71,8 @@ export interface Deps {
   config: Config;
   store: Store;
   allowance: AllowanceSource;
+  /** The credit vault's USDG, for /admin/reserves; absent without a vault. */
+  reserves?: ReserveSource;
   /** Defaults to the config's static blocklist alone. */
   screening?: Screening;
   /** Unix seconds. */
@@ -118,6 +123,36 @@ export function createControlServer(deps: Deps): Server {
   const log = deps.log ?? (() => {});
   const screening = deps.screening ?? new Screening(store, { blocklist: config.blockedWallets });
   // Routes with the resale margin applied, per public model.
+  // The vault's USDG against what it owes: only the surplus may leave the vault
+  // for suppliers or the treasury; refunds are paid from what is owed.
+  async function reservesView() {
+    const owed = store.liabilities();
+    const vault = deps.reserves ? await deps.reserves.vaultUsdgMicros() : undefined;
+    const surplus = vault === undefined ? undefined : vault - owed.owedMicros;
+    return {
+      ...owed,
+      vaultUsdgMicros: vault ?? null,
+      withdrawableMicros: surplus === undefined ? null : surplus > 0n ? surplus : 0n,
+      solvent: surplus === undefined ? null : surplus >= 0n,
+      shortfallMicros: surplus !== undefined && surplus < 0n ? -surplus : 0n,
+    };
+  }
+
+  // Billed per upstream per day over the last `days` complete and current days.
+  function spendView(url: URL) {
+    const days = Math.min(Math.max(Number(url.searchParams.get('days') ?? 7) || 7, 1), 90);
+    const today = Math.floor(now() / DAY) * DAY;
+    const since = today - (days - 1) * DAY;
+    const rows = store.spendByUpstream(since);
+    const totals = new Map<string, bigint>();
+    for (const r of rows) totals.set(r.upstream, (totals.get(r.upstream) ?? 0n) + r.billedMicros);
+    return {
+      since, days,
+      daily: rows,
+      upstreams: [...totals].map(([upstream, total]) => ({ upstream, totalMicros: total, perDayMicros: total / BigInt(days) })),
+    };
+  }
+
   const priced = new Map<string, Route[]>(
     Object.entries(config.models).map(([model, { routes }]) => [
       model,
@@ -472,6 +507,11 @@ export function createControlServer(deps: Deps): Server {
       const admin = () => {
         if (!tokenMatches(req.headers.authorization, config.adminToken)) throw new HttpError(401, 'unauthorized');
       };
+      // The read-only reports also accept the monitor's token.
+      const reader = () => {
+        if (config.monitorToken && tokenMatches(req.headers.authorization, config.monitorToken)) return;
+        admin();
+      };
 
       if (route === 'GET /healthz') return send(res, 200, { ok: true });
       if (route === 'POST /consult/pre') { gateway(); return send(res, 200, await consultPre(await readJson(req))); }
@@ -529,6 +569,8 @@ export function createControlServer(deps: Deps): Server {
       }
       if (route === 'POST /admin/refunds/paid') { admin(); return send(res, 200, adminRefund('paid', await readJson(req))); }
       if (route === 'POST /admin/refunds/release') { admin(); return send(res, 200, adminRefund('release', await readJson(req))); }
+      if (route === 'GET /admin/reserves') { reader(); return send(res, 200, await reservesView()); }
+      if (route === 'GET /admin/spend') { reader(); return send(res, 200, spendView(url)); }
       if (route === 'GET /admin/deposit-fee') { admin(); return send(res, 200, { bps: depositFeeBps() }); }
       if (route === 'POST /admin/deposit-fee') { admin(); return send(res, 200, adminDepositFee(await readJson(req))); }
       if (route === 'GET /admin/deposits/held') { admin(); return send(res, 200, { deposits: store.heldDeposits() }); }

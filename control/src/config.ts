@@ -43,6 +43,8 @@ export interface Config {
   controlToken: string;
   /** Bearer token for /admin endpoints. */
   adminToken: string;
+  /** Read-only bearer for GET /admin/reserves and /admin/spend (the monitor); optional. */
+  monitorToken?: string;
 }
 
 export interface ScreeningConfig {
@@ -92,7 +94,7 @@ export interface BackupConfig {
   secretAccessKey: string;
 }
 
-type FileConfig = Omit<Config, 'controlToken' | 'adminToken' | 'blockedWallets' | 'backup'> & {
+type FileConfig = Omit<Config, 'controlToken' | 'adminToken' | 'monitorToken' | 'blockedWallets' | 'backup'> & {
   blockedWallets?: string[];
   backup?: Omit<BackupConfig, 'accessKeyId' | 'secretAccessKey'>;
 };
@@ -104,8 +106,12 @@ export function loadConfig(path: string, env: NodeJS.ProcessEnv = process.env): 
   const adminToken = env.ADMIN_TOKEN;
   if (!controlToken || controlToken.length < 32) throw new Error('CONTROL_TOKEN must be set (32+ chars)');
   if (!adminToken || adminToken.length < 32) throw new Error('ADMIN_TOKEN must be set (32+ chars)');
+  const monitorToken = env.MONITOR_TOKEN || undefined;
+  if (monitorToken && (monitorToken.length < 32 || monitorToken === adminToken)) {
+    throw new Error('MONITOR_TOKEN must be 32+ chars and differ from ADMIN_TOKEN');
+  }
   validateModels(file.models);
-  const config: Config = { blockedWallets: [], ...file, controlToken, adminToken };
+  const config: Config = { blockedWallets: [], ...file, controlToken, adminToken, monitorToken };
   if (backup) {
     const { BACKUP_ACCESS_KEY_ID: accessKeyId, BACKUP_SECRET_ACCESS_KEY: secretAccessKey } = env;
     if (!accessKeyId || !secretAccessKey) {

@@ -5,7 +5,7 @@ import { existsSync } from 'node:fs';
 import { Anchorer, anchorKey, ReceiptAnchorContract } from './anchoring.ts';
 import { LedgerBackups, ledgerBackupKey } from './backup.ts';
 import { loadConfig } from './config.ts';
-import { noAllowance, StakingAllowanceReader } from './chain.ts';
+import { noAllowance, StakingAllowanceReader, VaultReserveReader } from './chain.ts';
 import { Store } from './db.ts';
 import { DepositWatcher, RpcLogSource } from './deposits.ts';
 import { Rpc } from './evm.ts';
@@ -78,7 +78,8 @@ if (config.anchoring) {
 const stopBackups = backups?.start(store.db, config.dbPath, config.backup?.intervalMs ?? 300_000);
 if (backups) log('ledger backups started', { bucket: config.backup!.bucket, prefix: config.backup!.prefix });
 
-const server = createControlServer({ config, store, allowance, screening, log }).listen(config.port, () =>
+const reserves = config.chain?.creditVault ? new VaultReserveReader(config.chain.rpcUrl, config.chain.creditVault) : undefined;
+const server = createControlServer({ config, store, allowance, reserves, screening, log }).listen(config.port, () =>
   log('control plane listening', { port: config.port, models: Object.keys(config.models) }),
 );
 

@@ -1,4 +1,5 @@
-// Reads staking allowances from StakingAllowance on Robinhood Chain.
+// Reads staking allowances from StakingAllowance, and the credit vault's USDG
+// reserves, on Robinhood Chain.
 
 import { keccak_256 } from '@noble/hashes/sha3';
 import { bytesToHex, utf8ToBytes } from '@noble/hashes/utils';
@@ -47,3 +48,39 @@ export class StakingAllowanceReader implements AllowanceSource {
 
 /** No staking configured: every allowance is zero. */
 export const noAllowance: AllowanceSource = { allowanceMicros: async () => 0n };
+
+export interface ReserveSource {
+  /** USDG held by the credit vault, in micro-USD. */
+  vaultUsdgMicros(): Promise<bigint>;
+}
+
+const sel = (signature: string) => bytesToHex(keccak_256(utf8ToBytes(signature))).slice(0, 8);
+
+/** USDG.balanceOf(vault), with the token address read once from CreditVault.usdg(). */
+export class VaultReserveReader implements ReserveSource {
+  private rpcUrl: string;
+  private vault: string;
+  private usdg?: string;
+
+  constructor(rpcUrl: string, vault: string) {
+    this.rpcUrl = rpcUrl;
+    this.vault = vault;
+  }
+
+  private async call(to: string, data: string): Promise<string> {
+    const res = await fetch(this.rpcUrl, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'eth_call', params: [{ to, data }, 'latest'] }),
+      signal: AbortSignal.timeout(10_000),
+    });
+    const body = (await res.json()) as { result?: string; error?: { message: string } };
+    if (!res.ok || !body.result) throw new Error(`eth_call failed: ${body.error?.message ?? res.status}`);
+    return body.result;
+  }
+
+  async vaultUsdgMicros(): Promise<bigint> {
+    this.usdg ??= `0x${(await this.call(this.vault, `0x${sel('usdg()')}`)).slice(-40)}`;
+    return BigInt(await this.call(this.usdg, `0x${sel('balanceOf(address)')}${word(this.vault)}`));
+  }
+}
