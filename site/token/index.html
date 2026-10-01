@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>NVLR · envolvr</title>
-<meta name="description" content="Stake NVLR for a daily share of private inference on envolvr, funded by trading fees. How it works, tokenomics, contracts and FAQ.">
+<meta name="description" content="NVLR powers private inference for the agent economy: a daily share of private inference for stakers today, the bond for an open network of attested GPUs next.">
 <meta name="theme-color" content="#ffffff">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <meta property="og:title" content="NVLR · envolvr">
@@ -16,7 +16,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,500&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/styles.css?v=20261001s">
+<link rel="stylesheet" href="/styles.css?v=20261001t">
 <script>document.documentElement.classList.add('js');</script>
 </head>
 <body>
@@ -65,128 +65,61 @@
 
 <main class="tok">
 
-<section class="wrap tok-hero">
-  <div class="tok-hero-copy">
-    <span class="tok-pill"><b>NVLR</b>The access token of envolvr</span>
-    <h1>Stake NVLR. Your agents run private inference every day.</h1>
-    <p class="lede-top">Stake once and your account receives a share of the daily inference budget, funded by NVLR trading fees. Your agents spend it before your USDG balance, and every request comes back with a signed receipt.</p>
-    <div class="tok-ctas">
-      <a class="hdr-btn volt" href="#" data-link="trade">Get NVLR</a>
-      <a class="hdr-btn ink" href="/app/">Stake in the app</a>
-    </div>
-  </div>
-
-  <div class="panel volt calc" id="calculator">
-    <div class="panel-body">
-      <div class="panel-head"><div><span class="panel-title">Allowance calculator</span><span class="panel-sub" data-calc-source>Today's budget and total stake, read from the staking contract</span></div></div>
-      <label class="calc-in"><span>Your stake</span><input id="calcStake" inputmode="numeric" value="100,000" aria-label="Your stake in NVLR"><em>NVLR</em></label>
-      <input class="calc-range" id="calcRange" type="range" min="0" max="100" step="1" value="50" aria-label="Your stake, slider">
-      <div class="calc-out">
-        <div><span>Your daily allowance</span><strong data-calc-allow>–</strong></div>
-        <div><span>Your share of the pool</span><strong data-calc-share>–</strong></div>
-      </div>
-      <ul class="calc-models" data-calc-models>
-        <li data-model="DeepSeek V4 Flash" data-in="0.44" data-out="1.32"></li>
-        <li data-model="Qwen3.8 27B" data-in="0.24" data-out="2.20"></li>
-        <li data-model="Kimi K2.6" data-in="0.50" data-out="2.85"></li>
-        <li data-model="GLM-5.3" data-in="1.40" data-out="4.40"></li>
-      </ul>
-      <div class="calc-params">
-        <label><span>Today's budget</span><input id="calcBudget" inputmode="decimal" value="2,000" aria-label="Today's budget in USD"><em>USD</em></label>
-        <label><span>Total staked</span><input id="calcTotal" inputmode="numeric" value="150,000,000" aria-label="Total staked NVLR"><em>NVLR</em></label>
+<section class="wrap tok-top">
+  <div class="tok-hero">
+    <svg class="tok-field" viewBox="0 0 1200 560" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+      <defs><pattern id="tokhex" width="52" height="90" patternUnits="userSpaceOnUse"><path d="M26 2 48 15v26L26 54 4 41V15z M26 54v34" fill="none" stroke="rgba(255,255,255,.08)" stroke-width="1.2"/></pattern></defs>
+      <rect width="1200" height="560" fill="url(#tokhex)"/>
+    </svg>
+    <div class="tok-hero-copy">
+      <span class="tok-pill"><b>NVLR</b>Live on Robinhood Chain</span>
+      <h1>NVLR powers private inference for the agent economy.</h1>
+      <p>Every agent will need a private place to think. NVLR gives stakers a daily share of private inference today, and becomes the bond that secures an open network of attested GPUs tomorrow.</p>
+      <div class="tok-ctas">
+        <a class="hdr-btn volt" href="#" data-link="trade">Get NVLR</a>
+        <a class="hdr-btn line" href="/app/">Stake in the app</a>
       </div>
     </div>
-    <p class="panel-note">ⓘ Allowance = today's budget × your stake ÷ total stake. Tokens per day at each model's list price, 3 parts input to 1 part output.</p>
+    <div class="tok-mark" aria-hidden="true">
+      <svg viewBox="0 0 24 24"><path d="M12 2.5l8.5 4.8v9.4L12 21.5l-8.5-4.8V7.3z" fill="#ccff00"/><path d="M7.8 10.4l4.2 3.4 4.2-3.4" fill="none" stroke="#0f1110" stroke-width="2.1" stroke-linejoin="round"/></svg>
+      <span>NVLR</span>
+    </div>
   </div>
 </section>
 
 <div class="wrap">
 
-<section class="sec" id="how">
+<section class="sec" id="what">
   <div class="sec-head">
-    <h2><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M12 2.5l8.5 4.8v9.4L12 21.5l-8.5-4.8V7.3z" fill="#7a5cff"/></svg>How it works</h2>
-    <p>Three steps, then your agents draw on the allowance every day without you doing anything.</p>
+    <h2><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M12 2.5l8.5 4.8v9.4L12 21.5l-8.5-4.8V7.3z" fill="#7a5cff"/></svg>What NVLR does</h2>
+    <p>One token, from the first staker to an open network.</p>
   </div>
-  <ol class="steps">
-    <li class="step lav"><span class="step-n">1</span><h3>Get NVLR</h3><p>NVLR is an ERC-20 on Robinhood Chain. Buy it with your Robinhood Chain wallet.</p><a href="#" data-link="trade">Get NVLR →</a></li>
-    <li class="step peri"><span class="step-n">2</span><h3>Stake it</h3><p>Connect the same wallet in the account app and stake. New stake counts from the next 00:00 UTC.</p><a href="/app/">Open the app →</a></li>
-    <li class="step amber"><span class="step-n">3</span><h3>Your agents draw on it</h3><p>Each day your allowance is your share of the budget. Requests spend it first, then your USDG balance.</p><a href="/docs/#quickstart">Connect an agent →</a></li>
-  </ol>
-</section>
-
-<section class="sec" id="budget">
-  <div class="sec-head">
-    <h2><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M12 2.5l8.5 4.8v9.4L12 21.5l-8.5-4.8V7.3z" fill="#ccff00" stroke="#111512" stroke-width="1.6" stroke-linejoin="round"/></svg>The daily budget</h2>
-    <p>Trading NVLR funds the compute that NVLR stakers use. The more NVLR trades, the more private inference stakers share.</p>
-  </div>
-  <div class="panel flow-panel">
-    <div class="panel-body flow">
-      <div class="flow-step"><span class="flow-k">Every trade</span><b>NVLR trading fees</b><p>Fees from NVLR trading go to the protocol.</p></div>
-      <span class="flow-arrow" aria-hidden="true">→</span>
-      <div class="flow-step"><span class="flow-k">Before each day</span><b>The day's budget, on chain</b><p>The budget is set from those fees and written to the staking contract before the day starts.</p></div>
-      <span class="flow-arrow" aria-hidden="true">→</span>
-      <div class="flow-step"><span class="flow-k">At 00:00 UTC</span><b>Split by stake</b><p>Each staker's allowance is the budget times their share of total stake at the day's start.</p></div>
-      <span class="flow-arrow" aria-hidden="true">→</span>
-      <div class="flow-step dark"><span class="flow-k">All day</span><b>Private inference</b><p>Your agents spend it in attested enclaves. Unused allowance does not roll over.</p></div>
-    </div>
-    <p class="panel-note">ⓘ The budget varies day to day with trading activity. Anyone can read past and upcoming budgets from the staking contract.</p>
-  </div>
-</section>
-
-<section class="sec" id="proof">
-  <div class="sec-head">
-    <h2><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M12 2.5l8.5 4.8v9.4L12 21.5l-8.5-4.8V7.3z" fill="#5465c4"/></svg>Proof, not promises</h2>
-    <p>Every request your stake pays for carries a receipt signed inside the enclave, with the exact tokens and cost, anchored on Robinhood Chain.</p>
-  </div>
-  <div class="proof-grid">
-    <div class="panel peri">
-      <div class="panel-body">
-        <div class="panel-head"><div><span class="panel-title">From a real receipt</span><span class="panel-sub">The billing record, signed with the response</span></div></div>
-<pre class="proof-code"><code><span class="k">"type"</span>: <span class="s">"billing.charged"</span>,
-<span class="k">"tokens"</span>: { <span class="k">"prompt"</span>: 25, <span class="k">"completion"</span>: 301 },
-<span class="k">"rates"</span>: { <span class="k">"inputCostPerToken"</span>: <span class="s">"0.0000014"</span>,
-           <span class="k">"outputCostPerToken"</span>: <span class="s">"0.0000044"</span> },
-<span class="k">"cost"</span>: <span class="s">"0.0013594"</span>,
-<span class="k">"billed_micro_usd"</span>: 1360,
-<span class="k">"payer"</span>: <span class="s">"sha256:eef9…0fbe"</span></code></pre>
-      </div>
-    </div>
-    <ul class="proof-points">
-      <li><b>What it cost</b><span>Token counts, rates and the amount billed, signed by the enclave's attested key.</span></li>
-      <li><b>Who paid</b><span>A commitment to your API key, so a receipt proves it was your request without revealing the key.</span></li>
-      <li><b>Where it came from</b><span>Your account shows, request by request, what your allowance covered and what your balance did.</span></li>
-      <li><b>That it happened</b><span>Each receipt is anchored on Robinhood Chain, so anyone can check it without trusting envolvr. <a href="/#verify">Try the verifier</a>.</span></li>
-    </ul>
-  </div>
-</section>
-
-<section class="sec" id="pay">
-  <div class="sec-head">
-    <h2><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M12 2.5l8.5 4.8v9.4L12 21.5l-8.5-4.8V7.3z" fill="#1f8a6d"/></svg>Two ways to pay</h2>
-    <p>You never need NVLR to use envolvr. Stake when a daily allowance suits you better than paying per request.</p>
-  </div>
-  <div class="plans">
-    <div class="plan lime">
-      <span class="plan-kicker">PAY AS YOU GO</span>
-      <h3>USDG, per request</h3>
-      <p>Deposit USDG and pay each request at the suppliers' list prices, billed to the micro-dollar.</p>
-      <ul><li>No token, no lockup</li><li>A small fee on each deposit</li><li>Balance refunded when you close the account</li></ul>
-      <a href="/app/">Deposit USDG</a>
-    </div>
-    <div class="plan dark">
-      <span class="tag-lime">STAKE</span>
-      <h3>NVLR, a daily allowance</h3>
-      <p>Stake NVLR and draw your share of each day's budget. Prepaid access to compute, not a claim on revenue.</p>
-      <ul><li>Refreshed every day at 00:00 UTC</li><li>Spent before your USDG balance</li><li>Unstake any time, with a cooldown</li></ul>
-      <a href="/app/">Stake NVLR</a>
-    </div>
+  <div class="tok-mods">
+    <article class="tok-mod lav">
+      <span class="tok-k">Today</span>
+      <h3>Private inference, every day</h3>
+      <p>Stake NVLR and your agents receive a daily share of private inference, funded by NVLR trading fees and served inside attested enclaves.</p>
+      <a href="/app/">Stake NVLR →</a>
+    </article>
+    <article class="tok-mod peri">
+      <span class="tok-k">Next</span>
+      <h3>A bond for open compute</h3>
+      <p>Independent providers stake NVLR to serve. A failed attestation or a wrong model is proven by the receipt itself, and slashed.</p>
+      <a href="/#how">How receipts work →</a>
+    </article>
+    <article class="tok-mod volt">
+      <span class="tok-k">Next</span>
+      <h3>Delegation and the fee switch</h3>
+      <p>Stake behind the providers you trust, and route protocol fees to burn, provider and delegator rewards, and the treasury.</p>
+      <a href="#faq">Read the FAQ →</a>
+    </article>
   </div>
 </section>
 
 <section class="sec" id="tokenomics">
   <div class="sec-head">
     <h2><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M12 2.5l8.5 4.8v9.4L12 21.5l-8.5-4.8V7.3z" fill="#f2b705"/></svg>Tokenomics</h2>
-    <p>1,000,000,000 NVLR. Most of it goes to liquidity on day one; the rest unlocks on a published schedule.</p>
+    <p>1,000,000,000 NVLR. Seventy percent goes to liquidity on day one. The rest unlocks on a published schedule.</p>
   </div>
   <div class="tn-grid">
     <div class="panel">
@@ -225,20 +158,6 @@
   </div>
 </section>
 
-<section class="sec" id="next">
-  <div class="sec-head">
-    <h2><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M12 2.5l8.5 4.8v9.4L12 21.5l-8.5-4.8V7.3z" fill="#e0479e"/></svg>Where NVLR goes next</h2>
-    <p>Today envolvr operates the network. Next, it opens to independent providers, and NVLR becomes their security bond.</p>
-  </div>
-  <div class="next-grid">
-    <div class="next lav"><b>Providers stake to serve</b><p>Anyone running attested GPUs can join by staking NVLR.</p></div>
-    <div class="next peri"><b>Misbehaviour is slashed</b><p>A failed attestation or a wrong model is proven from the receipt itself, and the provider's stake pays for it.</p></div>
-    <div class="next amber"><b>Delegation</b><p>Stake behind a provider you trust, share in its fees, and share its risk.</p></div>
-    <div class="next volt"><b>Fee switch</b><p>Protocol fees route to burn, provider and delegator rewards, and the treasury.</p></div>
-  </div>
-  <p class="note">ⓘ The open network launches when network volume supports it, not on a fixed date.</p>
-</section>
-
 <section class="sec" id="contracts">
   <div class="sec-head">
     <h2><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M12 2.5l8.5 4.8v9.4L12 21.5l-8.5-4.8V7.3z" fill="#111512"/></svg>Contracts</h2>
@@ -262,13 +181,11 @@
     <h2><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M12 2.5l8.5 4.8v9.4L12 21.5l-8.5-4.8V7.3z" fill="#7a5cff"/></svg>FAQ</h2>
   </div>
   <div class="faq">
-    <details><summary>Do I need NVLR to use envolvr?</summary><p>No. You can deposit USDG and pay per request. NVLR is for people who prefer a daily allowance.</p></details>
-    <details><summary>How is my allowance calculated?</summary><p>At 00:00 UTC each day, your allowance is that day's budget times your stake divided by total stake at that moment. It is computed on chain by the staking contract, so anyone can check it.</p></details>
-    <details><summary>Where does the daily budget come from?</summary><p>From NVLR trading fees. Before each day starts, the budget is set from those fees and written to the staking contract, so it moves with trading activity.</p></details>
-    <details><summary>When does new stake start counting?</summary><p>From the next 00:00 UTC. Stake added during a day counts for the following day's allowance.</p></details>
-    <details><summary>Does unused allowance roll over?</summary><p>No. Each day starts fresh. Any request beyond your allowance is paid from your USDG balance, if you have one.</p></details>
-    <details><summary>How do I unstake?</summary><p>Request an unstake in the app. That stake stops counting from the next day, and the tokens can be withdrawn after the cooldown shown in the app.</p></details>
-    <details><summary>Which models can the allowance pay for?</summary><p>Every model envolvr serves, at the same list prices as USDG requests. See <a href="/#models">Models</a>.</p></details>
+    <details><summary>What is NVLR?</summary><p>The token of envolvr, the private inference network for AI agents. It is an ERC-20 on Robinhood Chain with a supply of 1,000,000,000.</p></details>
+    <details><summary>What do I get for staking?</summary><p>A daily share of private inference for your agents, in proportion to your stake. Each day's budget is funded by NVLR trading fees, so it moves with trading activity.</p></details>
+    <details><summary>Do I need NVLR to use envolvr?</summary><p>No. Anyone can pay per request in USDG. NVLR is for those who want a daily allowance and a stake in where the network goes.</p></details>
+    <details><summary>What comes next?</summary><p>An open network: independent providers stake NVLR to serve, misbehaviour proven by receipts is slashed, holders can delegate, and protocol fees can be switched to burn and rewards. It opens when network volume supports it.</p></details>
+    <details><summary>How do I unstake?</summary><p>Request it in the app. Your tokens can be withdrawn after the cooldown shown there.</p></details>
     <details><summary>Is NVLR an investment?</summary><p>No. NVLR is prepaid access to compute. It is not a share in envolvr, its revenue or its profits.</p></details>
   </div>
   <p class="tok-legal">NVLR is intended as prepaid access to compute. Nothing on this page is financial, legal or investment advice or an offer to sell securities. Availability may be restricted in some jurisdictions. Digital assets are volatile and you can lose what you spend on them. See the <a href="/terms/">Terms of Service</a>.</p>
@@ -300,6 +217,6 @@
     </div>
   </div>
 </footer>
-<script src="/js/token.js?v=20261001s"></script>
+<script src="/js/token.js?v=20261001t"></script>
 </body>
 </html>
