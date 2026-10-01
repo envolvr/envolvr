@@ -55,6 +55,26 @@ sending and checks every receipt, run the local verifying proxy
 `npx private-ai-proxy serve https://api.envolvr.xyz` and point the client at
 `http://127.0.0.1:4180/v1`.
 
+### Automatic top-up
+
+Keep an agent funded without watching its balance. When the allowance left plus
+the balance falls below `below`, the client deposits `amount` from `signer` and
+waits until it is credited; a request refused for insufficient credit is topped
+up and retried once. `maxPerDay` caps the deposits per UTC day (default: one
+top-up). The signer can be the agent's own wallet or another one, which then
+deposits for the agent's account.
+
+```ts
+const envolvr = new Envolvr({
+  apiKey,
+  autoTopUp: { signer: wallet, below: '5', amount: '20', maxPerDay: '100', onEvent: console.log },
+});
+```
+
+The cap is counted per process. `onEvent` hears every top-up (`topped-up`),
+every day the cap stops one (`capped`) and every failure (`failed`); a failed
+top-up never fails the request on its own.
+
 Any wallet works for sign-in and deposits: implement `Signer` (`address`,
 `signMessage`, and `sendTransaction` for deposits) around viem, ethers or a
 hardware wallet.

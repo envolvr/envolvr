@@ -8,7 +8,8 @@ export { auditReceipt, fetchAttestationReport, runPap, verifyGateway } from './a
 export type { PapResult } from './attest.ts';
 export { Envolvr, savedReceipts, verifySaved } from './client.ts';
 export type { SavedReceipt, Verification } from './client.ts';
-export { fromMicros, TESTNET, toMicros } from './network.ts';
+export { fromMicros, MAINNET, TESTNET, toMicros } from './network.ts';
+export type { AutoTopUpOptions, TopUpEvent } from './topup.ts';
 export type { Network } from './network.ts';
 export { billingOf, chargedTo, payerCommitment, proofLeadsToRoot, receiptDigest, verifyAnchor } from './receipts.ts';
 export type { Anchor, Billing, Receipt } from './receipts.ts';

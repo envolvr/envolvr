@@ -180,6 +180,9 @@ const receiptId = res.response.headers.get('x-receipt-id');   // fetch it within
     <p>A management session lists, labels and revokes keys and shows usage and deposits. <code>GET /auth/session/nonce?wallet=0x…</code> returns a message to sign; <code>POST /auth/session</code> with <code>{wallet, nonce, issuedAt, signature}</code> returns a session token, valid for 12 hours. It manages the account and cannot call models, and an API key cannot manage the account.</p>
     <h3>Deposit USDG</h3>
     <p>Approve the credit vault for USDG, then call <code>deposit(amount)</code> from your wallet, or <code>depositFor(account, amount)</code> to fund another wallet. The balance is credited within seconds of the deposit being mined, net of the deposit fee. Deposit from a wallet you control, and use the vault's functions: a plain USDG transfer to the vault is not credited.</p>
+    <h3>Automatic top-up</h3>
+    <p>With the SDK, an agent can keep itself funded: when its allowance left plus balance falls below a threshold, the client deposits a set amount from a wallet you choose, waits until it is credited, and retries a request refused for insufficient credit once. A daily cap limits the deposits.</p>
+<pre><code>new Envolvr({ apiKey, autoTopUp: { signer: wallet, below: '5', amount: '20', maxPerDay: '100' } })</code></pre>
     <h3>Stake for an allowance</h3>
     <p>Staking NVLR gives a share of a daily inference budget: budget × your stake ÷ total stake, taken at 00:00 UTC. Stake added during a day counts from the next day. The allowance is spent before your USDG balance and does not roll over. Unstaking has a 7-day cooldown.</p>
     <h3>Balance</h3>

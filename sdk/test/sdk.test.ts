@@ -12,7 +12,8 @@ import { concatBytes, hexToBytes, utf8ToBytes } from '@noble/hashes/utils';
 import { closeAccount, closeAccountMessage, depositUsdg, netCredit, signIn, signInMessage } from '../src/api.ts';
 import { Envolvr, verifySaved } from '../src/client.ts';
 import { addressOfKey, encodeCall, hex, personalSign, signTx, unhex } from '../src/evm.ts';
-import { fromMicros, type Network, TESTNET, toMicros } from '../src/network.ts';
+import { fromMicros, MAINNET, type Network, TESTNET, toMicros } from '../src/network.ts';
+import type { TopUpEvent } from '../src/topup.ts';
 import { billingOf, chargedTo, payerCommitment, receiptDigest, type Receipt } from '../src/receipts.ts';
 import type { Signer } from '../src/wallet.ts';
 
@@ -79,7 +80,11 @@ test('billing and payer: read from the receipt, matched against the key', () => 
 
 let server: Server;
 let base: string;
-const state = { tamper: false, txs: [] as { to: string; data: string }[], allowance: 0n, balance: 50_000_000n };
+const state = {
+  tamper: false, txs: [] as { to: string; data: string }[], allowance: 0n, balance: 50_000_000n,
+  // the account at the control plane: its balance, reads counted; chat answers 402 below `need`
+  account: { wallet: '', balanceMicros: 0n, reads: 0 }, need: 0n,
+};
 const RECEIPT = {
   api_version: 'aci/1', receipt_id: 'rcpt-9', workload_keyset_digest: 'sha256:' + 'ab'.repeat(32), key_id: 'k', signature: '00',
   event_log: [{ type: 'billing.charged', currency: 'USD', cost: '0.0003', billed_micro_usd: 300, rates: {}, tokens: { prompt: 1, completion: 1, cache_read: 0, cache_creation: 0 }, payer: payerCommitment('envk_agent', 'rcpt-9') }],
@@ -109,6 +114,10 @@ before(async () => {
       return send(200, { closed: true, revokedKeys: 1, refund: { id: 1, amountMicros: '9500000', status: 'pending', refundTo: body.refundTo.toLowerCase() } });
     }
     if (url.pathname === '/pricing') return send(200, { depositFeeBps: 500, tokenPricing: 'provider list price' });
+    if (url.pathname === '/account') {
+      state.account.reads++;
+      return send(200, { wallet: state.account.wallet, balanceMicros: String(state.account.balanceMicros), allowanceTodayMicros: '0', allowanceLeftMicros: '0' });
+    }
     if (url.pathname === '/rpc') {
       const { method, params } = body;
       if (method === 'eth_call') {
@@ -120,6 +129,7 @@ before(async () => {
     }
     if (url.pathname === '/v1/chat/completions') {
       assert.equal(req.headers.authorization, 'Bearer envk_agent');
+      if (state.account.balanceMicros < state.need) return send(402, { error: { message: 'insufficient credit' } });
       return send(200, { choices: [{ message: { content: 'sealed' } }], usage: { cost: 0.0003 } }, { 'x-receipt-id': 'rcpt-9' });
     }
     if (url.pathname === '/v1/aci/receipts/rcpt-9') return send(200, RECEIPT);
@@ -139,7 +149,13 @@ const net = (): Network => ({ ...TESTNET, gateway: base, control: base, rpcUrl: 
 const signer = (): Signer => ({
   address: addressOfKey(unhex(KEY)),
   signMessage: async (m) => personalSign(m, unhex(KEY)),
-  sendTransaction: async (tx) => { state.txs.push(tx); return `0x${String(state.txs.length).padStart(64, '0')}`; },
+  sendTransaction: async (tx) => {
+    state.txs.push(tx);
+    // a mined deposit is credited net of the 5% fee, as the control plane's watcher does
+    const m = /^0x(b6b55f25|2f4f21e2)/.exec(tx.data);
+    if (m) state.account.balanceMicros += (BigInt('0x' + tx.data.slice(-64)) * 95n) / 100n;
+    return `0x${String(state.txs.length).padStart(64, '0')}`;
+  },
 });
 
 test('signIn signs only envolvr\'s own message', async () => {
@@ -198,3 +214,89 @@ test('closeAccount signs only the close message for the refund address it asked 
   state.tamper = false;
 });
 
+
+// ---- automatic top-up ----
+
+const AGENT = addressOfKey(unhex(KEY));
+function fresh(balanceMicros: bigint, wallet = AGENT) {
+  state.txs = []; state.allowance = 10n ** 12n; state.balance = 50_000_000n; state.need = 0n;
+  state.account = { wallet: wallet.toLowerCase(), balanceMicros, reads: 0 };
+}
+const deposits = () => state.txs.filter((t) => /^0x(b6b55f25|2f4f21e2)/.test(t.data));
+const client = (events: TopUpEvent[], over: Record<string, unknown> = {}) => new Envolvr({
+  apiKey: 'envk_agent', network: net(),
+  autoTopUp: { signer: signer(), below: '5', amount: '20', onEvent: (e) => events.push(e), ...over },
+});
+
+test('auto top-up: a low account is topped up before the request and credited before it runs', async () => {
+  fresh(1_000_000n);
+  const events: TopUpEvent[] = [];
+  await client(events).chat({ model: 'm', messages: [] });
+  assert.deepEqual(deposits().map((t) => t.data), [encodeCall('deposit(uint256)', [20_000_000n])]);
+  assert.equal(state.account.balanceMicros, 20_000_000n);
+  assert.equal(events[0].type, 'topped-up');
+  assert.equal((events[0] as { creditedMicros: bigint }).creditedMicros, 19_000_000n);
+});
+
+test('auto top-up: enough credit, no deposit, and the account is read at most every checkEveryMs', async () => {
+  fresh(50_000_000n);
+  const c = client([], { checkEveryMs: 60_000 });
+  await c.chat({ model: 'm', messages: [] });
+  await c.chat({ model: 'm', messages: [] });
+  assert.equal(deposits().length, 0);
+  assert.equal(state.account.reads, 1);
+});
+
+test('auto top-up: concurrent requests share one top-up', async () => {
+  fresh(0n);
+  const c = client([], { maxPerDay: '100' });
+  await Promise.all([1, 2, 3].map(() => c.chat({ model: 'm', messages: [] })));
+  assert.equal(deposits().length, 1);
+});
+
+test('auto top-up: the daily cap stops further deposits and says so once', async () => {
+  fresh(1_000_000n);
+  const events: TopUpEvent[] = [];
+  const c = client(events, { checkEveryMs: 0 });
+  await c.chat({ model: 'm', messages: [] });
+  state.account.balanceMicros = 1_000_000n; // spent again the same day
+  await c.chat({ model: 'm', messages: [] });
+  await c.chat({ model: 'm', messages: [] });
+  assert.equal(deposits().length, 1);
+  assert.deepEqual(events.map((e) => e.type), ['topped-up', 'capped']);
+});
+
+test('auto top-up: a 402 tops up and retries once; without auto top-up the 402 is thrown', async () => {
+  fresh(50_000_000n);
+  const c = client([], { checkEveryMs: 60_000 });
+  await c.chat({ model: 'm', messages: [] }); // reads the account: plenty
+  state.account.balanceMicros = 1_000_000n; // spent down before the next check is due
+  state.need = 10_000_000n;
+  const r = await c.chat({ model: 'm', messages: [] }); // 402, top-up, retry
+  assert.equal(r.response.choices[0].message.content, 'sealed');
+  assert.equal(deposits().length, 1);
+  assert.equal(state.account.reads, 3); // the first check, the 402's read, the credit check
+  fresh(0n); state.need = 1n;
+  await assert.rejects(new Envolvr({ apiKey: 'envk_agent', network: net() }).chat({ model: 'm', messages: [] }), (e: any) => e.status === 402);
+});
+
+test('auto top-up: a signer that is not the account wallet deposits for it', async () => {
+  const agent = '0x' + '42'.repeat(20);
+  fresh(0n, agent);
+  await client([]).chat({ model: 'm', messages: [] });
+  assert.deepEqual(deposits().map((t) => t.data), [encodeCall('depositFor(address,uint256)', [agent, 20_000_000n])]);
+});
+
+test('auto top-up: a failed deposit is reported and the request still runs', async () => {
+  fresh(1_000_000n);
+  state.balance = 0n; // the paying wallet holds no USDG
+  const events: TopUpEvent[] = [];
+  await client(events).chat({ model: 'm', messages: [] });
+  assert.equal(events[0].type, 'failed');
+  assert.match((events[0] as { error: Error }).error.message, /less than/);
+});
+
+test('MAINNET: on-chain steps refuse until the contracts are published', async () => {
+  assert.equal(MAINNET.chainId, 4663);
+  await assert.rejects(depositUsdg({ signer: signer(), amountMicros: 1n, network: MAINNET }), /published at launch/);
+});
