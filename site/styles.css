@@ -120,8 +120,12 @@ code{font-family:var(--mono)}
 @media (max-width:479px){.hdr{top:8px;margin-top:8px;padding:0 8px}}
 
 /* ---------- hero ---------- */
-.hero{display:grid;grid-template-columns:minmax(0,1fr);gap:28px 0;align-items:center;padding-top:72px}
-@media (min-width:1100px){.hero{grid-template-columns:minmax(0,1.7fr) minmax(0,1fr);gap:48px 72px}}
+/* Hero grid: 12 columns, 32px gaps; the news column is 5, 4 and 3 columns
+   wide from 768, 1024 and 1280px, top-aligned with the headline. */
+.hero{display:grid;grid-template-columns:minmax(0,1fr);gap:28px 32px;align-items:start;padding-top:72px}
+@media (min-width:768px){.hero{grid-template-columns:repeat(12,minmax(0,1fr))}.hero-copy{grid-column:1 / span 7}.news{grid-column:8 / span 5}}
+@media (min-width:1024px){.hero-copy{grid-column:1 / span 8}.news{grid-column:9 / span 4}}
+@media (min-width:1280px){.news{grid-column:10 / span 3}}
 @media (max-width:819px){.hero{padding-top:36px}}
 .hero-copy{display:flex;flex-direction:column;gap:16px}
 .hero h1{font-family:var(--serif);font-weight:500;font-size:calc(48px * var(--serif-scale));line-height:48px;letter-spacing:var(--serif-track);text-wrap:balance}
@@ -135,18 +139,20 @@ code{font-family:var(--mono)}
 .snippet em{font-style:normal;color:var(--violet)}
 .snippet button{all:unset;cursor:pointer;flex:none;padding:7px 12px;border:1px solid var(--line);background:#fff;border-radius:7px;font-family:var(--sans);font-size:13px}
 .snippet button:hover{border-color:var(--ink)}
+/* News links: 8px above and 20px below each, a hairline that darkens
+   on hover, 20px between links; label 8px above a 16/24 title with the 14px
+   description directly under it; a 32px arrow square. */
 .news{display:none;flex-direction:column;align-self:start}
-@media (min-width:1100px){.news{display:flex}}
-.news{padding-top:4px}
-.news a{display:grid;grid-template-columns:minmax(0,1fr) 32px;gap:16px;padding:18px 16px;margin:0 -16px;border-radius:12px;color:var(--ink);transition:background .18s}
-.news a:hover{background:var(--chip);color:var(--ink)}
-.news a > span:first-child{display:flex;flex-direction:column;gap:4px}
-.news small{font-size:12px;line-height:16px;font-weight:400;letter-spacing:normal;text-transform:uppercase;color:var(--violet)}
-.news b{font-weight:400;font-size:16px;line-height:24px;text-underline-offset:3px}
-.news a:hover b{text-decoration:underline}
-.news i{font-style:normal;font-size:14px;line-height:19.25px;color:#8a918b}
-.news .arr{width:32px;height:32px;border-radius:8px;font-size:13px;background:#fff;transition:all .18s}
-.news a:hover .arr{background:var(--ink);border-color:var(--ink);color:#fff;transform:translate(2px,-2px)}
+@media (min-width:768px){.news{display:flex}}
+.news a{display:flex;justify-content:space-between;align-items:flex-start;padding:8px 0 20px;margin-bottom:20px;border-bottom:1px solid var(--line);color:var(--ink);transition:border-color .15s}
+.news a:last-child{margin-bottom:0}
+.news a:hover{border-bottom-color:var(--ink);color:var(--ink)}
+.news a > span:first-child{flex:1;min-width:0;padding-right:16px;display:flex;flex-direction:column}
+.news small{display:block;margin-bottom:8px;font-size:12px;line-height:16px;font-weight:400;letter-spacing:normal;text-transform:uppercase;color:var(--violet)}
+.news b{font-weight:400;font-size:16px;line-height:24px}
+.news i{font-style:normal;font-size:14px;line-height:19.25px;color:#a3a3a3}
+.news .arr{flex:none;width:32px;height:32px;border:0;border-radius:8px;background:#fafafa;font-size:13px;transition:background .15s,color .15s}
+.news a:hover .arr{background:var(--ink);color:#fff}
 .arr{display:flex;align-items:center;justify-content:center;width:30px;height:30px;border:1px solid var(--line);border-radius:7px;font-size:12px}
 
 /* ---------- highlights ---------- */
