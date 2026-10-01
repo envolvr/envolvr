@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="64" height="64" role="img" aria-label="envolvr">
   <title>envolvr</title>
-  <path d="M12 1.2l9.6 5.4v10.8L12 22.8l-9.6-5.4V6.6z" fill="#163a2e"/>
+  <path d="M12 1.2l9.6 5.4v10.8L12 22.8l-9.6-5.4V6.6z" fill="#0f1110"/>
   <path d="M7.4 10.2l4.6 3.7 4.6-3.7" fill="none" stroke="#d4f25c" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"/>
 </svg>

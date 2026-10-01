@@ -16,7 +16,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,500&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="styles.css?v=20261001k">
+<link rel="stylesheet" href="styles.css?v=20261001m">
 <script>document.documentElement.classList.add('js');</script>
 </head>
 <body>
@@ -25,7 +25,7 @@
 <header class="hdr" id="nav">
   <div class="hdr-bar">
     <a class="logo" href="#top" aria-label="envolvr home">
-      <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M12 2.5l8.5 4.8v9.4L12 21.5l-8.5-4.8V7.3z" fill="#163a2e"/><path d="M7.8 10.4l4.2 3.4 4.2-3.4" fill="none" stroke="#d4f25c" stroke-width="2.3" stroke-linejoin="round"/></svg>
+      <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M12 2.5l8.5 4.8v9.4L12 21.5l-8.5-4.8V7.3z" fill="#0f1110"/><path d="M7.8 10.4l4.2 3.4 4.2-3.4" fill="none" stroke="#d4f25c" stroke-width="2.3" stroke-linejoin="round"/></svg>
       envolvr
     </a>
     <nav class="hdr-nav" aria-label="Main">
@@ -37,8 +37,8 @@
       <a class="dim" href="/docs/">Docs ↗</a>
     </nav>
     <a class="hdr-gh" href="https://github.com/envolvr/envolvr" aria-label="GitHub" title="GitHub"><svg viewBox="0 0 16 16" width="19" height="19" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg></a>
-    <a class="hdr-btn green" href="/app/">Open app</a>
-    <a class="hdr-btn ink" href="/docs/#quickstart">Start building</a>
+    <a class="hdr-btn ink" href="/app/">Open app</a>
+    <a class="hdr-btn volt" href="/docs/#quickstart">Start building</a>
     <button class="burger" id="navToggle" type="button" aria-label="Menu" aria-expanded="false" aria-controls="menu"><span></span><span></span><span></span></button>
   </div>
   <nav class="menu" id="menu" aria-label="Menu" hidden>
@@ -49,7 +49,7 @@
     <a href="#developers">Developers<span>→</span></a>
     <a href="/docs/">Docs<span>↗</span></a>
     <a href="https://github.com/envolvr/envolvr">GitHub<span>↗</span></a>
-    <div class="menu-cta"><a class="green" href="/app/">Open app</a><a class="ink" href="/docs/#quickstart">Start building</a></div>
+    <div class="menu-cta"><a class="ink" href="/app/">Open app</a><a class="volt" href="/docs/#quickstart">Start building</a></div>
   </nav>
 </header>
 
@@ -140,23 +140,23 @@
 
 <div class="wrap body">
   <aside class="toc" aria-label="On this page">
-    <a href="#privacy"><span>01</span>Privacy</a>
-    <a href="#models"><span>02</span>Models</a>
-    <a href="#how"><span>03</span>How it works</a>
-    <a href="#verify"><span>04</span>Verify</a>
-    <a href="#pricing"><span>05</span>Pricing</a>
-    <a href="#developers"><span>06</span>Developers</a>
-    <a href="#suppliers"><span>07</span>Suppliers</a>
+    <a href="#privacy" style="--c:#7a5cff"><span>01</span>Privacy</a>
+    <a href="#models" style="--c:#111512"><span>02</span>Models</a>
+    <a href="#how" style="--c:#f2b705"><span>03</span>How it works</a>
+    <a href="#verify" style="--c:#5465c4"><span>04</span>Verify</a>
+    <a href="#pricing" style="--c:#9fd600"><span>05</span>Pricing</a>
+    <a href="#developers" style="--c:#e0479e"><span>06</span>Developers</a>
+    <a href="#suppliers" style="--c:#1f8a6d"><span>07</span>Suppliers</a>
   </aside>
 
   <main class="content">
 
     <section class="sec" id="privacy">
       <div class="sec-head">
-        <h2><svg viewBox="0 0 24 24" width="26" height="26" aria-hidden="true"><path d="M12 2.5l8.5 4.8v9.4L12 21.5l-8.5-4.8V7.3z" fill="#111512"/></svg>Privacy</h2>
+        <h2><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M12 2.5l8.5 4.8v9.4L12 21.5l-8.5-4.8V7.3z" fill="#7a5cff"/></svg>Privacy</h2>
         <p>Every prompt an agent sends to a hosted model is a disclosure. envolvr seals it before it leaves the agent.</p>
       </div>
-      <div class="panel seal" id="seal">
+      <div class="panel seal lav" id="seal">
         <div class="tabs" role="group" aria-label="Prompt view">
           <button type="button" data-view="open" aria-pressed="true">Hosted model</button>
           <button type="button" data-view="sealed" aria-pressed="false">envolvr</button>
@@ -176,9 +176,9 @@
             </div>
           </div>
           <div class="points">
-            <div><i class="sq" style="background:#1f8a6d"></i><div><b>Reasoning leaks</b><span>Signals and intent go to whoever serves the model.</span></div></div>
-            <div><i class="sq" style="background:#9bb51f"></i><div><b>"No logs" is a promise</b><span>envolvr makes it a proof, checked on every request.</span></div></div>
-            <div><i class="sq" style="background:#3e6fc8"></i><div><b>A paper trail, sealed</b><span>Which model decided, provable without exposing why.</span></div></div>
+            <div><i class="sq out" style="background:#ccff00"></i><div><b>Reasoning leaks</b><span>Signals and intent go to whoever serves the model.</span></div></div>
+            <div><i class="sq" style="background:#7a5cff"></i><div><b>"No logs" is a promise</b><span>envolvr makes it a proof, checked on every request.</span></div></div>
+            <div><i class="sq" style="background:#e0479e"></i><div><b>A paper trail, sealed</b><span>Which model decided, provable without exposing why.</span></div></div>
           </div>
         </div>
         <div class="panel-note" data-seal-note>ⓘ Position, intent and timing, all readable at the point of inference.</div>
@@ -187,7 +187,7 @@
 
     <section class="sec" id="models">
       <div class="sec-head">
-        <h2><svg viewBox="0 0 24 24" width="26" height="26" aria-hidden="true"><path d="M12 2.5l8.5 4.8v9.4L12 21.5l-8.5-4.8V7.3z" fill="#111512"/></svg>Models</h2>
+        <h2><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M12 2.5l8.5 4.8v9.4L12 21.5l-8.5-4.8V7.3z" fill="#111512"/></svg>Models</h2>
         <p>Open-weight models on attested GPUs, at the suppliers' own list prices. Every endpoint returns a signed receipt.</p>
       </div>
       <div class="panel">
@@ -200,9 +200,9 @@
           <div class="chart-head">
             <div><span class="panel-title" data-chart-title>Blended price per 1M tokens</span><span class="panel-sub" data-chart-sub>USD per 1M tokens, 3 parts input to 1 part output · Lower is better</span></div>
             <div class="chips">
-              <button type="button" aria-pressed="true" data-sup="phala"><i style="background:#1f8a6d"></i>Phala</button>
-              <button type="button" aria-pressed="true" data-sup="near"><i style="background:#9bb51f"></i>NEAR AI</button>
-              <button type="button" aria-pressed="true" data-sup="chutes"><i style="background:#3e6fc8"></i>Chutes</button>
+              <button type="button" aria-pressed="true" data-sup="phala"><i style="background:#b5ec00"></i>Phala</button>
+              <button type="button" aria-pressed="true" data-sup="near"><i style="background:#7a5cff"></i>NEAR AI</button>
+              <button type="button" aria-pressed="true" data-sup="chutes"><i style="background:#ff5fa2"></i>Chutes</button>
               <span class="count" data-count>9 of 9 endpoints</span>
             </div>
           </div>
@@ -268,11 +268,11 @@
 
     <section class="sec" id="how">
       <div class="sec-head">
-        <h2><svg viewBox="0 0 24 24" width="26" height="26" aria-hidden="true"><path d="M12 2.5l8.5 4.8v9.4L12 21.5l-8.5-4.8V7.3z" fill="#111512"/></svg>How it works</h2>
+        <h2><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M12 2.5l8.5 4.8v9.4L12 21.5l-8.5-4.8V7.3z" fill="#f2b705"/></svg>How it works</h2>
         <p>Five hops from the agent to the chain, and no trusted middleman. Each hop proves something you can check.</p>
       </div>
       <!-- Desktop: tabs, a row of hop boxes and the detail panel. Phones: a vertical accordion. Both are filled by main.js. -->
-      <div class="panel hops-wide" id="flow">
+      <div class="panel hops-wide amber" id="flow">
         <div class="tabs" role="tablist" aria-label="Hop" data-hop-tabs></div>
         <div class="hop-row-wrap"><div class="hop-row" data-hop-row></div></div>
         <div class="hop-detail">
@@ -285,10 +285,10 @@
 
     <section class="sec" id="verify">
       <div class="sec-head">
-        <h2><svg viewBox="0 0 24 24" width="26" height="26" aria-hidden="true"><path d="M12 2.5l8.5 4.8v9.4L12 21.5l-8.5-4.8V7.3z" fill="#111512"/></svg>Verify</h2>
+        <h2><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M12 2.5l8.5 4.8v9.4L12 21.5l-8.5-4.8V7.3z" fill="#5465c4"/></svg>Verify</h2>
         <p>Signature, commitments, bill and on-chain anchor, computed in your browser. Change a single character and watch it fail.</p>
       </div>
-      <div class="panel">
+      <div class="panel peri">
         <div class="tabs" role="tablist" aria-label="Receipt">
           <button type="button" role="tab" aria-selected="true" data-src="sample">Sample receipt</button>
           <button type="button" role="tab" aria-selected="false" data-src="own">Your receipt</button>
@@ -322,7 +322,7 @@
 
     <section class="sec" id="pricing">
       <div class="sec-head">
-        <h2><svg viewBox="0 0 24 24" width="26" height="26" aria-hidden="true"><path d="M12 2.5l8.5 4.8v9.4L12 21.5l-8.5-4.8V7.3z" fill="#111512"/></svg>Pricing</h2>
+        <h2><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M12 2.5l8.5 4.8v9.4L12 21.5l-8.5-4.8V7.3z" fill="#ccff00" stroke="#111512" stroke-width="1.6" stroke-linejoin="round"/></svg>Pricing</h2>
         <p>Two ways to pay. One of them is cheaper.</p>
       </div>
       <div class="plans">
@@ -346,16 +346,16 @@
 
     <section class="sec" id="developers">
       <div class="sec-head">
-        <h2><svg viewBox="0 0 24 24" width="26" height="26" aria-hidden="true"><path d="M12 2.5l8.5 4.8v9.4L12 21.5l-8.5-4.8V7.3z" fill="#111512"/></svg>Developers</h2>
+        <h2><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M12 2.5l8.5 4.8v9.4L12 21.5l-8.5-4.8V7.3z" fill="#e0479e"/></svg>Developers</h2>
         <p>Keep your OpenAI client. Point it at envolvr and every response carries a receipt.</p>
       </div>
-      <div class="panel" id="code">
+      <div class="panel volt" id="code">
         <div class="tabs" role="tablist" aria-label="Language" data-code-tabs></div>
         <div class="panel-body dev">
           <div class="points dev-points">
-            <div><i class="sq" style="background:#1f8a6d"></i><div><b>OpenAI-compatible</b><span>Chat completions and streaming, same SDKs.</span></div></div>
-            <div><i class="sq" style="background:#9bb51f"></i><div><b>A receipt per response</b><span>The <code>x-receipt-id</code> header names it.</span></div></div>
-            <div><i class="sq" style="background:#3e6fc8"></i><div><b>Docs for agents</b><span><a href="/llms.txt"><code>llms.txt</code></a> lets your agent read them itself.</span></div></div>
+            <div><i class="sq out" style="background:#ccff00"></i><div><b>OpenAI-compatible</b><span>Chat completions and streaming, same SDKs.</span></div></div>
+            <div><i class="sq" style="background:#7a5cff"></i><div><b>A receipt per response</b><span>The <code>x-receipt-id</code> header names it.</span></div></div>
+            <div><i class="sq" style="background:#e0479e"></i><div><b>Docs for agents</b><span><a href="/llms.txt"><code>llms.txt</code></a> lets your agent read them itself.</span></div></div>
           </div>
           <div class="code"><button type="button" data-copy-code>Copy</button><div class="code-lines" data-code-lines></div></div>
         </div>
@@ -364,14 +364,14 @@
 
     <section class="sec sec-last" id="suppliers">
       <div class="sec-head">
-        <h2><svg viewBox="0 0 24 24" width="26" height="26" aria-hidden="true"><path d="M12 2.5l8.5 4.8v9.4L12 21.5l-8.5-4.8V7.3z" fill="#111512"/></svg>Suppliers</h2>
+        <h2><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M12 2.5l8.5 4.8v9.4L12 21.5l-8.5-4.8V7.3z" fill="#1f8a6d"/></svg>Suppliers</h2>
         <p>Inference runs on confidential hardware, rooted in Intel TDX and NVIDIA Confidential Computing.</p>
       </div>
       <div class="sup-grid">
-        <div class="sup-card"><span class="sup-tile phala"><svg aria-hidden="true"><use href="images/suppliers.svg#phala"/></svg></span><b>Phala</b><span>GPU TEE models on Intel TDX and NVIDIA CC</span></div>
-        <div class="sup-card"><span class="sup-tile near"><svg aria-hidden="true"><use href="images/suppliers.svg#near"/></svg></span><b>NEAR AI</b><span>Responses signed in the model enclave</span></div>
-        <div class="sup-card"><span class="sup-tile redpill"><svg aria-hidden="true"><use href="images/suppliers.svg#redpill"/></svg></span><b>RedPill</b><span>Routing to Phala GPU TEEs</span></div>
-        <div class="sup-card"><span class="sup-tile chutes"><svg aria-hidden="true"><use href="images/suppliers.svg#chutes"/></svg></span><b>Chutes</b><span>On Bittensor, each machine attested</span></div>
+        <div class="sup-card phala"><span class="sup-tile phala"><svg aria-hidden="true"><use href="images/suppliers.svg#phala"/></svg></span><b>Phala</b><span>GPU TEE models on Intel TDX and NVIDIA CC</span></div>
+        <div class="sup-card near"><span class="sup-tile near"><svg aria-hidden="true"><use href="images/suppliers.svg#near"/></svg></span><b>NEAR AI</b><span>Responses signed in the model enclave</span></div>
+        <div class="sup-card redpill"><span class="sup-tile redpill"><svg aria-hidden="true"><use href="images/suppliers.svg#redpill"/></svg></span><b>RedPill</b><span>Routing to Phala GPU TEEs</span></div>
+        <div class="sup-card chutes"><span class="sup-tile chutes"><svg aria-hidden="true"><use href="images/suppliers.svg#chutes"/></svg></span><b>Chutes</b><span>On Bittensor, each machine attested</span></div>
       </div>
     </section>
 
@@ -396,14 +396,14 @@
       <p>envolvr is a pre-launch protocol. Nothing on this site is financial, legal or investment advice, and nothing here is an offer to sell securities. NVLR is intended as prepaid access to compute. Availability is restricted by jurisdiction and any token launch is subject to legal review. The attestation guarantee is limited to what is described in the protocol spec.</p>
     </div>
     <div class="foot-mark" aria-hidden="true">
-      <svg viewBox="0 0 24 24"><path d="M12 2.5l8.5 4.8v9.4L12 21.5l-8.5-4.8V7.3z" fill="none" stroke="#163a2e" stroke-width="2.4" stroke-linejoin="round"/><path d="M7.8 10.4l4.2 3.4 4.2-3.4" fill="none" stroke="#163a2e" stroke-width="2.4" stroke-linejoin="round"/></svg>
+      <svg viewBox="0 0 24 24"><path d="M12 2.5l8.5 4.8v9.4L12 21.5l-8.5-4.8V7.3z" fill="none" stroke="#0f1110" stroke-width="2.4" stroke-linejoin="round"/><path d="M7.8 10.4l4.2 3.4 4.2-3.4" fill="none" stroke="#0f1110" stroke-width="2.4" stroke-linejoin="round"/></svg>
       <span>envolvr</span>
     </div>
   </div>
 </footer>
 
 </div>
-<script src="main.js?v=20261001k"></script>
-<script type="module" src="js/site-verify.js?v=20261001k"></script>
+<script src="main.js?v=20261001m"></script>
+<script type="module" src="js/site-verify.js?v=20261001m"></script>
 </body>
 </html>
