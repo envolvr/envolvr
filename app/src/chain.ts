@@ -1,6 +1,6 @@
 // Robinhood Chain: balances and staking state (read over the public RPC), and
 // the transactions the wallet signs (approve, deposit, stake, unstake, withdraw,
-// and on testnet a test USDG mint).
+// and, with TESTNET, a test USDG mint).
 
 import { createPublicClient, createWalletClient, custom, http, parseAbi, type Address } from 'viem';
 import { chain, contracts } from './config.ts';

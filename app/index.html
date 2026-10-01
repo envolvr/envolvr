@@ -6,7 +6,7 @@
 <title>envolvr · Account</title>
 <meta name="description" content="Connect a wallet to fund your envolvr account, stake NVLR, manage API keys and see what your agents spent.">
 <meta name="theme-color" content="#ffffff">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com https://fonts.reown.com; img-src 'self' data: https:; connect-src 'self' https://auth.envolvr.xyz https://rpc.testnet.chain.robinhood.com https://*.walletconnect.com https://*.walletconnect.org wss://*.walletconnect.com wss://*.walletconnect.org https://*.reown.com wss://*.reown.com https://*.web3modal.org https://*.web3modal.com; frame-src https://*.walletconnect.com https://*.walletconnect.org https://*.reown.com; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com https://fonts.reown.com; img-src 'self' data: https:; connect-src 'self' https://auth.envolvr.xyz https://rpc.mainnet.chain.robinhood.com https://*.walletconnect.com https://*.walletconnect.org wss://*.walletconnect.com wss://*.walletconnect.org https://*.reown.com wss://*.reown.com https://*.web3modal.org https://*.web3modal.com; frame-src https://*.walletconnect.com https://*.walletconnect.org https://*.reown.com; base-uri 'none'; form-action 'none'">
 <meta name="referrer" content="no-referrer">
 <link rel="icon" href="../favicon.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -22,8 +22,8 @@
       <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M12 2.5l8.5 4.8v9.4L12 21.5l-8.5-4.8V7.3z" fill="#0f1110"/><path d="M7.8 10.4l4.2 3.4 4.2-3.4" fill="none" stroke="#d4f25c" stroke-width="2.3" stroke-linejoin="round"/></svg>
       envolvr
     </a>
-    <span class="net-tag">Testnet</span>
-    <nav class="hdr-nav" aria-label="App"><a href="/">Home</a><a href="/docs/">Docs</a></nav>
+    <span class="net-tag">Robinhood Chain</span>
+    <nav class="hdr-nav" aria-label="App"><a href="/">Home</a><a href="/token/">Token</a><a href="/docs/">Docs</a></nav>
     <span class="wallet-chip" id="walletChip" hidden></span>
     <button class="hdr-btn line" id="disconnect" type="button" hidden>Disconnect</button>
   </div>
@@ -37,7 +37,7 @@
     </div>
     <div class="panel lav">
       <div class="panel-body">
-        <div class="panel-head"><div><h2 class="panel-title">Connect a wallet</h2><p class="panel-sub">Robinhood Chain testnet · signing in costs no gas</p></div></div>
+        <div class="panel-head"><div><h2 class="panel-title">Connect a wallet</h2><p class="panel-sub">Robinhood Chain · signing in costs no gas</p></div></div>
         <div id="walletList" class="wallets"></div>
         <p class="app-note" id="noWallet" hidden>No browser wallet found. Install one (for example Rabby or MetaMask) and reload.</p>
       </div>
@@ -68,7 +68,7 @@
           <div class="panel-head"><div><h2 class="panel-title">Deposit USDG</h2><p class="panel-sub">Pay per request from your balance</p></div></div>
           <label class="field"><span>Amount</span><input id="depositAmount" inputmode="decimal" placeholder="10.00"><em>USDG</em></label>
           <p class="app-note" id="depositPreview">Credited to your balance, net of the deposit fee, within seconds.</p>
-          <div class="row"><button class="btn btn-primary" id="deposit">Deposit</button><button class="btn btn-outline" id="mint">Get 20 test USDG</button></div>
+          <div class="row"><button class="btn btn-primary" id="deposit">Deposit</button><button class="btn btn-outline" id="mint" hidden>Get 20 test USDG</button></div>
         </div>
       </article>
 
@@ -124,7 +124,7 @@
 </main>
 
 <footer class="wrap"><div class="app-foot">
-  <span>© 2026 envolvr · Testnet: balances and tokens have no value.</span>
+  <span>© 2026 envolvr</span>
   <nav aria-label="Footer"><a href="/">Home</a><a href="/docs/">Docs</a><a href="https://github.com/envolvr/envolvr">GitHub</a><a href="/terms/">Terms</a><a href="/privacy/">Privacy</a></nav>
 </div></footer>
 
