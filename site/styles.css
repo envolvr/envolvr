@@ -259,16 +259,18 @@ code{font-family:var(--mono)}
 .chart .col{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;gap:4px;min-width:0}
 .chart .val{font-size:10.5px;color:#3a403c;white-space:nowrap;font-variant-numeric:tabular-nums}
 .chart .bar{display:block;width:78%;background:var(--c);border-radius:2px 2px 0 0;height:0;transition:height .35s}
-.chart .labels{display:flex;gap:6px;height:84px}
-.chart .lcol{flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;padding-top:6px;min-width:0}
-.chart .lcol > span:last-child{font-size:9.5px;color:#5d655f;white-space:nowrap;transform:rotate(-65deg) translateX(-18px);transform-origin:top center}
+.chart .labels{display:flex;gap:6px;height:112px}
+.chart .lcol{position:relative;flex:1;display:flex;flex-direction:column;align-items:center;padding-top:6px;min-width:0}
+/* The label's right end sits 9px under its logo, at the column centre; rotating
+   around that point sends the text down and to the left, clear of every logo. */
+.chart .lcol > span:last-child{position:absolute;right:50%;top:29px;font-size:9.5px;line-height:1;color:#5d655f;white-space:nowrap;transform:translateY(-50%) rotate(-65deg);transform-origin:100% 50%}
 .chart.big .plot{gap:10px;height:250px;margin-top:28px;background-image:repeating-linear-gradient(to top,#eceee8 0,#eceee8 1px,transparent 1px,transparent 50px)}
 .chart.big .col{gap:5px}
 .chart.big .val{font-size:11.5px}
 .chart.big .bar{width:46%;min-width:18px}
-.chart.big .labels{gap:10px;height:86px}
-.chart.big .lcol{gap:8px;padding-top:8px}
-.chart.big .lcol > span:last-child{font-size:11px;transform:rotate(-50deg) translateX(-16px)}
+.chart.big .labels{gap:10px;height:116px}
+.chart.big .lcol{padding-top:8px}
+.chart.big .lcol > span:last-child{top:34px;font-size:11px;transform:translateY(-50%) rotate(-50deg)}
 /* supplier marks under the bars: black, like the table */
 .tile{display:flex;align-items:center;justify-content:center;flex:none;width:14px;height:14px}
 .chart.big .tile{width:16px;height:16px}
