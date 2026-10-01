@@ -11,6 +11,25 @@ export interface Account {
   balanceMicros: bigint;
 }
 
+/** A CreditVault TopUpRuleSet event; amount 0 clears the rule. */
+export interface TopUpRuleEvent {
+  payer: string;
+  account: string;
+  belowMicros: bigint;
+  amountMicros: bigint;
+  maxPerDayMicros: bigint;
+  blockNumber: number;
+  logIndex: number;
+}
+
+export interface TopUpRule {
+  payer: string;
+  account: string;
+  belowMicros: bigint;
+  amountMicros: bigint;
+  maxPerDayMicros: bigint;
+}
+
 export interface DepositEvent {
   txHash: string;
   logIndex: number;
@@ -137,6 +156,16 @@ export class Store {
         tx_hash TEXT,
         paid_at INTEGER
       );
+      CREATE TABLE IF NOT EXISTS topup_rules (
+        payer TEXT NOT NULL,
+        account TEXT NOT NULL,
+        below_micros INTEGER NOT NULL,
+        amount_micros INTEGER NOT NULL,
+        max_per_day_micros INTEGER NOT NULL,
+        block_number INTEGER NOT NULL,
+        PRIMARY KEY (payer, account)
+      );
+      CREATE INDEX IF NOT EXISTS topup_rules_account ON topup_rules (account);
       CREATE TABLE IF NOT EXISTS wallet_screening (
         wallet TEXT PRIMARY KEY,
         sanctioned INTEGER NOT NULL,
@@ -329,6 +358,49 @@ export class Store {
       this.db.exec('ROLLBACK');
       throw err;
     }
+  }
+
+  /**
+   * Apply TopUpRuleSet events in chain order and advance the cursor, in one
+   * transaction: the latest event per (payer, account) wins, amount 0 removes it.
+   */
+  applyTopUpRules(cursorName: string, events: TopUpRuleEvent[], throughBlock: number): void {
+    const ordered = [...events].sort((x, y) => x.blockNumber - y.blockNumber || x.logIndex - y.logIndex);
+    this.db.exec('BEGIN IMMEDIATE');
+    try {
+      for (const e of ordered) {
+        const payer = e.payer.toLowerCase();
+        const account = e.account.toLowerCase();
+        if (e.amountMicros === 0n) {
+          this.db.prepare('DELETE FROM topup_rules WHERE payer = ? AND account = ?').run(payer, account);
+        } else {
+          this.db.prepare(`INSERT INTO topup_rules (payer, account, below_micros, amount_micros, max_per_day_micros, block_number)
+            VALUES (?, ?, ?, ?, ?, ?) ON CONFLICT (payer, account) DO UPDATE SET below_micros = excluded.below_micros,
+            amount_micros = excluded.amount_micros, max_per_day_micros = excluded.max_per_day_micros,
+            block_number = excluded.block_number`)
+            .run(payer, account, e.belowMicros, e.amountMicros, e.maxPerDayMicros, e.blockNumber);
+        }
+      }
+      this.db.prepare(`INSERT INTO chain_cursor (name, block_number) VALUES (?, ?)
+        ON CONFLICT (name) DO UPDATE SET block_number = excluded.block_number`).run(cursorName, throughBlock);
+      this.db.exec('COMMIT');
+    } catch (err) {
+      this.db.exec('ROLLBACK');
+      throw err;
+    }
+  }
+
+  /** Top-up rules, all of them or those funding one account. */
+  topUpRules(account?: string): TopUpRule[] {
+    const rows = (account
+      ? this.db.prepare('SELECT * FROM topup_rules WHERE account = ? ORDER BY block_number, payer').all(account.toLowerCase())
+      : this.db.prepare('SELECT * FROM topup_rules ORDER BY account, block_number, payer').all()) as {
+      payer: string; account: string; below_micros: number; amount_micros: number; max_per_day_micros: number;
+    }[];
+    return rows.map((r) => ({
+      payer: r.payer, account: r.account, belowMicros: BigInt(r.below_micros), amountMicros: BigInt(r.amount_micros),
+      maxPerDayMicros: BigInt(r.max_per_day_micros),
+    }));
   }
 
   /**

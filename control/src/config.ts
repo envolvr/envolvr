@@ -37,6 +37,8 @@ export interface Config {
   backup?: BackupConfig;
   /** Receipt anchoring on chain (anchoring.ts); needs `chain`. Off when absent. */
   anchoring?: AnchoringConfig;
+  /** Automatic top-up keeper for CreditVault rules (topup.ts); needs chain.creditVault. Off when absent. */
+  topUp?: TopUpConfig;
   /** Origins allowed to call the client-facing API from a browser (the app), e.g. https://envolvr.xyz. */
   corsOrigins?: string[];
   /** Bearer token the gateway presents (middleware.control_token). */
@@ -54,6 +56,17 @@ export interface ScreeningConfig {
   oracle?: string;
   /** Default 86400. */
   rescreenAfterSeconds?: number;
+}
+
+export interface TopUpConfig {
+  /** Checked against the RPC before every transaction. */
+  chainId: number;
+  /** How often every rule is checked, ms. Default 60000. */
+  sweepMs?: number;
+  /** A sent top-up is not repeated for this long, seconds. Default 600. */
+  retryAfterSeconds?: number;
+  /** Where the dstack guest agent listens. Default /var/run/dstack.sock. */
+  dstackEndpoint?: string;
 }
 
 export interface AnchoringConfig {
@@ -122,6 +135,10 @@ export function loadConfig(path: string, env: NodeJS.ProcessEnv = process.env): 
     config.backup = { ...backup, accessKeyId, secretAccessKey };
   }
   if (config.anchoring) validateAnchoring(config);
+  if (config.topUp) {
+    if (!config.chain?.creditVault) throw new Error('topUp needs chain.creditVault');
+    if (!Number.isInteger(config.topUp.chainId)) throw new Error('topUp.chainId must be an integer');
+  }
   if (config.screening) {
     const urls = config.screening.oracleRpcUrls;
     if (!Array.isArray(urls) || urls.length === 0 || !urls.every((u) => /^https?:\/\//.test(u))) {

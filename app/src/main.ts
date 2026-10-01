@@ -106,6 +106,7 @@ async function refresh() {
   $('cooldown').textContent = `${Math.round(chainState.cooldown / 86400)} days`;
   $('mint').hidden = !TESTNET;
   updatePreview();
+  void refreshTopUp();
 
   const locked = !state.session;
   document.querySelectorAll('.needs-session').forEach((el) => el.classList.toggle('locked', locked));
@@ -245,6 +246,54 @@ $('withdraw').onclick = (e) => busy(e.currentTarget as HTMLButtonElement, 'Withd
   await onchain.withdrawUnstaked(state.provider!, state.address!);
   toast('Unstaked NVLR withdrawn to your wallet');
   await refresh();
+});
+
+// ---- automatic top-up ----
+
+function topUpAccount(): Address {
+  const v = $<HTMLInputElement>('topUpAccount').value.trim();
+  if (!v) return state.address! as Address;
+  if (!/^0x[0-9a-fA-F]{40}$/.test(v)) throw new Error('the account must be a wallet address (0x…)');
+  return v as Address;
+}
+
+async function refreshTopUp() {
+  if (!state.address) return;
+  let account: Address;
+  try { account = topUpAccount(); } catch { return; }
+  const rule = await onchain.readTopUpRule(state.address as Address, account).catch(() => undefined);
+  const status = $('topUpStatus');
+  $('topUpOff').hidden = !rule || rule.amount === 0n;
+  if (!rule) return;
+  if (rule.amount === 0n) {
+    status.textContent = rule.keeperActive
+      ? 'No rule for this account yet. When its credit falls below the threshold, envolvr\'s attested keeper pulls the top-up amount from this wallet. The vault contract enforces the amount, the account and the daily maximum.'
+      : 'Automatic top-up is not switched on yet; rules saved now apply once it is.';
+    return;
+  }
+  const who = account.toLowerCase() === state.address.toLowerCase() ? 'this account' : short(account);
+  status.textContent = `On: when ${who} falls below ${usd(rule.below)}, ${usd(rule.amount)} is added from this wallet, at most ${usd(rule.maxPerDay)} a day (${usd(rule.spentToday)} today).`
+    + (rule.keeperActive ? '' : ' Top-ups start once the keeper is switched on.');
+}
+
+$('topUpAccount').onchange = () => void refreshTopUp();
+
+$('topUpSave').onclick = (e) => busy(e.currentTarget as HTMLButtonElement, 'Check your wallet…', async () => {
+  const account = topUpAccount();
+  const below = amountOf('topUpBelow', 6);
+  const amount = amountOf('topUpAmount', 6);
+  const max = amountOf('topUpMax', 6);
+  if (amount <= 0n) throw new Error('set a top-up amount');
+  if (max < amount) throw new Error('the daily maximum must be at least the top-up amount');
+  await onchain.setTopUpRule(state.provider!, state.address! as Address, account, below, amount, max);
+  toast('Top-up rule saved');
+  await refreshTopUp();
+});
+
+$('topUpOff').onclick = (e) => busy(e.currentTarget as HTMLButtonElement, 'Check your wallet…', async () => {
+  await onchain.clearTopUpRule(state.provider!, state.address! as Address, topUpAccount());
+  toast('Automatic top-up turned off');
+  await refreshTopUp();
 });
 
 $('createKey').onclick = (e) => busy(e.currentTarget as HTMLButtonElement, 'Creating…', async () => {

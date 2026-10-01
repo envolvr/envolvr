@@ -73,6 +73,8 @@ export interface Deps {
   allowance: AllowanceSource;
   /** The credit vault's USDG, for /admin/reserves; absent without a vault. */
   reserves?: ReserveSource;
+  /** The top-up keeper: told about every billed request of an account. */
+  topUp?: { check(wallet: string): Promise<unknown> };
   /** Defaults to the config's static blocklist alone. */
   screening?: Screening;
   /** Unix seconds. */
@@ -240,6 +242,8 @@ export function createControlServer(deps: Deps): Server {
       route,
       status: Number(body.status) || 0, costMicros: cost, allowanceMicros: allowanceTotal, dayStart, now: t,
     });
+    // A billed account may now be below its top-up threshold; the keeper checks in the background.
+    if (account && result.fromBalance > 0n && deps.topUp) void deps.topUp.check(account.wallet).catch(() => {});
     // An upstream out of credit (NEAR AI and RedPill expose no balance API): the monitor alerts on this line.
     if (body.errorMessage === 'upstream_quota_exhausted') log('upstream quota exhausted', { route });
     return { recorded: result.recorded, costMicros: cost, fromAllowanceMicros: result.fromAllowance, fromBalanceMicros: result.fromBalance };

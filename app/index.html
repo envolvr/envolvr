@@ -72,6 +72,18 @@
         </div>
       </article>
 
+      <article class="panel" id="topUpCard">
+        <div class="panel-body">
+          <div class="panel-head"><div><h2 class="panel-title">Automatic top-up</h2><p class="panel-sub">Keep an account funded from this wallet</p></div></div>
+          <label class="field"><span>Account</span><input id="topUpAccount" spellcheck="false" placeholder="this wallet"></label>
+          <label class="field"><span>Below</span><input id="topUpBelow" inputmode="decimal" placeholder="5.00"><em>USD</em></label>
+          <label class="field"><span>Top up</span><input id="topUpAmount" inputmode="decimal" placeholder="20.00"><em>USDG</em></label>
+          <label class="field"><span>Per day, max</span><input id="topUpMax" inputmode="decimal" placeholder="100.00"><em>USDG</em></label>
+          <div class="row"><button class="btn btn-primary" id="topUpSave">Save rule</button><button class="btn btn-outline" id="topUpOff" hidden>Turn off</button></div>
+          <p class="app-note" id="topUpStatus">When the account's credit falls below the threshold, envolvr's attested keeper pulls the top-up amount from this wallet into the account. The vault contract enforces the amount, the account and the daily maximum.</p>
+        </div>
+      </article>
+
       <!-- Staking comes later: the card stays in the page (main.ts reads it) but is hidden. -->
       <article class="panel peri" id="stakeCard" hidden>
         <div class="panel-body">

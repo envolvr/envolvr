@@ -12,7 +12,13 @@ const erc20 = parseAbi([
   'function approve(address spender, uint256 amount) returns (bool)',
   'function mint(address to, uint256 amount)',
 ]);
-const vault = parseAbi(['function deposit(uint256 amount)', 'function depositFor(address account, uint256 amount)']);
+const vault = parseAbi([
+  'function deposit(uint256 amount)',
+  'function depositFor(address account, uint256 amount)',
+  'function keeper() view returns (address)',
+  'function topUpRules(address payer, address account) view returns (uint128 below, uint128 amount, uint128 maxPerDay, uint64 day, uint128 spentToday)',
+  'function setTopUpRule(address account, uint256 below, uint256 amount, uint256 maxPerDay)',
+]);
 const staking = parseAbi([
   'function stake(uint256 amount)',
   'function requestUnstake(uint256 amount)',
@@ -81,6 +87,31 @@ export async function deposit(provider: Eip1193, account: Address, amount: bigin
   await approveIfNeeded(provider, account, contracts.usdg, contracts.creditVault, amount);
   return send(provider, account, contracts.creditVault, vault, 'deposit', [amount]);
 }
+
+export interface TopUpRule { below: bigint; amount: bigint; maxPerDay: bigint; spentToday: bigint; keeperActive: boolean }
+
+/** The connected wallet's top-up rule for `account`, and whether the vault has a keeper. */
+export async function readTopUpRule(payer: Address, account: Address): Promise<TopUpRule> {
+  const [rule, keeper] = await Promise.all([
+    publicClient.readContract({ address: contracts.creditVault, abi: vault, functionName: 'topUpRules', args: [payer, account] }),
+    publicClient.readContract({ address: contracts.creditVault, abi: vault, functionName: 'keeper' }),
+  ]);
+  const [below, amount, maxPerDay, day, spent] = rule;
+  const today = BigInt(Math.floor(Date.now() / 86_400_000));
+  return { below, amount, maxPerDay, spentToday: day === today ? spent : 0n, keeperActive: !/^0x0{40}$/i.test(keeper) };
+}
+
+/**
+ * Store a top-up rule. The vault pulls USDG from this wallet when the account
+ * runs low, so it is approved first for up to 30 days at the daily cap.
+ */
+export async function setTopUpRule(provider: Eip1193, payer: Address, account: Address, below: bigint, amount: bigint, maxPerDay: bigint) {
+  await approveIfNeeded(provider, payer, contracts.usdg, contracts.creditVault, maxPerDay * 30n);
+  return send(provider, payer, contracts.creditVault, vault, 'setTopUpRule', [account, below, amount, maxPerDay]);
+}
+
+export const clearTopUpRule = (provider: Eip1193, payer: Address, account: Address) =>
+  send(provider, payer, contracts.creditVault, vault, 'setTopUpRule', [account, 0n, 0n, 0n]);
 
 export async function stake(provider: Eip1193, account: Address, amount: bigint): Promise<string> {
   await approveIfNeeded(provider, account, contracts.nvlr, contracts.staking, amount);

@@ -12,6 +12,7 @@ import { Rpc } from './evm.ts';
 import { S3Client } from './s3.ts';
 import { OracleSource, Screening } from './screening.ts';
 import { createControlServer } from './server.ts';
+import { keeperKey, TopUpKeeper, VaultTopUpContract } from './topup.ts';
 
 const config = loadConfig(process.env.CONTROL_CONFIG ?? 'config.json');
 const log = (msg: string, fields: Record<string, unknown> = {}) =>
@@ -78,8 +79,25 @@ if (config.anchoring) {
 const stopBackups = backups?.start(store.db, config.dbPath, config.backup?.intervalMs ?? 300_000);
 if (backups) log('ledger backups started', { bucket: config.backup!.bucket, prefix: config.backup!.prefix });
 
+let topUp: TopUpKeeper | undefined;
+let stopTopUp = () => {};
+if (config.topUp) {
+  const t = config.topUp;
+  const chain = new VaultTopUpContract({
+    rpc: new Rpc(config.chain!.rpcUrl), vault: config.chain!.creditVault!, chainId: t.chainId,
+    key: await keeperKey(t.dstackEndpoint ?? '/var/run/dstack.sock'),
+  });
+  topUp = new TopUpKeeper(store, chain, allowance, {
+    startBlock: config.chain!.depositStartBlock ?? 0, confirmations: config.chain!.confirmations ?? 1,
+    retryAfterSeconds: t.retryAfterSeconds, screen: (wallet) => screening.check(wallet), log,
+  });
+  stopTopUp = topUp.start(t.sweepMs ?? 60_000);
+  // The vault owner sets this address with CreditVault.setKeeper; it needs a little ETH for gas.
+  log('top-up keeper configured', { vault: config.chain!.creditVault, keeper: chain.address });
+}
+
 const reserves = config.chain?.creditVault ? new VaultReserveReader(config.chain.rpcUrl, config.chain.creditVault) : undefined;
-const server = createControlServer({ config, store, allowance, reserves, screening, log }).listen(config.port, () =>
+const server = createControlServer({ config, store, allowance, reserves, topUp, screening, log }).listen(config.port, () =>
   log('control plane listening', { port: config.port, models: Object.keys(config.models) }),
 );
 
@@ -92,6 +110,7 @@ for (const signal of ['SIGTERM', 'SIGINT'] as const) {
     log('stopping', { signal });
     stopDeposits();
     stopAnchoring();
+    stopTopUp();
     await new Promise<void>((resolve) => server.close(() => resolve()));
     await stopBackups?.();
     store.close();
