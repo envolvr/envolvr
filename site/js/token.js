@@ -1,60 +1,11 @@
-// Token page: contract addresses and the trade link from data/network.json, the
-// allowance calculator (live budget and total stake from StakingAllowance when its
-// address is published, example values until then) and the unlock schedule chart.
+// Token page: contract addresses and the trade link from data/network.json, and the
+// unlock schedule chart.
 (function () {
   'use strict';
   var $ = function (s, r) { return (r || document).querySelector(s); };
   var $$ = function (s, r) { return Array.prototype.slice.call((r || document).querySelectorAll(s)); };
-  var fmt = function (n, d) { return n.toLocaleString('en-US', { maximumFractionDigits: d || 0 }); };
-  var num = function (s) { var v = parseFloat(String(s).replace(/[^0-9.]/g, '')); return isFinite(v) ? v : 0; };
 
-  // ---- calculator ----
-  var stakeIn = $('#calcStake'), range = $('#calcRange'), budgetIn = $('#calcBudget'), totalIn = $('#calcTotal');
-  var models = $$('[data-calc-models] li');
-  // Slider: 0..100 maps to 1k..10M NVLR on a log scale.
-  var toStake = function (p) { return Math.round(Math.pow(10, 3 + (p / 100) * 4) / 1000) * 1000; };
-  var toPos = function (s) { return s <= 1000 ? 0 : Math.min(100, (Math.log10(s) - 3) / 4 * 100); };
-
-  function compact(t) {
-    if (t >= 1e9) return fmt(t / 1e9, 1) + 'B';
-    if (t >= 1e6) return fmt(t / 1e6, t >= 1e7 ? 0 : 1) + 'M';
-    if (t >= 1e3) return fmt(t / 1e3, 0) + 'k';
-    return fmt(t, 0);
-  }
-  function render() {
-    var stake = num(stakeIn.value), budget = num(budgetIn.value), total = num(totalIn.value);
-    // A new staker joins the pool, so their stake is part of the total.
-    var pool = total + stake;
-    var share = pool > 0 ? stake / pool : 0;
-    var allowance = budget * share;
-    $('[data-calc-allow]').textContent = '$' + fmt(allowance, allowance < 10 ? 2 : 0) + ' / day';
-    $('[data-calc-share]').textContent = (share * 100 < 0.01 && share > 0 ? '<0.01' : fmt(share * 100, 2)) + '%';
-    models.forEach(function (li) {
-      var blended = (3 * num(li.dataset.in) + num(li.dataset.out)) / 4; // USD per 1M tokens
-      var tokens = blended > 0 ? allowance / blended * 1e6 : 0;
-      li.innerHTML = '<span>' + li.dataset.model + '</span><b>≈ ' + compact(tokens) + ' tokens / day</b>';
-    });
-  }
-  function reformat(input) { var v = num(input.value); input.value = v ? fmt(v, input === budgetIn ? 2 : 0) : ''; }
-  if (stakeIn) {
-    stakeIn.addEventListener('input', function () { range.value = toPos(num(stakeIn.value)); render(); });
-    range.addEventListener('input', function () { stakeIn.value = fmt(toStake(+range.value)); render(); });
-    [budgetIn, totalIn].forEach(function (i) { i.addEventListener('input', render); });
-    [stakeIn, budgetIn, totalIn].forEach(function (i) { i.addEventListener('blur', function () { reformat(i); render(); }); });
-    range.value = toPos(num(stakeIn.value));
-    render();
-  }
-
-  // ---- contracts, trade link, live values ----
-  function call(rpc, to, data) {
-    return fetch(rpc, {
-      method: 'POST', headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'eth_call', params: [{ to: to, data: data }, 'latest'] }),
-      signal: AbortSignal.timeout ? AbortSignal.timeout(6000) : undefined,
-    }).then(function (r) { return r.json(); }).then(function (j) { if (j.error) throw new Error(j.error.message); return BigInt(j.result); });
-  }
-  var word = function (n) { return BigInt(n).toString(16).padStart(64, '0'); };
-
+  // ---- contracts and trade link ----
   fetch('/data/network.json').then(function (r) { return r.json(); }).then(function (net) {
     $$('[data-addr]').forEach(function (el) {
       var a = net.contracts[el.dataset.addr];
@@ -67,20 +18,7 @@
       if (net.links.trade) { el.href = net.links.trade; el.target = '_blank'; el.rel = 'noopener'; }
       else el.href = '#contracts';
     });
-    var staking = net.contracts.staking;
-    if (!staking || !stakeIn) { $('[data-calc-source]').textContent = 'Example values: edit the budget and total stake below'; return; }
-    // currentDayStart() 0x5a4d30cd, budgetAt(uint256) 0x41d4058a, totalStake() 0x8b0e9f3f
-    return call(net.rpcUrl, staking, '0x5a4d30cd').then(function (day) {
-      return Promise.all([call(net.rpcUrl, staking, '0x41d4058a' + word(day)), call(net.rpcUrl, staking, '0x8b0e9f3f')]);
-    }).then(function (v) {
-      budgetIn.value = fmt(Number(v[0]) / 1e6, 2);
-      totalIn.value = fmt(Number(v[1] / 10n ** 18n));
-      $('[data-calc-source]').textContent = "Live: today's budget and total stake from the staking contract";
-      render();
-    });
-  }).catch(function () {
-    if ($('[data-calc-source]')) $('[data-calc-source]').textContent = 'Example values: edit the budget and total stake below';
-  });
+  }).catch(function () {});
 
   // ---- unlock schedule: stacked areas by month, 0..12 ----
   var host = $('[data-unlock]');
