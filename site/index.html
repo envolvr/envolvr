@@ -15,526 +15,395 @@
 <meta name="twitter:image" content="https://envolvr.xyz/images/og.jpg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,400;6..72,500&family=Inter+Tight:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="styles.css?v=20261001h">
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,500&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css?v=20261001j">
 <script>document.documentElement.classList.add('js');</script>
 </head>
 <body>
+<div id="top">
 
-<header class="top" id="nav">
-  <a class="logo-pill" href="#top" aria-label="envolvr home">
-    <svg viewBox="0 0 32 32" aria-hidden="true"><path d="M16 2.75 27.25 9.1v13.8L16 29.25 4.75 22.9V9.1z" fill="none" stroke="#fff" stroke-width="2.6" stroke-linejoin="round"/><path d="M4.75 9.1 16 19.7 27.25 9.1" fill="none" stroke="#c8ff00" stroke-width="2.6" stroke-linejoin="round" stroke-linecap="round"/></svg>
-    <span class="logo-word">envolvr</span>
-  </a>
-  <nav class="pillnav" aria-label="Main">
-    <div class="pillgroup">
+<header class="hdr" id="nav">
+  <div class="hdr-bar">
+    <a class="logo" href="#top" aria-label="envolvr home">
+      <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M12 2.5l8.5 4.8v9.4L12 21.5l-8.5-4.8V7.3z" fill="#163a2e"/><path d="M7.8 10.4l4.2 3.4 4.2-3.4" fill="none" stroke="#d4f25c" stroke-width="2.3" stroke-linejoin="round"/></svg>
+      envolvr
+    </a>
+    <nav class="hdr-nav" aria-label="Main">
       <a href="#models">Models</a>
       <a href="#how">How it works</a>
       <a href="#verify">Verify</a>
       <a href="#pricing">Pricing</a>
       <a href="#developers">Developers</a>
-    </div>
-    <a class="pillsolo" href="/docs/">Docs</a>
-  </nav>
-  <div class="top-actions">
-    <a class="btn btn-plum" href="/app/">Open app</a>
-    <a class="btn btn-black" href="/docs/#quickstart">Start building</a>
-    <a class="icon-btn icon-gh" href="https://github.com/envolvr/envolvr" aria-label="envolvr on GitHub">
-      <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .5a11.5 11.5 0 0 0-3.64 22.41c.58.1.79-.25.79-.56v-2c-3.2.7-3.87-1.37-3.87-1.37-.53-1.33-1.28-1.69-1.28-1.69-1.05-.72.08-.7.08-.7 1.16.08 1.77 1.19 1.77 1.19 1.03 1.77 2.7 1.26 3.36.96.1-.75.4-1.26.73-1.55-2.55-.29-5.24-1.28-5.24-5.69 0-1.26.45-2.28 1.19-3.09-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.17 1.18a11 11 0 0 1 5.77 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.59.23 2.76.11 3.05.74.81 1.19 1.83 1.19 3.09 0 4.42-2.69 5.39-5.26 5.68.41.36.78 1.06.78 2.14v3.17c0 .31.21.67.8.56A11.5 11.5 0 0 0 12 .5z"/></svg>
-    </a>
-    <button class="icon-btn icon-menu" id="navToggle" type="button" aria-label="Menu" aria-expanded="false" aria-controls="sheet">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="M5 7h14M5 12h14M5 17h14"/></svg>
-    </button>
-    <button class="icon-btn icon-share" type="button" data-share aria-label="Copy link to this page">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="18" cy="5" r="2.5"/><circle cx="6" cy="12" r="2.5"/><circle cx="18" cy="19" r="2.5"/><path d="m8.2 10.8 7.6-4.4M8.2 13.2l7.6 4.4"/></svg>
-    </button>
+      <a class="dim" href="/docs/">Docs ↗</a>
+    </nav>
+    <a class="hdr-gh" href="https://github.com/envolvr/envolvr" aria-label="GitHub" title="GitHub"><svg viewBox="0 0 16 16" width="19" height="19" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg></a>
+    <a class="hdr-btn green" href="/app/">Open app</a>
+    <a class="hdr-btn ink" href="/docs/#quickstart">Start building</a>
+    <button class="burger" id="navToggle" type="button" aria-label="Menu" aria-expanded="false" aria-controls="menu"><span></span><span></span><span></span></button>
   </div>
+  <nav class="menu" id="menu" aria-label="Menu" hidden>
+    <a href="#models">Models<span>→</span></a>
+    <a href="#how">How it works<span>→</span></a>
+    <a href="#verify">Verify<span>→</span></a>
+    <a href="#pricing">Pricing<span>→</span></a>
+    <a href="#developers">Developers<span>→</span></a>
+    <a href="/docs/">Docs<span>↗</span></a>
+    <a href="https://github.com/envolvr/envolvr">GitHub<span>↗</span></a>
+    <div class="menu-cta"><a class="green" href="/app/">Open app</a><a class="ink" href="/docs/#quickstart">Start building</a></div>
+  </nav>
 </header>
 
-<!-- Phone and tablet menu: a bottom sheet, as on artificialanalysis.ai -->
-<div class="sheet" id="sheet" hidden>
-  <div class="sheet-backdrop" data-sheet-close></div>
-  <nav class="sheet-panel" aria-label="Menu">
-    <span class="sheet-handle" aria-hidden="true"></span>
-    <a href="/app/">Open app <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M5 11 11 5M6 5h5v5" fill="none" stroke="currentColor" stroke-width="1.5"/></svg></a>
-    <a href="#top">Home</a>
-    <a href="#models">Models <svg viewBox="0 0 16 16" aria-hidden="true"><path d="m6 3.5 4.5 4.5L6 12.5" fill="none" stroke="currentColor" stroke-width="1.5"/></svg></a>
-    <a href="#how">How it works <svg viewBox="0 0 16 16" aria-hidden="true"><path d="m6 3.5 4.5 4.5L6 12.5" fill="none" stroke="currentColor" stroke-width="1.5"/></svg></a>
-    <a href="#verify">Verify <svg viewBox="0 0 16 16" aria-hidden="true"><path d="m6 3.5 4.5 4.5L6 12.5" fill="none" stroke="currentColor" stroke-width="1.5"/></svg></a>
-    <a href="#pricing">Pricing <svg viewBox="0 0 16 16" aria-hidden="true"><path d="m6 3.5 4.5 4.5L6 12.5" fill="none" stroke="currentColor" stroke-width="1.5"/></svg></a>
-    <a href="#developers">Developers <svg viewBox="0 0 16 16" aria-hidden="true"><path d="m6 3.5 4.5 4.5L6 12.5" fill="none" stroke="currentColor" stroke-width="1.5"/></svg></a>
-    <a href="/docs/">Docs <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M5 11 11 5M6 5h5v5" fill="none" stroke="currentColor" stroke-width="1.5"/></svg></a>
-    <a href="https://github.com/envolvr/envolvr">GitHub <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M5 11 11 5M6 5h5v5" fill="none" stroke="currentColor" stroke-width="1.5"/></svg></a>
-  </nav>
-</div>
-
-<main id="top">
-
-  <!-- Hero: headline left, announcements right -->
-  <section class="wrap hero">
-    <div class="hero-copy">
-      <h1>Private inference<br> your agent can prove</h1>
-      <p class="hero-sub">Prompts run in hardware-attested enclaves the operator cannot read. Every response comes back with a signed receipt, anchored on Robinhood Chain.</p>
-      <div class="snippet">
-        <code>base_url=<span class="s">"https://api.envolvr.xyz/v1"</span></code>
-        <button class="copy" type="button" data-copy='base_url="https://api.envolvr.xyz/v1"'>Copy</button>
-      </div>
+<!-- Hero: headline, lede and the base_url switch; two news links on wide screens -->
+<section class="wrap hero">
+  <div class="hero-copy">
+    <h1 id="h1">Private inference your agent can prove</h1>
+    <p class="lede lede-top">Prompts run in hardware-attested enclaves the operator cannot read. Every response comes back with a signed receipt, anchored on Robinhood Chain.</p>
+    <div class="snippet">
+      <span>base_url=<em>"https://api.envolvr.xyz/v1"</em></span>
+      <button type="button" data-copy="https://api.envolvr.xyz/v1">Copy</button>
     </div>
-    <ul class="news">
-      <li>
-        <a href="#models">
-          <span class="news-label">New</span>
-          <span class="news-title">Chutes joins as the third supplier</span>
-          <span class="news-desc">DeepSeek V4 Flash, DeepSeek V3.2 and Kimi K2.6, each machine attested before it serves</span>
-          <span class="arrow" aria-hidden="true"><svg viewBox="0 0 16 16"><path d="M5 11 11 5M6 5h5v5" fill="none" stroke="currentColor" stroke-width="1.5"/></svg></span>
-        </a>
-      </li>
-      <li>
-        <a href="#verify">
-          <span class="news-label">Live</span>
-          <span class="news-title">Verify a receipt in your browser</span>
-          <span class="news-desc">Signature, commitments, bill and on-chain anchor, checked on this page</span>
-          <span class="arrow" aria-hidden="true"><svg viewBox="0 0 16 16"><path d="M5 11 11 5M6 5h5v5" fill="none" stroke="currentColor" stroke-width="1.5"/></svg></span>
-        </a>
-      </li>
-    </ul>
-  </section>
-
-  <!-- Highlights: three cards, like the index charts -->
-  <section class="wrap highlights">
-    <h2 class="hl-head">Highlights</h2>
-    <div class="hl-grid">
-      <article class="card hl-card" id="heroCard" aria-live="polite">
-        <header class="hl-title">
-          <span class="sq" style="background:var(--t1)"></span>
-          <h3>Receipt check</h3>
-          <span class="vstate" data-state>unverified</span>
-        </header>
-        <p class="hl-sub">A real testnet receipt for z-ai/glm-5.3 on Phala · verified in your browser</p>
-        <ol class="vrows" data-rows>
-          <li class="vrow" data-id="keyset"><span class="ic"></span><span class="lb">Keyset</span><span class="dt">attested tdx keyset</span></li>
-          <li class="vrow" data-id="signature"><span class="ic"></span><span class="lb">Signature</span><span class="dt">ed25519</span></li>
-          <li class="vrow" data-id="request"><span class="ic"></span><span class="lb">Prompt</span><span class="dt">sha256 commitment</span></li>
-          <li class="vrow" data-id="response"><span class="ic"></span><span class="lb">Response</span><span class="dt">sha256 commitment</span></li>
-          <li class="vrow" data-id="session"><span class="ic"></span><span class="lb">GPU session</span><span class="dt">attested</span></li>
-          <li class="vrow" data-id="billing"><span class="ic"></span><span class="lb">Billing</span><span class="dt">recomputed</span></li>
-          <li class="vrow" data-id="anchor"><span class="ic"></span><span class="lb">Anchor</span><span class="dt">robinhood chain</span></li>
-        </ol>
-        <footer class="hl-foot"><span data-foot>Checked in your browser, not on our servers</span><button class="linkbtn" type="button" data-rerun>Run again</button></footer>
-      </article>
-      <article class="card hl-card">
-        <header class="hl-title">
-          <span class="sq" style="background:var(--t2)"></span>
-          <h3>Input price</h3>
-        </header>
-        <p class="hl-sub">USD per 1M input tokens · Lower is better</p>
-        <div class="chart mini" data-chart="in"></div>
-      </article>
-      <article class="card hl-card">
-        <header class="hl-title">
-          <span class="sq" style="background:var(--t3)"></span>
-          <h3>Output price</h3>
-        </header>
-        <p class="hl-sub">USD per 1M output tokens · Lower is better</p>
-        <div class="chart mini" data-chart="out"></div>
-      </article>
-    </div>
-  </section>
-
-  <!-- Feature row: dark product cards and the changelog -->
-  <section class="wrap features">
-    <a class="feature feature-black" href="#verify">
-      <span class="feature-glow" aria-hidden="true"></span>
-      <span class="feature-top">
-        <span class="feature-brand">
-          <svg viewBox="0 0 32 32" aria-hidden="true"><path d="M16 2.75 27.25 9.1v13.8L16 29.25 4.75 22.9V9.1z" fill="none" style="stroke:var(--soft)" stroke-width="2.6" stroke-linejoin="round"/><path d="M4.75 9.1 16 19.7 27.25 9.1" fill="none" stroke="#c8ff00" stroke-width="2.6" stroke-linejoin="round" stroke-linecap="round"/></svg>
-          <span><b>Verifier</b><small>by envolvr</small></span>
-        </span>
-        <span class="feature-arrow" aria-hidden="true"><svg viewBox="0 0 16 16"><path d="M5 11 11 5M6 5h5v5" fill="none" stroke="currentColor" stroke-width="1.5"/></svg></span>
-      </span>
-      <span class="feature-bottom">
-        <span class="tag-mint">New</span>
-        <span class="feature-big">Don't trust us. Check the receipt.</span>
-      </span>
+  </div>
+  <div class="news">
+    <a href="#suppliers">
+      <span><small>NEW</small><b>Chutes joins as the third supplier</b><i>DeepSeek V4 Flash, DeepSeek V3.2 and Kimi K2.6, each machine attested before it serves</i></span>
+      <span class="arr">↗</span>
     </a>
-    <a class="feature feature-plum" href="/app/">
-      <span class="feature-top">
-        <span class="feature-title">NVLR<br>allowance</span>
-        <span class="feature-arrow" aria-hidden="true"><svg viewBox="0 0 16 16"><path d="M5 11 11 5M6 5h5v5" fill="none" stroke="currentColor" stroke-width="1.5"/></svg></span>
-      </span>
-      <span class="feature-bottom">
-        <span class="feature-desc">Stake NVLR for a daily compute allowance, refreshed at 00:00 UTC and drawn before your USDG balance</span>
-      </span>
+    <a href="#verify">
+      <span><small>LIVE</small><b>Verify a receipt in your browser</b><i>Signature, commitments, bill and on-chain anchor, checked on this page</i></span>
+      <span class="arr">↗</span>
+    </a>
+  </div>
+</section>
+
+<!-- Highlights: the live receipt check and two price charts, then the promo row -->
+<section class="wrap highlights">
+  <div class="hl-grid">
+    <article class="rcard" id="heroCard" aria-live="polite">
+      <div class="rcard-head">
+        <div>
+          <span class="card-title"><i class="sq" style="background:#1f8a6d"></i>Receipt check</span>
+          <span class="rcard-sub">A real testnet receipt for z-ai/glm-5.3 on Phala · verified in your browser</span>
+        </div>
+        <span class="badge" data-state><i></i><span>checking</span></span>
+      </div>
+      <div class="rcard-rows">
+        <div class="vrow" data-id="keyset"><span class="ck"></span><span class="lb">Keyset</span><span class="dt">sha256:2317…, attested</span></div>
+        <div class="vrow" data-id="signature"><span class="ck"></span><span class="lb">Signature</span><span class="dt">ed25519 · receipt-ed25519-v1</span></div>
+        <div class="vrow" data-id="request"><span class="ck"></span><span class="lb">Prompt</span><span class="dt">ebfc…a6a3 matches</span></div>
+        <div class="vrow" data-id="response"><span class="ck"></span><span class="lb">Response</span><span class="dt">3648…0be5 matches</span></div>
+        <div class="vrow" data-id="session"><span class="ck"></span><span class="lb">GPU session</span><span class="dt">39bc…4ad2 · redpill, attested</span></div>
+        <div class="vrow extra" data-id="billing" hidden><span class="ck"></span><span class="lb">Billing</span><span class="dt">$0.001360 · 326 tokens, recomputed</span></div>
+        <div class="vrow extra" data-id="anchor" hidden><span class="ck"></span><span class="lb">Anchor</span><span class="dt">robinhood chain</span></div>
+      </div>
+      <button class="rcard-more" type="button" data-more>+ 2 more checks: billing, anchor</button>
+      <div class="rcard-foot"><span data-foot>Checking in your browser…</span><button type="button" data-rerun>Run again</button></div>
+    </article>
+    <p class="lede lede-below">Prompts run in hardware-attested enclaves the operator cannot read. Every response comes back with a signed receipt, anchored on Robinhood Chain.</p>
+    <article class="ccard">
+      <span class="card-title"><i class="sq" style="background:#9bb51f"></i>Input price</span>
+      <span class="ccard-sub">USD per 1M input tokens · Lower is better</span>
+      <div class="chart mini" data-chart="in"></div>
+    </article>
+    <article class="ccard">
+      <span class="card-title"><i class="sq" style="background:#3e6fc8"></i>Output price</span>
+      <span class="ccard-sub">USD per 1M output tokens · Lower is better</span>
+      <div class="chart mini" data-chart="out"></div>
+    </article>
+  </div>
+  <div class="promo-grid">
+    <a class="promo promo-verifier" href="#verify">
+      <div class="promo-col">
+        <div class="promo-brand"><svg viewBox="0 0 24 24" width="30" height="30" aria-hidden="true"><path d="M12 2.5l8.5 4.8v9.4L12 21.5l-8.5-4.8V7.3z" fill="none" stroke="#d4f25c" stroke-width="2" stroke-linejoin="round"/><path d="M7.8 10.4l4.2 3.4 4.2-3.4" fill="none" stroke="#d4f25c" stroke-width="2" stroke-linejoin="round"/></svg><span><b>Verifier</b><small>by envolvr</small></span></div>
+        <div class="promo-bottom"><span class="tag-lime">NEW</span><span class="promo-big">Don't trust us. Check the receipt.</span></div>
+      </div>
+      <span class="promo-arr">↗</span>
+    </a>
+    <a class="promo nvlr" href="#pricing">
+      <div class="promo-col">
+        <span class="promo-title">NVLR allowance</span>
+        <span class="promo-desc">Stake NVLR for a daily compute allowance, refreshed at 00:00 UTC and drawn before your USDG balance</span>
+      </div>
+      <span class="promo-arr">↗</span>
     </a>
     <div class="changelog">
-      <header><h3>Changelog</h3><a class="icon-btn icon-btn-black" href="https://github.com/envolvr/envolvr/commits/main" aria-label="All changes on GitHub"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M5 11 11 5M6 5h5v5" fill="none" stroke="currentColor" stroke-width="1.5"/></svg></a></header>
+      <div class="changelog-head"><span>Changelog</span><a href="https://github.com/envolvr/envolvr/commits/main" aria-label="All changes on GitHub">↗</a></div>
       <ol>
         <li><small>New supplier · 30 Sept</small><span>Chutes live: Qwen3.8-27B, DeepSeek V4 Flash, DeepSeek V3.2, Kimi K2.6</span></li>
         <li><small>Site · 30 Sept</small><span>In-browser receipt verification on envolvr.xyz</span></li>
         <li><small>Testnet · 30 Sept</small><span>NVLR token and staking allowance redeployed</span></li>
         <li><small>App · 25 Sept</small><span>Account app at envolvr.xyz/app: keys, deposits, staking</span></li>
         <li><small>SDK · 25 Sept</small><span>@envolvr/sdk 0.1.1 on npm with the envolvr CLI</span></li>
-        <li><small>Anchoring · 25 Sept</small><span>Receipt batches anchored on Robinhood Chain</span></li>
-        <li><small>New supplier · 24 Sept</small><span>NEAR AI Cloud routes, response signed in the model enclave</span></li>
       </ol>
     </div>
-  </section>
-
-  <!-- Body: sticky side nav and the sections -->
-  <div class="wrap body">
-    <aside class="sidenav" aria-label="On this page">
-      <a href="#problem">Privacy</a>
-      <a href="#models">Models <em>Updated</em></a>
-      <a href="#how">How it works</a>
-      <a href="#verify">Verify <em>New</em></a>
-      <a href="#pricing">Pricing</a>
-      <a href="#developers">Developers</a>
-      <a href="#suppliers">Suppliers</a>
-    </aside>
-
-    <div class="content">
-
-      <section class="sec" id="problem">
-        <h2 class="sec-title"><span class="sq"></span>Privacy</h2>
-        <p class="sec-desc">Every prompt an agent sends to a hosted model is a disclosure. envolvr seals it before it leaves the agent.</p>
-        <div class="card panel seal" id="seal">
-          <div class="tabs" role="group" aria-label="Prompt view">
-            <button type="button" data-view="open" aria-pressed="true">Hosted model</button>
-            <button type="button" data-view="sealed" aria-pressed="false">envolvr</button>
-          </div>
-          <div class="panel-body seal-grid">
-            <div>
-              <div class="panel-head">
-                <h3 data-seal-who>What a hosted model reads</h3>
-                <span class="vstate" data-seal-state>readable</span>
-              </div>
-              <p class="panel-sub">The same prompt, before and after. Scroll to seal it.</p>
-              <p class="seal-text" data-seal-text>"Given the SOL funding rate and my current basis position, should I close the arb now or hold it through the weekend?"</p>
-              <div class="seal-bar"><i data-seal-bar></i></div>
-              <dl class="seal-meta">
-                <div><dt>Wallet</dt><dd data-a="0x7f3a…c41e" data-b="not sent">0x7f3a…c41e</dd></div>
-                <div><dt>Operator reads</dt><dd data-a="position, intent" data-b="ciphertext">position, intent</dd></div>
-                <div><dt>Record</dt><dd data-a="unknown" data-b="commitment d845…">unknown</dd></div>
-              </dl>
-            </div>
-            <ul class="leaks">
-              <li><span class="sq" style="background:var(--t1)"></span><span><b>Reasoning leaks</b>Signals and intent go to whoever serves the model.</span></li>
-              <li><span class="sq" style="background:var(--t2)"></span><span><b>"No logs" is a promise</b>envolvr makes it a proof, checked on every request.</span></li>
-              <li><span class="sq" style="background:var(--t3)"></span><span><b>A paper trail, sealed</b>Which model decided, provable without exposing why.</span></li>
-            </ul>
-          </div>
-          <p class="panel-note" data-seal-note>ⓘ Position, intent and timing, readable at the point of inference.</p>
-        </div>
-      </section>
-
-      <section class="sec" id="models">
-        <h2 class="sec-title"><span class="sq"></span>Models <em class="badge">Updated</em></h2>
-        <p class="sec-desc">Open-weight models on attested GPUs, at the suppliers' own list prices. Every endpoint returns a signed receipt.</p>
-        <div class="card panel">
-          <div class="tabs" role="tablist" aria-label="Price">
-            <button type="button" role="tab" aria-selected="true" data-metric="blend">Blended price</button>
-            <button type="button" role="tab" aria-selected="false" data-metric="in">Input price</button>
-            <button type="button" role="tab" aria-selected="false" data-metric="out">Output price</button>
-          </div>
-          <div class="panel-body">
-            <div class="panel-head">
-              <div>
-                <h3 data-chart-title>Blended price per 1M tokens</h3>
-                <p class="panel-sub" data-chart-sub>USD per 1M tokens, 3 parts input to 1 part output · Lower is better</p>
-              </div>
-              <div class="panel-tools">
-                <a class="icon-btn icon-btn-line" href="#modelTable" aria-label="Jump to the table"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M4 10h16M4 15h16M10 4v16"/></svg></a>
-                <label class="select">
-                  <span class="sr-only">Supplier</span>
-                  <select data-sup-select>
-                    <option value="all">9 of 9 endpoints</option>
-                    <option value="phala">Phala</option>
-                    <option value="near">NEAR AI</option>
-                    <option value="chutes">Chutes</option>
-                  </select>
-                </label>
-              </div>
-            </div>
-            <div class="legend"><span><i style="background:var(--t1)"></i>Phala</span><span><i style="background:var(--t2)"></i>NEAR AI</span><span><i style="background:var(--t3)"></i>Chutes</span></div>
-            <div class="chart big" data-chart="main"></div>
-          </div>
-          <p class="panel-note">ⓘ Blended price weights input and output 3 to 1</p>
-        </div>
-
-        <div class="card table-card">
-          <div class="table-scroll">
-            <table class="models" id="modelTable">
-              <thead>
-                <tr><th>Model</th><th>Supplier</th><th class="num">Input</th><th class="num">Output</th><th class="num">Blended</th><th>The receipt also proves</th></tr>
-              </thead>
-              <tbody>
-                <tr data-model="glm-5.3" data-label="GLM-5.3" data-sup="phala" data-sup-name="Phala" data-in="1.40" data-out="4.40">
-                  <td><span class="m-name"><span class="mono-badge">Z</span><code>z-ai/glm-5.3</code></span></td>
-                  <td><span class="sup"><svg aria-hidden="true"><use href="images/suppliers.svg#phala"/></svg>Phala <span class="dim">via RedPill</span></span></td>
-                  <td class="num">$1.40</td><td class="num">$4.40</td><td class="num" data-blend></td>
-                  <td class="proves">Attested GPU session</td>
-                </tr>
-                <tr data-model="glm-5.3-flash" data-label="GLM-5.3 Flash" data-sup="near" data-sup-name="NEAR AI" data-in="0.15" data-out="0.50">
-                  <td><span class="m-name"><span class="mono-badge">Z</span><code>z-ai/glm-5.3-flash</code></span></td>
-                  <td><span class="sup"><svg aria-hidden="true"><use href="images/suppliers.svg#near"/></svg>NEAR AI</span></td>
-                  <td class="num">$0.15</td><td class="num">$0.50</td><td class="num" data-blend></td>
-                  <td class="proves">Attested GPU session, response signed in the model enclave</td>
-                </tr>
-                <tr data-model="qwen3.8-27b" data-label="Qwen3.8 27B" data-sup="chutes" data-sup-name="Chutes" data-in="0.24" data-out="2.20">
-                  <td><span class="m-name"><span class="mono-badge">Q</span><code>qwen/qwen3.8-27b</code></span></td>
-                  <td><span class="sup"><svg aria-hidden="true"><use href="images/suppliers.svg#chutes"/></svg>Chutes <em class="badge badge-soft">Default</em></span></td>
-                  <td class="num">$0.24</td><td class="num">$2.20</td><td class="num" data-blend></td>
-                  <td class="proves">Attested machine, end-to-end encrypted to its key</td>
-                </tr>
-                <tr data-model="qwen3.8-27b" data-label="Qwen3.8 27B" data-sup="phala" data-sup-name="Phala" data-in="0.24" data-out="2.50">
-                  <td><span class="m-name"><span class="mono-badge">Q</span><code>qwen/qwen3.8-27b</code></span></td>
-                  <td><span class="sup"><svg aria-hidden="true"><use href="images/suppliers.svg#phala"/></svg>Phala <span class="dim">via RedPill</span></span></td>
-                  <td class="num">$0.24</td><td class="num">$2.50</td><td class="num" data-blend></td>
-                  <td class="proves">Attested GPU session</td>
-                </tr>
-                <tr data-model="qwen3.8-27b" data-label="Qwen3.8 27B" data-sup="near" data-sup-name="NEAR AI" data-in="0.44" data-out="3.30">
-                  <td><span class="m-name"><span class="mono-badge">Q</span><code>qwen/qwen3.8-27b</code></span></td>
-                  <td><span class="sup"><svg aria-hidden="true"><use href="images/suppliers.svg#near"/></svg>NEAR AI</span></td>
-                  <td class="num">$0.44</td><td class="num">$3.30</td><td class="num" data-blend></td>
-                  <td class="proves">Attested GPU session, response signed in the model enclave</td>
-                </tr>
-                <tr data-model="qwen3.6-35b-a3b" data-label="Qwen3.6 35B A3B" data-sup="near" data-sup-name="NEAR AI" data-in="0.17" data-out="1.10">
-                  <td><span class="m-name"><span class="mono-badge">Q</span><code>qwen/qwen3.6-35b-a3b</code></span></td>
-                  <td><span class="sup"><svg aria-hidden="true"><use href="images/suppliers.svg#near"/></svg>NEAR AI</span></td>
-                  <td class="num">$0.17</td><td class="num">$1.10</td><td class="num" data-blend></td>
-                  <td class="proves">Attested GPU session, response signed in the model enclave</td>
-                </tr>
-                <tr data-model="deepseek-v4-flash" data-label="DeepSeek V4 Flash" data-sup="chutes" data-sup-name="Chutes" data-in="0.44" data-out="1.32">
-                  <td><span class="m-name"><span class="mono-badge">DS</span><code>deepseek/deepseek-v4-flash</code></span></td>
-                  <td><span class="sup"><svg aria-hidden="true"><use href="images/suppliers.svg#chutes"/></svg>Chutes</span></td>
-                  <td class="num">$0.44</td><td class="num">$1.32</td><td class="num" data-blend></td>
-                  <td class="proves">Attested machine, end-to-end encrypted to its key</td>
-                </tr>
-                <tr data-model="deepseek-v3.2" data-label="DeepSeek V3.2" data-sup="chutes" data-sup-name="Chutes" data-in="1.00" data-out="1.00">
-                  <td><span class="m-name"><span class="mono-badge">DS</span><code>deepseek/deepseek-v3.2</code></span></td>
-                  <td><span class="sup"><svg aria-hidden="true"><use href="images/suppliers.svg#chutes"/></svg>Chutes</span></td>
-                  <td class="num">$1.00</td><td class="num">$1.00</td><td class="num" data-blend></td>
-                  <td class="proves">Attested machine, end-to-end encrypted to its key</td>
-                </tr>
-                <tr data-model="kimi-k2.6" data-label="Kimi K2.6" data-sup="chutes" data-sup-name="Chutes" data-in="0.50" data-out="2.85">
-                  <td><span class="m-name"><span class="mono-badge">K</span><code>moonshotai/kimi-k2.6</code></span></td>
-                  <td><span class="sup"><svg aria-hidden="true"><use href="images/suppliers.svg#chutes"/></svg>Chutes</span></td>
-                  <td class="num">$0.50</td><td class="num">$2.85</td><td class="num" data-blend></td>
-                  <td class="proves">Attested machine, end-to-end encrypted to its key</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </section>
-
-      <section class="sec" id="how">
-        <h2 class="sec-title"><span class="sq"></span>How it works</h2>
-        <p class="sec-desc">Five hops from the agent to the chain, and no trusted middleman. Each hop proves something you can check.</p>
-        <div class="card panel" id="flow">
-          <div class="tabs" role="tablist" aria-label="Hop">
-            <button type="button" class="node" data-step="0">Agent</button>
-            <button type="button" class="node" data-step="1">Gateway</button>
-            <button type="button" class="node" data-step="2">GPU enclave</button>
-            <button type="button" class="node" data-step="3">Receipt</button>
-            <button type="button" class="node" data-step="4">Robinhood Chain</button>
-          </div>
-          <div class="panel-body">
-            <div class="flow-track" aria-hidden="true">
-              <span class="flow-line"><i data-flow-line></i></span>
-              <span class="flow-packet" data-flow-packet></span>
-              <span class="flow-node"><span class="flow-ic" style="--c:var(--dark)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="7" width="16" height="12" rx="3"/><path d="M12 3v4M9 12h.01M15 12h.01M9.5 15.5h5"/></svg></span><b>Agent</b><small>sdk · verifying proxy</small></span>
-              <span class="flow-node"><span class="flow-ic" style="--c:var(--primary)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.8 20 7.4v9.2l-8 4.6-8-4.6V7.4z"/><rect x="9" y="10.5" width="6" height="5" rx="1"/><path d="M10.2 10.5V9a1.8 1.8 0 0 1 3.6 0v1.5"/></svg></span><b>Gateway</b><small>intel tdx</small></span>
-              <span class="flow-node"><span class="flow-ic" style="--c:var(--t1)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="6" width="12" height="12" rx="2"/><rect x="9.5" y="9.5" width="5" height="5" rx=".8"/><path d="M9 2.5V6M15 2.5V6M9 18v3.5M15 18v3.5M2.5 9H6M2.5 15H6M18 9h3.5M18 15h3.5"/></svg></span><b>GPU enclave</b><small>nvidia cc</small></span>
-              <span class="flow-node"><span class="flow-ic" style="--c:var(--t3)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2.8h12v18.4l-2-1.4-2 1.4-2-1.4-2 1.4-2-1.4-2 1.4z"/><path d="M9 7.5h6M9 11h6M9 14.5h3.5"/></svg></span><b>Receipt</b><small>ed25519 · signed</small></span>
-              <span class="flow-node"><span class="flow-ic" style="--c:var(--deep)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="14" width="6" height="6" rx="1.2"/><rect x="9" y="14" width="6" height="6" rx="1.2"/><rect x="15.5" y="14" width="6" height="6" rx="1.2"/><path d="M12 4v4M12 8l-6.5 6M12 8l6.5 6"/><circle cx="12" cy="4" r="1.6"/></svg></span><b>Robinhood Chain</b><small>merkle anchor</small></span>
-            </div>
-            <div class="flow-detail" aria-live="polite">
-              <div><span class="label" data-flow-k>What happens</span><p data-flow-what></p></div>
-              <div><span class="label">What it proves</span><p class="proof" data-flow-proof></p></div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section class="sec" id="verify">
-        <h2 class="sec-title"><span class="sq"></span>Verify <em class="badge">New</em></h2>
-        <p class="sec-desc">Signature, commitments, bill and on-chain anchor, computed in your browser. Change a single character and watch it fail.</p>
-        <div class="card panel">
-          <div class="tabs" role="tablist" aria-label="Receipt">
-            <button type="button" role="tab" aria-selected="true" data-src="sample">Sample receipt</button>
-            <button type="button" role="tab" aria-selected="false" data-src="own">Your receipt</button>
-          </div>
-          <div class="panel-body verifier">
-            <div class="v-input">
-              <div class="panel-head">
-                <div>
-                  <h3>receipt.json</h3>
-                  <p class="panel-sub" data-v-hint>A real testnet receipt for z-ai/glm-5.3, served on Phala. Try editing the bill.</p>
-                </div>
-                <a class="icon-btn icon-btn-line" href="https://github.com/envolvr/envolvr/blob/main/site/src/verifier.ts" aria-label="Verifier source"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m8 7-5 5 5 5M16 7l5 5-5 5"/></svg></a>
-              </div>
-              <label class="sr-only" for="receiptInput">Receipt JSON</label>
-              <textarea id="receiptInput" wrap="off" spellcheck="false" autocomplete="off" placeholder='Paste receipt.json, or {"receipt", "report", "request", "response", "session"} from envolvr-receipts/'></textarea>
-              <div class="v-actions">
-                <button class="btn btn-plum" type="button" id="verifyRun">Verify in browser</button>
-                <p class="v-err" data-v-err hidden></p>
-              </div>
-            </div>
-            <div class="vcard" id="verifyCard" aria-live="polite">
-              <div class="panel-head">
-                <div>
-                  <h3 data-id>No receipt yet</h3>
-                  <p class="panel-sub">Digest <span class="mono" data-digest>—</span></p>
-                </div>
-                <span class="vstate" data-state>waiting</span>
-              </div>
-              <ol class="vrows" data-rows>
-                <li class="vrow" data-id="keyset"><span class="ic"></span><span class="lb">Keyset</span><span class="dt">bound into the tdx quote</span></li>
-                <li class="vrow" data-id="signature"><span class="ic"></span><span class="lb">Receipt signature</span><span class="dt">by the attested key</span></li>
-                <li class="vrow" data-id="request"><span class="ic"></span><span class="lb">Prompt commitment</span><span class="dt">the exact request bytes</span></li>
-                <li class="vrow" data-id="response"><span class="ic"></span><span class="lb">Response commitment</span><span class="dt">the exact response bytes</span></li>
-                <li class="vrow" data-id="session"><span class="ic"></span><span class="lb">Provider session</span><span class="dt">the attested gpu session</span></li>
-                <li class="vrow" data-id="billing"><span class="ic"></span><span class="lb">Billing</span><span class="dt">rates × tokens, to the micro-dollar</span></li>
-                <li class="vrow" data-id="anchor"><span class="ic"></span><span class="lb">On-chain anchor</span><span class="dt">receiptanchor on robinhood chain</span></li>
-              </ol>
-              <p class="verdict" data-verdict></p>
-              <div class="v-cli"><span class="p">$</span> npx @envolvr/sdk verify --last      <span class="p"># your saved receipts</span>
-<span class="p">$</span> npx @envolvr/sdk verify-gateway   <span class="p"># the TDX quote, to Intel's root</span></div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section class="sec" id="pricing">
-        <h2 class="sec-title"><span class="sq"></span>Pricing</h2>
-        <p class="sec-desc">Two ways to pay. One of them is cheaper.</p>
-        <div class="plans">
-          <article class="plan plan-lavender">
-            <span class="plan-kicker">Pay as you go</span>
-            <h3>USDG, per request</h3>
-            <p>Sign in with your wallet, deposit USDG and call the endpoint. No token, no lockup.</p>
-            <ul>
-              <li>Suppliers' list prices, 5% on deposit</li>
-              <li>Billed to the micro-dollar, on the receipt</li>
-              <li>No token exposure</li>
-            </ul>
-            <a class="btn btn-plumdark" href="/app/">Deposit USDG</a>
-          </article>
-          <article class="plan plan-plum">
-            <span class="plan-kicker"><span class="tag-mint">Stake</span></span>
-            <h3>A daily compute allowance</h3>
-            <p>Stake NVLR and draw your share of the daily inference pool, refreshed at 00:00 UTC. Prepaid access to compute, not a claim on revenue.</p>
-            <ul>
-              <li>More stake, more daily inference</li>
-              <li>Drawn before your USDG balance</li>
-              <li>Unstake with a cooldown</li>
-            </ul>
-            <a class="btn btn-lime" href="/app/">Stake NVLR</a>
-          </article>
-        </div>
-        <p class="panel-note next">ⓘ <b>Next: an open provider network.</b> Providers stake NVLR to serve, and a failed attestation or a wrong model is proven by the receipt itself and slashed.</p>
-      </section>
-
-      <section class="sec" id="developers">
-        <h2 class="sec-title"><span class="sq"></span>Developers</h2>
-        <p class="sec-desc">Keep your OpenAI client. Point it at envolvr and every response carries a receipt.</p>
-        <div class="card panel" id="code">
-          <div class="tabs" role="tablist" aria-label="Language">
-            <button type="button" role="tab" aria-selected="true" data-lang="py">Python</button>
-            <button type="button" role="tab" aria-selected="false" data-lang="ts">TypeScript</button>
-            <button type="button" role="tab" aria-selected="false" data-lang="sh">curl</button>
-            <button type="button" role="tab" aria-selected="false" data-lang="cli">CLI</button>
-          </div>
-          <div class="panel-body dev">
-            <ul class="dev-points">
-              <li><span class="sq" style="background:var(--t1)"></span><span><b>OpenAI-compatible</b>Chat completions and streaming, same SDKs.</span></li>
-              <li><span class="sq" style="background:var(--t2)"></span><span><b>A receipt per response</b>The <code>x-receipt-id</code> header names it.</span></li>
-              <li><span class="sq" style="background:var(--t3)"></span><span><b>Docs for agents</b><a href="/llms.txt"><code>llms.txt</code></a> lets your agent read them itself.</span></li>
-            </ul>
-            <div class="code">
-              <button class="copy" type="button" data-copy-code>Copy</button>
-<pre data-lang="py"><code><span class="k">import</span> os
-<span class="k">from</span> openai <span class="k">import</span> OpenAI
-
-client = OpenAI(
-<span class="hl-line">    base_url=<span class="s">"https://api.envolvr.xyz/v1"</span>,</span>
-    api_key=os.environ[<span class="s">"ENVOLVR_API_KEY"</span>],
-)
-r = client.chat.completions.with_raw_response.create(
-    model=<span class="s">"z-ai/glm-5.3"</span>,
-    messages=[{<span class="s">"role"</span>: <span class="s">"user"</span>, <span class="s">"content"</span>: <span class="s">"Close the arb?"</span>}],
-)
-<span class="c"># the signed receipt for this exact exchange</span>
-print(r.headers[<span class="s">"x-receipt-id"</span>])</code></pre>
-<pre data-lang="ts" hidden><code><span class="k">import</span> OpenAI <span class="k">from</span> <span class="s">"openai"</span>;
-
-<span class="k">const</span> client = <span class="k">new</span> OpenAI({
-<span class="hl-line">  baseURL: <span class="s">"https://api.envolvr.xyz/v1"</span>,</span>
-  apiKey: process.env.ENVOLVR_API_KEY,
-});
-<span class="k">const</span> { data, response } = <span class="k">await</span> client.chat.completions
-  .create({ model: <span class="s">"z-ai/glm-5.3"</span>, messages: [{ role: <span class="s">"user"</span>, content: <span class="s">"Close the arb?"</span> }] })
-  .withResponse();
-<span class="c">// the signed receipt for this exact exchange</span>
-console.log(response.headers.get(<span class="s">"x-receipt-id"</span>));</code></pre>
-<pre data-lang="sh" hidden><code>curl <span class="s">https://api.envolvr.xyz/v1/chat/completions</span> \
-  -H <span class="s">"Authorization: Bearer $ENVOLVR_API_KEY"</span> \
-  -H <span class="s">"Content-Type: application/json"</span> \
-  -d <span class="s">'{"model":"z-ai/glm-5.3","messages":[{"role":"user","content":"Close the arb?"}]}'</span> \
-  -D - | grep -i <span class="s">x-receipt-id</span>
-<span class="c"># the signed receipt for this exact exchange</span></code></pre>
-<pre data-lang="cli" hidden><code><span class="c"># sign in with a wallet, deposit, chat, verify</span>
-npx @envolvr/sdk signin --save
-npx @envolvr/sdk deposit 10
-npx @envolvr/sdk chat <span class="s">"Close the arb?"</span>
-<span class="hl-line">npx @envolvr/sdk verify --last</span></code></pre>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section class="sec" id="suppliers">
-        <h2 class="sec-title"><span class="sq"></span>Suppliers</h2>
-        <p class="sec-desc">Inference runs on confidential hardware, rooted in Intel TDX and NVIDIA Confidential Computing.</p>
-        <div class="sup-grid">
-          <div class="sup-card"><span class="sup-mark" style="background:var(--t1);--logo-cut:var(--t1)"><svg viewBox="0 0 48 48" aria-hidden="true"><use href="images/suppliers.svg#phala"/></svg></span><b>Phala</b><small>GPU TEE models on Intel TDX and NVIDIA CC</small></div>
-          <div class="sup-card"><span class="sup-mark" style="background:var(--t2)"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="images/suppliers.svg#near"/></svg></span><b>NEAR AI</b><small>Responses signed in the model enclave</small></div>
-          <div class="sup-card"><span class="sup-mark" style="background:var(--dark)"><svg viewBox="27.5 15 95.12 121.1" aria-hidden="true"><use href="images/suppliers.svg#redpill"/></svg></span><b>RedPill</b><small>Routing to Phala GPU TEEs</small></div>
-          <div class="sup-card"><span class="sup-mark" style="background:var(--t3)"><svg viewBox="0 0.84 61.29 40.13" aria-hidden="true"><use href="images/suppliers.svg#chutes"/></svg></span><b>Chutes</b><small>On Bittensor, each machine attested</small></div>
-        </div>
-      </section>
-
-    </div>
   </div>
-</main>
+</section>
 
-<footer class="footer">
-  <div class="wrap footer-grid">
-    <div class="footer-brand">
-      <svg class="footer-mark" viewBox="0 0 32 32" aria-hidden="true"><path d="M16 2.75 27.25 9.1v13.8L16 29.25 4.75 22.9V9.1z" fill="none" style="stroke:var(--deep)" stroke-width="2.6" stroke-linejoin="round"/><path d="M4.75 9.1 16 19.7 27.25 9.1" fill="none" style="stroke:var(--deep)" stroke-width="2.6" stroke-linejoin="round" stroke-linecap="round"/></svg>
-      <p class="footer-word">envolvr</p>
-    </div>
-    <div class="footer-main">
-      <h2>Your agent's alpha stays yours.</h2>
-      <div class="footer-cta">
-        <a class="btn btn-plumdark" href="/docs/#quickstart">Start building</a>
-        <a class="btn btn-outline-plum" href="/docs/">Read the docs</a>
+<div class="wrap body">
+  <aside class="toc" aria-label="On this page">
+    <a href="#privacy"><span>01</span>Privacy</a>
+    <a href="#models"><span>02</span>Models</a>
+    <a href="#how"><span>03</span>How it works</a>
+    <a href="#verify"><span>04</span>Verify</a>
+    <a href="#pricing"><span>05</span>Pricing</a>
+    <a href="#developers"><span>06</span>Developers</a>
+    <a href="#suppliers"><span>07</span>Suppliers</a>
+  </aside>
+
+  <main class="content">
+
+    <section class="sec" id="privacy">
+      <div class="sec-head">
+        <h2><svg viewBox="0 0 24 24" width="26" height="26" aria-hidden="true"><path d="M12 2.5l8.5 4.8v9.4L12 21.5l-8.5-4.8V7.3z" fill="#111512"/></svg>Privacy</h2>
+        <p>Every prompt an agent sends to a hosted model is a disclosure. envolvr seals it before it leaves the agent.</p>
       </div>
-      <nav class="footer-links" aria-label="Footer">
-        <div><p>Product</p><a href="#models">Models</a><a href="#verify">Verify a receipt</a><a href="#pricing">Pricing</a><a href="/app/">Account app</a></div>
-        <div><p>Developers</p><a href="/docs/">Documentation</a><a href="/docs/#quickstart">Quickstart</a><a href="/llms.txt">llms.txt</a><a href="https://www.npmjs.com/package/@envolvr/sdk">SDK on npm</a></div>
-        <div><p>Protocol</p><a href="#how">How it works</a><a href="#problem">Why private inference</a><a href="/app/">Stake NVLR</a><a href="https://github.com/envolvr/envolvr">GitHub</a></div>
+      <div class="panel seal" id="seal">
+        <div class="tabs" role="group" aria-label="Prompt view">
+          <button type="button" data-view="open" aria-pressed="true">Hosted model</button>
+          <button type="button" data-view="sealed" aria-pressed="false">envolvr</button>
+        </div>
+        <div class="panel-body split">
+          <div class="seal-main">
+            <div class="panel-head">
+              <div><span class="panel-title" data-seal-who>What the hosted provider sees</span><span class="panel-sub">The same prompt, before and after.</span></div>
+              <span class="badge badge-red" data-seal-state><i></i><span>readable</span></span>
+            </div>
+            <div class="seal-text" data-seal-text>"Given the SOL funding rate and my current basis position, should I close the arb now or hold it through the weekend?"</div>
+            <span class="seal-rule"><i data-seal-bar></i></span>
+            <div class="seal-meta">
+              <div><span>Wallet</span><b data-a="0x7f3a…c41e" data-b="not sent">0x7f3a…c41e</b></div>
+              <div><span>Operator reads</span><b data-a="plaintext" data-b="ciphertext">plaintext</b></div>
+              <div><span>Record</span><b data-a="retained: unknown" data-b="commitment d845…">retained: unknown</b></div>
+            </div>
+          </div>
+          <div class="points">
+            <div><i class="sq" style="background:#1f8a6d"></i><div><b>Reasoning leaks</b><span>Signals and intent go to whoever serves the model.</span></div></div>
+            <div><i class="sq" style="background:#9bb51f"></i><div><b>"No logs" is a promise</b><span>envolvr makes it a proof, checked on every request.</span></div></div>
+            <div><i class="sq" style="background:#3e6fc8"></i><div><b>A paper trail, sealed</b><span>Which model decided, provable without exposing why.</span></div></div>
+          </div>
+        </div>
+        <div class="panel-note" data-seal-note>ⓘ Position, intent and timing, all readable at the point of inference.</div>
+      </div>
+    </section>
+
+    <section class="sec" id="models">
+      <div class="sec-head">
+        <h2><svg viewBox="0 0 24 24" width="26" height="26" aria-hidden="true"><path d="M12 2.5l8.5 4.8v9.4L12 21.5l-8.5-4.8V7.3z" fill="#111512"/></svg>Models</h2>
+        <p>Open-weight models on attested GPUs, at the suppliers' own list prices. Every endpoint returns a signed receipt.</p>
+      </div>
+      <div class="panel">
+        <div class="tabs" role="tablist" aria-label="Price">
+          <button type="button" role="tab" aria-selected="true" data-metric="blend">Blended price</button>
+          <button type="button" role="tab" aria-selected="false" data-metric="in">Input price</button>
+          <button type="button" role="tab" aria-selected="false" data-metric="out">Output price</button>
+        </div>
+        <div class="panel-body chart-body">
+          <div class="chart-head">
+            <div><span class="panel-title" data-chart-title>Blended price per 1M tokens</span><span class="panel-sub" data-chart-sub>USD per 1M tokens, 3 parts input to 1 part output · Lower is better</span></div>
+            <div class="chips">
+              <button type="button" aria-pressed="true" data-sup="phala"><i style="background:#1f8a6d"></i>Phala</button>
+              <button type="button" aria-pressed="true" data-sup="near"><i style="background:#9bb51f"></i>NEAR AI</button>
+              <button type="button" aria-pressed="true" data-sup="chutes"><i style="background:#3e6fc8"></i>Chutes</button>
+              <span class="count" data-count>9 of 9 endpoints</span>
+            </div>
+          </div>
+          <div class="chart big" data-chart="main"></div>
+        </div>
+        <div class="panel-note">ⓘ Blended price weights input and output 3 to 1</div>
+      </div>
+      <div class="panel table-panel">
+        <div class="table-scroll">
+          <table class="models" id="modelTable">
+            <thead><tr><th>Model</th><th>Supplier</th><th class="num">Input</th><th class="num">Output</th><th class="num">Blended</th><th>The receipt also proves</th></tr></thead>
+            <tbody>
+              <tr data-label="GLM-5.3" data-sup="phala" data-sup-name="Phala" data-in="1.40" data-out="4.40">
+                <td><span class="m-name"><span class="m-tag">Z</span><code>z-ai/glm-5.3</code></span></td>
+                <td><span class="sup"><svg aria-hidden="true"><use href="images/suppliers.svg#phala"/></svg>Phala<em>via RedPill</em></span></td>
+                <td class="num">$1.40</td><td class="num">$4.40</td><td class="num b" data-blend></td><td class="proves">Attested GPU session</td>
+              </tr>
+              <tr data-label="GLM-5.3 Flash" data-sup="near" data-sup-name="NEAR AI" data-in="0.15" data-out="0.50">
+                <td><span class="m-name"><span class="m-tag">Z</span><code>z-ai/glm-5.3-flash</code></span></td>
+                <td><span class="sup"><svg aria-hidden="true"><use href="images/suppliers.svg#near"/></svg>NEAR AI</span></td>
+                <td class="num">$0.15</td><td class="num">$0.50</td><td class="num b" data-blend></td><td class="proves">Attested GPU session, response signed in the model enclave</td>
+              </tr>
+              <tr data-label="Qwen3.8 27B" data-sup="chutes" data-sup-name="Chutes" data-in="0.24" data-out="2.20">
+                <td><span class="m-name"><span class="m-tag">Q</span><code>qwen/qwen3.8-27b</code></span></td>
+                <td><span class="sup"><svg aria-hidden="true"><use href="images/suppliers.svg#chutes"/></svg>Chutes<em>Default</em></span></td>
+                <td class="num">$0.24</td><td class="num">$2.20</td><td class="num b" data-blend></td><td class="proves">Attested machine, end-to-end encrypted to its key</td>
+              </tr>
+              <tr data-label="Qwen3.8 27B" data-sup="phala" data-sup-name="Phala" data-in="0.24" data-out="2.50">
+                <td><span class="m-name"><span class="m-tag">Q</span><code>qwen/qwen3.8-27b</code></span></td>
+                <td><span class="sup"><svg aria-hidden="true"><use href="images/suppliers.svg#phala"/></svg>Phala<em>via RedPill</em></span></td>
+                <td class="num">$0.24</td><td class="num">$2.50</td><td class="num b" data-blend></td><td class="proves">Attested GPU session</td>
+              </tr>
+              <tr data-label="Qwen3.8 27B" data-sup="near" data-sup-name="NEAR AI" data-in="0.44" data-out="3.30">
+                <td><span class="m-name"><span class="m-tag">Q</span><code>qwen/qwen3.8-27b</code></span></td>
+                <td><span class="sup"><svg aria-hidden="true"><use href="images/suppliers.svg#near"/></svg>NEAR AI</span></td>
+                <td class="num">$0.44</td><td class="num">$3.30</td><td class="num b" data-blend></td><td class="proves">Attested GPU session, response signed in the model enclave</td>
+              </tr>
+              <tr data-label="Qwen3.6 35B" data-sup="near" data-sup-name="NEAR AI" data-in="0.17" data-out="1.10">
+                <td><span class="m-name"><span class="m-tag">Q</span><code>qwen/qwen3.6-35b-a3b</code></span></td>
+                <td><span class="sup"><svg aria-hidden="true"><use href="images/suppliers.svg#near"/></svg>NEAR AI</span></td>
+                <td class="num">$0.17</td><td class="num">$1.10</td><td class="num b" data-blend></td><td class="proves">Attested GPU session, response signed in the model enclave</td>
+              </tr>
+              <tr data-label="DeepSeek V4 Flash" data-sup="chutes" data-sup-name="Chutes" data-in="0.44" data-out="1.32">
+                <td><span class="m-name"><span class="m-tag">DS</span><code>deepseek/deepseek-v4-flash</code></span></td>
+                <td><span class="sup"><svg aria-hidden="true"><use href="images/suppliers.svg#chutes"/></svg>Chutes</span></td>
+                <td class="num">$0.44</td><td class="num">$1.32</td><td class="num b" data-blend></td><td class="proves">Attested machine, end-to-end encrypted to its key</td>
+              </tr>
+              <tr data-label="DeepSeek V3.2" data-sup="chutes" data-sup-name="Chutes" data-in="1.00" data-out="1.00">
+                <td><span class="m-name"><span class="m-tag">DS</span><code>deepseek/deepseek-v3.2</code></span></td>
+                <td><span class="sup"><svg aria-hidden="true"><use href="images/suppliers.svg#chutes"/></svg>Chutes</span></td>
+                <td class="num">$1.00</td><td class="num">$1.00</td><td class="num b" data-blend></td><td class="proves">Attested machine, end-to-end encrypted to its key</td>
+              </tr>
+              <tr data-label="Kimi K2.6" data-sup="chutes" data-sup-name="Chutes" data-in="0.50" data-out="2.85">
+                <td><span class="m-name"><span class="m-tag">K</span><code>moonshotai/kimi-k2.6</code></span></td>
+                <td><span class="sup"><svg aria-hidden="true"><use href="images/suppliers.svg#chutes"/></svg>Chutes</span></td>
+                <td class="num">$0.50</td><td class="num">$2.85</td><td class="num b" data-blend></td><td class="proves">Attested machine, end-to-end encrypted to its key</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <section class="sec" id="how">
+      <div class="sec-head">
+        <h2><svg viewBox="0 0 24 24" width="26" height="26" aria-hidden="true"><path d="M12 2.5l8.5 4.8v9.4L12 21.5l-8.5-4.8V7.3z" fill="#111512"/></svg>How it works</h2>
+        <p>Five hops from the agent to the chain, and no trusted middleman. Each hop proves something you can check.</p>
+      </div>
+      <!-- Desktop: tabs, a row of hop boxes and the detail panel. Phones: a vertical accordion. Both are filled by main.js. -->
+      <div class="panel hops-wide" id="flow">
+        <div class="tabs" role="tablist" aria-label="Hop" data-hop-tabs></div>
+        <div class="hop-row-wrap"><div class="hop-row" data-hop-row></div></div>
+        <div class="hop-detail">
+          <div><span class="kicker" data-hop-k>HOP 2 OF 5 · WHAT HAPPENS</span><p data-hop-what></p></div>
+          <div><span class="kicker">WHAT IT PROVES</span><p class="proof" data-hop-proof></p></div>
+        </div>
+      </div>
+      <div class="panel hops-narrow" data-hop-list></div>
+    </section>
+
+    <section class="sec" id="verify">
+      <div class="sec-head">
+        <h2><svg viewBox="0 0 24 24" width="26" height="26" aria-hidden="true"><path d="M12 2.5l8.5 4.8v9.4L12 21.5l-8.5-4.8V7.3z" fill="#111512"/></svg>Verify</h2>
+        <p>Signature, commitments, bill and on-chain anchor, computed in your browser. Change a single character and watch it fail.</p>
+      </div>
+      <div class="panel">
+        <div class="tabs" role="tablist" aria-label="Receipt">
+          <button type="button" role="tab" aria-selected="true" data-src="sample">Sample receipt</button>
+          <button type="button" role="tab" aria-selected="false" data-src="own">Your receipt</button>
+        </div>
+        <div class="panel-body verifier">
+          <div class="v-input">
+            <div><span class="panel-title">receipt.json</span><span class="panel-sub" data-v-hint>A real testnet receipt for z-ai/glm-5.3, served on Phala. Try editing the bill.</span></div>
+            <label class="sr-only" for="receiptInput">Receipt JSON</label>
+            <textarea id="receiptInput" wrap="off" spellcheck="false" autocomplete="off" placeholder="Paste a receipt.json"></textarea>
+            <div class="v-actions"><button class="btn-green" type="button" id="verifyRun">Verify in browser</button><span class="v-err" data-v-err hidden></span></div>
+          </div>
+          <div class="vcard" id="verifyCard" aria-live="polite">
+            <div class="panel-head">
+              <div><span class="panel-title" data-id>No receipt yet</span><span class="panel-sub">Digest <span data-digest>–</span></span></div>
+              <span class="badge" data-state><i></i><span>waiting</span></span>
+            </div>
+            <div class="vlist">
+              <div class="vrow" data-id="keyset"><span class="ck"></span><span class="lb">Keyset</span><span class="dt">bound into the tdx quote</span></div>
+              <div class="vrow" data-id="signature"><span class="ck"></span><span class="lb">Receipt signature</span><span class="dt">by the attested key</span></div>
+              <div class="vrow" data-id="request"><span class="ck"></span><span class="lb">Prompt commitment</span><span class="dt">the exact request bytes</span></div>
+              <div class="vrow" data-id="response"><span class="ck"></span><span class="lb">Response commitment</span><span class="dt">the exact response bytes</span></div>
+              <div class="vrow" data-id="session"><span class="ck"></span><span class="lb">Provider session</span><span class="dt">the attested gpu session</span></div>
+              <div class="vrow" data-id="billing"><span class="ck"></span><span class="lb">Billing</span><span class="dt">rates × tokens, to the micro-dollar</span></div>
+              <div class="vrow" data-id="anchor"><span class="ck"></span><span class="lb">On-chain anchor</span><span class="dt">receiptanchor on robinhood chain</span></div>
+            </div>
+            <div class="cli"><div>$ npx @envolvr/sdk verify --last <em>&nbsp;&nbsp;&nbsp;# your saved receipts</em></div><div>$ npx @envolvr/sdk verify-gateway <em>&nbsp;# the TDX quote, to Intel's root</em></div></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="sec" id="pricing">
+      <div class="sec-head">
+        <h2><svg viewBox="0 0 24 24" width="26" height="26" aria-hidden="true"><path d="M12 2.5l8.5 4.8v9.4L12 21.5l-8.5-4.8V7.3z" fill="#111512"/></svg>Pricing</h2>
+        <p>Two ways to pay. One of them is cheaper.</p>
+      </div>
+      <div class="plans">
+        <div class="plan lime">
+          <span class="plan-kicker">PAY AS YOU GO</span>
+          <h3>USDG, per request</h3>
+          <p>Sign in with your wallet, deposit USDG and call the endpoint. No token, no lockup.</p>
+          <ul><li>Suppliers' list prices, 5% on deposit</li><li>Billed to the micro-dollar, on the receipt</li><li>No token exposure</li></ul>
+          <a href="/app/">Deposit USDG</a>
+        </div>
+        <div class="plan dark">
+          <span class="tag-lime">STAKE</span>
+          <h3>A daily compute allowance</h3>
+          <p>Stake NVLR and draw your share of the daily inference pool, refreshed at 00:00 UTC. Prepaid access to compute, not a claim on revenue.</p>
+          <ul><li>More stake, more daily inference</li><li>Drawn before your USDG balance</li><li>Unstake with a cooldown</li></ul>
+          <a href="/app/">Stake NVLR</a>
+        </div>
+      </div>
+      <p class="note">ⓘ <strong>Next: an open provider network.</strong> Providers stake NVLR to serve, and a failed attestation or a wrong model is proven by the receipt itself and slashed.</p>
+    </section>
+
+    <section class="sec" id="developers">
+      <div class="sec-head">
+        <h2><svg viewBox="0 0 24 24" width="26" height="26" aria-hidden="true"><path d="M12 2.5l8.5 4.8v9.4L12 21.5l-8.5-4.8V7.3z" fill="#111512"/></svg>Developers</h2>
+        <p>Keep your OpenAI client. Point it at envolvr and every response carries a receipt.</p>
+      </div>
+      <div class="panel" id="code">
+        <div class="tabs" role="tablist" aria-label="Language" data-code-tabs></div>
+        <div class="panel-body dev">
+          <div class="points dev-points">
+            <div><i class="sq" style="background:#1f8a6d"></i><div><b>OpenAI-compatible</b><span>Chat completions and streaming, same SDKs.</span></div></div>
+            <div><i class="sq" style="background:#9bb51f"></i><div><b>A receipt per response</b><span>The <code>x-receipt-id</code> header names it.</span></div></div>
+            <div><i class="sq" style="background:#3e6fc8"></i><div><b>Docs for agents</b><span><a href="/llms.txt"><code>llms.txt</code></a> lets your agent read them itself.</span></div></div>
+          </div>
+          <div class="code"><button type="button" data-copy-code>Copy</button><div class="code-lines" data-code-lines></div></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="sec sec-last" id="suppliers">
+      <div class="sec-head">
+        <h2><svg viewBox="0 0 24 24" width="26" height="26" aria-hidden="true"><path d="M12 2.5l8.5 4.8v9.4L12 21.5l-8.5-4.8V7.3z" fill="#111512"/></svg>Suppliers</h2>
+        <p>Inference runs on confidential hardware, rooted in Intel TDX and NVIDIA Confidential Computing.</p>
+      </div>
+      <div class="sup-grid">
+        <div class="sup-card"><span class="sup-tile phala"><svg aria-hidden="true"><use href="images/suppliers.svg#phala"/></svg></span><b>Phala</b><span>GPU TEE models on Intel TDX and NVIDIA CC</span></div>
+        <div class="sup-card"><span class="sup-tile near"><svg aria-hidden="true"><use href="images/suppliers.svg#near"/></svg></span><b>NEAR AI</b><span>Responses signed in the model enclave</span></div>
+        <div class="sup-card"><span class="sup-tile redpill"><svg aria-hidden="true"><use href="images/suppliers.svg#redpill"/></svg></span><b>RedPill</b><span>Routing to Phala GPU TEEs</span></div>
+        <div class="sup-card"><span class="sup-tile chutes"><svg aria-hidden="true"><use href="images/suppliers.svg#chutes"/></svg></span><b>Chutes</b><span>On Bittensor, each machine attested</span></div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<footer class="foot">
+  <div class="foot-panel">
+    <div class="foot-top">
+      <div class="foot-cta">
+        <h2>Your agent's alpha stays yours.</h2>
+        <div><a class="solid" href="/docs/#quickstart">Start building</a><a class="line" href="/docs/">Read the docs</a></div>
+      </div>
+      <nav class="foot-links" aria-label="Footer">
+        <div><span>Product</span><a href="#models">Models</a><a href="#verify">Verify a receipt</a><a href="#pricing">Pricing</a><a href="/app/">Account app</a></div>
+        <div><span>Developers</span><a href="/docs/">Documentation</a><a href="/docs/#quickstart">Quickstart</a><a href="/llms.txt">llms.txt</a><a href="https://www.npmjs.com/package/@envolvr/sdk">SDK on npm</a></div>
+        <div><span>Protocol</span><a href="#how">How it works</a><a href="#privacy">Why private inference</a><a href="/app/">Stake NVLR</a><a href="https://github.com/envolvr/envolvr">GitHub</a></div>
       </nav>
     </div>
-  </div>
-  <div class="wrap footer-legal">
-    <p>© 2026 envolvr</p>
-    <p>envolvr is a pre-launch protocol. Nothing on this site is financial, legal or investment advice, and nothing here is an offer to sell securities. NVLR is intended as prepaid access to compute. Availability is restricted by jurisdiction and any token launch is subject to legal review. The attestation guarantee is limited to what is described in the protocol spec.</p>
+    <div class="foot-legal">
+      <span>© 2026 envolvr</span>
+      <p>envolvr is a pre-launch protocol. Nothing on this site is financial, legal or investment advice, and nothing here is an offer to sell securities. NVLR is intended as prepaid access to compute. Availability is restricted by jurisdiction and any token launch is subject to legal review. The attestation guarantee is limited to what is described in the protocol spec.</p>
+    </div>
+    <div class="foot-mark" aria-hidden="true">
+      <svg viewBox="0 0 24 24"><path d="M12 2.5l8.5 4.8v9.4L12 21.5l-8.5-4.8V7.3z" fill="none" stroke="#163a2e" stroke-width="2.4" stroke-linejoin="round"/><path d="M7.8 10.4l4.2 3.4 4.2-3.4" fill="none" stroke="#163a2e" stroke-width="2.4" stroke-linejoin="round"/></svg>
+      <span>envolvr</span>
+    </div>
   </div>
 </footer>
-<a class="to-top" href="#top" aria-label="Back to top"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 13V3M3.5 7.5 8 3l4.5 4.5" fill="none" stroke="currentColor" stroke-width="1.5"/></svg></a>
-<script src="main.js?v=20261001h"></script>
-<script type="module" src="js/site-verify.js?v=20261001h"></script>
+
+</div>
+<script src="main.js?v=20261001j"></script>
+<script type="module" src="js/site-verify.js?v=20261001j"></script>
 </body>
 </html>
