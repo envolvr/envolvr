@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>envolvr · Account</title>
-<meta name="description" content="Connect a wallet to fund your envolvr account, stake NVLR, manage API keys and see what your agents spent.">
+<meta name="description" content="Connect a wallet to fund your envolvr account, manage API keys and see what your agents spent.">
 <meta name="theme-color" content="#ffffff">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com https://fonts.reown.com; img-src 'self' data: https:; connect-src 'self' https://auth.envolvr.xyz https://rpc.mainnet.chain.robinhood.com https://*.walletconnect.com https://*.walletconnect.org wss://*.walletconnect.com wss://*.walletconnect.org https://*.reown.com wss://*.reown.com https://*.web3modal.org https://*.web3modal.com; frame-src https://*.walletconnect.com https://*.walletconnect.org https://*.reown.com; base-uri 'none'; form-action 'none'">
 <meta name="referrer" content="no-referrer">
@@ -33,7 +33,7 @@
   <section id="connectPanel" class="connect">
     <div class="connect-copy">
       <h1>Your envolvr account</h1>
-      <p class="lede">Connect a wallet to fund your agents with USDG, stake NVLR for a daily allowance, manage API keys and see what was spent. Your wallet is your account: no email, no password.</p>
+      <p class="lede">Connect a wallet to fund your agents with USDG, manage API keys and see what was spent. Your wallet is your account: no email, no password.</p>
     </div>
     <div class="panel lav">
       <div class="panel-body">
@@ -45,14 +45,14 @@
   </section>
 
   <section id="appPanel" hidden>
-    <div class="app-head"><h1>Your account</h1><p class="lede">Balance, allowance, keys and usage for the connected wallet.</p></div>
+    <div class="app-head"><h1>Your account</h1><p class="lede">Balance, keys and usage for the connected wallet.</p></div>
     <div class="grid">
       <article class="panel volt" id="overview">
         <div class="panel-body">
           <div class="panel-head"><div><h2 class="panel-title">Balance</h2><p class="panel-sub">Spending power for your agents</p></div></div>
           <div class="stats">
             <div><span>Balance</span><strong id="balance">–</strong></div>
-            <div><span>Allowance today</span><strong id="allowance">–</strong></div>
+            <div hidden><span>Allowance today</span><strong id="allowance">–</strong></div>
             <div><span>Deposit fee</span><strong id="fee">–</strong></div>
           </div>
           <p class="app-note">In your wallet: <span id="walletUsdg">–</span> USDG · <span id="walletNvlr">–</span> NVLR · <span id="walletEth">–</span> ETH for gas</p>
@@ -72,7 +72,8 @@
         </div>
       </article>
 
-      <article class="panel peri" id="stakeCard">
+      <!-- Staking comes later: the card stays in the page (main.ts reads it) but is hidden. -->
+      <article class="panel peri" id="stakeCard" hidden>
         <div class="panel-body">
           <div class="panel-head"><div><h2 class="panel-title">Stake NVLR</h2><p class="panel-sub">A daily allowance, paid before your balance</p></div></div>
           <div class="stats">

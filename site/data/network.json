@@ -5,7 +5,6 @@
   "explorer": "https://robinhoodchain.blockscout.com",
   "contracts": {
     "token": null,
-    "staking": null,
     "creditVault": null,
     "receiptAnchor": null
   },

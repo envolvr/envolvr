@@ -16,7 +16,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,500&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="styles.css?v=20261001v">
+<link rel="stylesheet" href="styles.css?v=20261002r">
 <script>document.documentElement.classList.add('js');</script>
 </head>
 <body>
@@ -67,7 +67,7 @@
   </div>
   <div class="news">
     <a href="/token/">
-      <span><small>NEW</small><b>NVLR is live on Robinhood Chain</b><i>Stake it and your agents get a daily share of private inference, funded by trading fees</i></span>
+      <span><small>NEW</small><b>NVLR is live on Robinhood Chain</b><i>A portion of protocol revenue buys back NVLR and burns it, on an ongoing basis</i></span>
       <span class="arr">↗</span>
     </a>
     <a href="#suppliers">
@@ -77,29 +77,49 @@
   </div>
 </section>
 
-<!-- Highlights: the live receipt check and two price charts, then the promo row -->
+<!-- Intercepted prompt: the same prompt as a hosted provider and as envolvr's operator sees it, and the receipt that comes back, verified in the browser -->
+<section class="wrap intercept-wrap" aria-label="What a provider sees">
+  <div class="intercept" id="intercept" data-state="plain" data-receipt="hidden">
+    <div class="ic-bg" aria-hidden="true">
+      <span class="ic-band b1"></span><span class="ic-band b2"></span><span class="ic-band b3"></span><span class="ic-band b4"></span><span class="ic-band b5"></span>
+    </div>
+    <div class="ic-main">
+      <span class="ic-label"><i></i><span data-ic-label>What a hosted provider sees</span></span>
+      <p class="ic-prompt"><span class="ic-who">agent&nbsp;›</span><span class="ic-line"><span data-ic-text>Close SOL arb before funding flips?</span><span class="ic-beam" aria-hidden="true"></span></span></p>
+      <p class="ic-note" data-ic-note>Plain text, at the point of inference: position, intent and timing.</p>
+      <div class="ic-side">
+        <a class="ic-cta" href="/docs/#quickstart">Seal my agent</a>
+      </div>
+    </div>
+    <button class="ic-replay" type="button" data-ic-toggle aria-pressed="false">Pause</button>
+    <div class="ic-receipt" inert>
+      <article class="rcard" id="heroCard" aria-live="polite">
+        <div class="rcard-head">
+          <div>
+            <span class="card-title"><i class="sq" style="background:#1f8a6d"></i>Receipt check</span>
+            <span class="rcard-sub">A real receipt for z-ai/glm-5.3 on Phala · verified in your browser</span>
+          </div>
+          <span class="badge" data-state><i></i><span>checking</span></span>
+        </div>
+        <div class="rcard-rows">
+          <div class="vrow" data-id="keyset"><span class="ck"></span><span class="lb">Keyset</span><span class="dt">sha256:2317…, attested</span></div>
+          <div class="vrow" data-id="signature"><span class="ck"></span><span class="lb">Signature</span><span class="dt">ed25519 · receipt-ed25519-v1</span></div>
+          <div class="vrow" data-id="request"><span class="ck"></span><span class="lb">Prompt</span><span class="dt">ebfc…a6a3 matches</span></div>
+          <div class="vrow" data-id="response"><span class="ck"></span><span class="lb">Response</span><span class="dt">3648…0be5 matches</span></div>
+          <div class="vrow" data-id="session"><span class="ck"></span><span class="lb">GPU session</span><span class="dt">39bc…4ad2 · redpill, attested</span></div>
+          <div class="vrow extra" data-id="billing" hidden><span class="ck"></span><span class="lb">Billing</span><span class="dt">$0.001360 · 326 tokens, recomputed</span></div>
+          <div class="vrow extra" data-id="anchor" hidden><span class="ck"></span><span class="lb">Anchor</span><span class="dt">robinhood chain</span></div>
+        </div>
+        <button class="rcard-more" type="button" data-more>+ 2 more checks: billing, anchor</button>
+        <div class="rcard-foot"><span data-foot>Checking in your browser…</span><button type="button" data-rerun>Run again</button></div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- Highlights: two price charts, then the promo row -->
 <section class="wrap highlights">
   <div class="hl-grid">
-    <article class="rcard" id="heroCard" aria-live="polite">
-      <div class="rcard-head">
-        <div>
-          <span class="card-title"><i class="sq" style="background:#1f8a6d"></i>Receipt check</span>
-          <span class="rcard-sub">A real receipt for z-ai/glm-5.3 on Phala · verified in your browser</span>
-        </div>
-        <span class="badge" data-state><i></i><span>checking</span></span>
-      </div>
-      <div class="rcard-rows">
-        <div class="vrow" data-id="keyset"><span class="ck"></span><span class="lb">Keyset</span><span class="dt">sha256:2317…, attested</span></div>
-        <div class="vrow" data-id="signature"><span class="ck"></span><span class="lb">Signature</span><span class="dt">ed25519 · receipt-ed25519-v1</span></div>
-        <div class="vrow" data-id="request"><span class="ck"></span><span class="lb">Prompt</span><span class="dt">ebfc…a6a3 matches</span></div>
-        <div class="vrow" data-id="response"><span class="ck"></span><span class="lb">Response</span><span class="dt">3648…0be5 matches</span></div>
-        <div class="vrow" data-id="session"><span class="ck"></span><span class="lb">GPU session</span><span class="dt">39bc…4ad2 · redpill, attested</span></div>
-        <div class="vrow extra" data-id="billing" hidden><span class="ck"></span><span class="lb">Billing</span><span class="dt">$0.001360 · 326 tokens, recomputed</span></div>
-        <div class="vrow extra" data-id="anchor" hidden><span class="ck"></span><span class="lb">Anchor</span><span class="dt">robinhood chain</span></div>
-      </div>
-      <button class="rcard-more" type="button" data-more>+ 2 more checks: billing, anchor</button>
-      <div class="rcard-foot"><span data-foot>Checking in your browser…</span><button type="button" data-rerun>Run again</button></div>
-    </article>
     <p class="lede lede-below">Prompts run in hardware-attested enclaves the operator cannot read. Every response comes back with a signed receipt, anchored on Robinhood Chain.</p>
     <article class="ccard">
       <span class="card-title"><i class="sq" style="background:#9bb51f"></i>Input price</span>
@@ -120,10 +140,10 @@
       </div>
       <span class="promo-arr">↗</span>
     </a>
-    <a class="promo nvlr" href="#pricing">
+    <a class="promo nvlr" href="/token/#burn">
       <div class="promo-col">
-        <span class="promo-title">NVLR allowance</span>
-        <span class="promo-desc">Stake NVLR for a daily compute allowance, refreshed at 00:00 UTC and drawn before your USDG balance</span>
+        <span class="promo-title">NVLR buyback and burn</span>
+        <span class="promo-desc">The more agents run private inference, the more revenue flows back into NVLR</span>
       </div>
       <span class="promo-arr">↗</span>
     </a>
@@ -134,7 +154,7 @@
         <li><small>Mainnet · Oct</small><span>NVLR and the envolvr contracts live on Robinhood Chain</span></li>
         <li><small>New supplier · 30 Sept</small><span>Chutes live: Qwen3.8-27B, DeepSeek V4 Flash, DeepSeek V3.2, Kimi K2.6</span></li>
         <li><small>Site · 30 Sept</small><span>In-browser receipt verification on envolvr.xyz</span></li>
-        <li><small>App · 25 Sept</small><span>Account app at envolvr.xyz/app: keys, deposits, staking</span></li>
+        <li><small>App · 25 Sept</small><span>Account app at envolvr.xyz/app: keys, deposits, usage</span></li>
         <li><small>SDK · 25 Sept</small><span>@envolvr/sdk 0.1.1 on npm with the envolvr CLI</span></li>
       </ol>
     </div>
@@ -326,7 +346,7 @@
     <section class="sec" id="pricing">
       <div class="sec-head">
         <h2><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M12 2.5l8.5 4.8v9.4L12 21.5l-8.5-4.8V7.3z" fill="#ccff00" stroke="#111512" stroke-width="1.6" stroke-linejoin="round"/></svg>Pricing</h2>
-        <p>Two ways to pay. One of them is cheaper.</p>
+        <p>Pay per request in USDG, at the suppliers' own list prices.</p>
       </div>
       <div class="plans">
         <div class="plan lime">
@@ -337,14 +357,13 @@
           <a href="/app/">Deposit USDG</a>
         </div>
         <div class="plan dark">
-          <span class="tag-lime">STAKE</span>
-          <h3>A daily compute allowance</h3>
-          <p>Stake NVLR and draw your share of the daily inference pool, refreshed at 00:00 UTC. Prepaid access to compute, not a claim on revenue.</p>
-          <ul><li>More stake, more daily inference</li><li>Drawn before your USDG balance</li><li>Unstake with a cooldown</li></ul>
-          <a href="/app/">Stake NVLR</a>
+          <span class="tag-lime">NVLR</span>
+          <h3>Usage feeds the flywheel</h3>
+          <p>Every request adds to protocol revenue, and a portion of it buys back NVLR and burns it, on an ongoing basis.</p>
+          <ul><li>Buyback and burn, ongoing</li><li>1,000,000,000 NVLR supply</li><li>Live on Robinhood Chain</li></ul>
+          <a href="/token/">See the token</a>
         </div>
       </div>
-      <p class="note">ⓘ <strong>Next: an open provider network.</strong> Providers stake NVLR to serve, and a failed attestation or a wrong model is proven by the receipt itself and slashed.</p>
     </section>
 
     <section class="sec" id="developers">
@@ -396,7 +415,7 @@
     </div>
     <div class="foot-legal">
       <span class="foot-legal-links">© 2026 envolvr<a href="/terms/">Terms of Service</a><a href="/privacy/">Privacy Policy</a></span>
-      <p>Nothing on this site is financial, legal or investment advice, and nothing here is an offer to sell securities. NVLR is intended as prepaid access to compute. Availability may be restricted in some jurisdictions. The attestation guarantee is limited to what is described in the protocol spec.</p>
+      <p>Nothing on this site is financial, legal or investment advice, and nothing here is an offer to sell securities. Availability may be restricted in some jurisdictions. The attestation guarantee is limited to what is described in the protocol spec.</p>
     </div>
     <div class="foot-mark" aria-hidden="true">
       <svg viewBox="0 0 24 24"><path d="M12 2.5l8.5 4.8v9.4L12 21.5l-8.5-4.8V7.3z" fill="none" stroke="#0f1110" stroke-width="2.4" stroke-linejoin="round"/><path d="M7.8 10.4l4.2 3.4 4.2-3.4" fill="none" stroke="#0f1110" stroke-width="2.4" stroke-linejoin="round"/></svg>
@@ -407,6 +426,7 @@
 
 </div>
 <script src="main.js?v=20261001v"></script>
-<script type="module" src="js/site-verify.js?v=20261001v"></script>
+<script src="js/intercept.js?v=20261002n"></script>
+<script type="module" src="js/site-verify.js?v=20261002i"></script>
 </body>
 </html>

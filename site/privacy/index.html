@@ -123,9 +123,9 @@
   <h2 id="collect">2. What we keep</h2>
   <p>To run accounts and billing, the control plane keeps the following, inside the same attested virtual machine:</p>
   <ul>
-    <li><strong>Account:</strong> your wallet address, balance, daily allowance use and creation date.</li>
+    <li><strong>Account:</strong> your wallet address, balance and creation date.</li>
     <li><strong>API keys:</strong> a hash of each key (never the key itself), its first characters to tell keys apart, the label you give it, and when it was created and revoked.</li>
-    <li><strong>Usage:</strong> for each request, a request id, the model, the provider route, the status, the cost and whether it was paid from your allowance or your balance, and the time.</li>
+    <li><strong>Usage:</strong> for each request, a request id, the model, the provider route, the status, the cost and the time.</li>
     <li><strong>Deposits and refunds:</strong> transaction hash, paying wallet, amount, fee, block and status.</li>
     <li><strong>Sanctions screening:</strong> whether each wallet was flagged, and when it was checked.</li>
     <li><strong>Sign-in:</strong> hashed session tokens, which expire after 12 hours, and one-time sign-in nonces.</li>
@@ -134,11 +134,11 @@
   <p>We do not ask for your name, email address, phone number or any identity document. envolvr's gateway and control plane do not record IP addresses, and their logs, which are public, carry no prompts, keys, wallets or per-caller data. If you email us, we keep the correspondence.</p>
 
   <h2 id="public">3. What is public by design</h2>
-  <p>Some records live on public blockchains, where anyone can read them and no one, including us, can delete them: USDG deposits, NVLR staking and unstaking, refunds, and the Merkle roots that anchor receipts on Robinhood Chain. Content stays hidden, but metadata does not: a paying wallet, and the timing and volume of its activity, can be linked to envolvr usage. Use a wallet you are comfortable having associated with the Service.</p>
+  <p>Some records live on public blockchains, where anyone can read them and no one, including us, can delete them: USDG deposits, refunds, and the Merkle roots that anchor receipts on Robinhood Chain. Content stays hidden, but metadata does not: a paying wallet, and the timing and volume of its activity, can be linked to envolvr usage. Use a wallet you are comfortable having associated with the Service.</p>
 
   <h2 id="use">4. How we use data</h2>
   <ul>
-    <li>to authenticate you, bill requests, credit deposits, apply staking allowances and pay refunds;</li>
+    <li>to authenticate you, bill requests, credit deposits and pay refunds;</li>
     <li>to anchor receipts and let anyone verify them;</li>
     <li>to screen wallets against sanctions lists and meet our legal obligations;</li>
     <li>to detect abuse and keep the Service secure and running;</li>
@@ -199,7 +199,7 @@
     </div>
     <div class="foot-legal">
       <span class="foot-legal-links">© 2026 envolvr<a href="/terms/">Terms of Service</a><a href="/privacy/">Privacy Policy</a></span>
-      <p>Nothing on this site is financial, legal or investment advice, and nothing here is an offer to sell securities. NVLR is intended as prepaid access to compute. Availability may be restricted in some jurisdictions. The attestation guarantee is limited to what is described in the protocol spec.</p>
+      <p>Nothing on this site is financial, legal or investment advice, and nothing here is an offer to sell securities. Availability may be restricted in some jurisdictions. The attestation guarantee is limited to what is described in the protocol spec.</p>
     </div>
     <div class="foot-mark" aria-hidden="true">
       <svg viewBox="0 0 24 24"><path d="M12 2.5l8.5 4.8v9.4L12 21.5l-8.5-4.8V7.3z" fill="none" stroke="#0f1110" stroke-width="2.4" stroke-linejoin="round"/><path d="M7.8 10.4l4.2 3.4 4.2-3.4" fill="none" stroke="#0f1110" stroke-width="2.4" stroke-linejoin="round"/></svg>

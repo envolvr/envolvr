@@ -4,11 +4,11 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>NVLR · envolvr</title>
-<meta name="description" content="NVLR powers private inference for the agent economy: a daily share of private inference for stakers today, the bond for an open network of attested GPUs next.">
+<meta name="description" content="NVLR powers private inference for the agent economy: as agents use envolvr, a portion of protocol revenue buys back NVLR and burns it.">
 <meta name="theme-color" content="#ffffff">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <meta property="og:title" content="NVLR · envolvr">
-<meta property="og:description" content="Stake NVLR and your agents run private inference every day.">
+<meta property="og:description" content="Usage drives ongoing buybacks and burns of NVLR.">
 <meta property="og:type" content="website">
 <meta property="og:image" content="https://envolvr.xyz/images/og.jpg?v=20261001">
 <meta name="twitter:card" content="summary_large_image">
@@ -74,10 +74,10 @@
     <div class="tok-hero-copy">
       <span class="tok-pill"><b>NVLR</b>Live on Robinhood Chain</span>
       <h1>NVLR powers private inference for the agent economy.</h1>
-      <p>Every agent will need a private place to think. NVLR gives stakers a daily share of private inference today, and becomes the bond that secures an open network of attested GPUs tomorrow.</p>
+      <p>Every agent will need a private place to think. As agents run private inference on envolvr, a portion of protocol revenue flows back into NVLR through ongoing buybacks and burns.</p>
       <div class="tok-ctas">
         <a class="hdr-btn volt" href="#" data-link="trade">Get NVLR</a>
-        <a class="hdr-btn line" href="/app/">Stake in the app</a>
+        <a class="hdr-btn line" href="#burn">See the flywheel</a>
       </div>
     </div>
     <div class="tok-mark" aria-hidden="true">
@@ -88,33 +88,6 @@
 </section>
 
 <div class="wrap">
-
-<section class="sec" id="what">
-  <div class="sec-head">
-    <h2><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M12 2.5l8.5 4.8v9.4L12 21.5l-8.5-4.8V7.3z" fill="#7a5cff"/></svg>What NVLR does</h2>
-    <p>One token, from the first staker to an open network.</p>
-  </div>
-  <div class="tok-mods">
-    <article class="tok-mod lav">
-      <span class="tok-k">Today</span>
-      <h3>Private inference, every day</h3>
-      <p>Stake NVLR and your agents receive a daily share of private inference, funded by NVLR trading fees and served inside attested enclaves.</p>
-      <a href="/app/">Stake NVLR →</a>
-    </article>
-    <article class="tok-mod peri">
-      <span class="tok-k">Next</span>
-      <h3>A bond for open compute</h3>
-      <p>Independent providers stake NVLR to serve. A failed attestation or a wrong model is proven by the receipt itself, and slashed.</p>
-      <a href="/#how">How receipts work →</a>
-    </article>
-    <article class="tok-mod volt">
-      <span class="tok-k">Next</span>
-      <h3>Delegation and the fee switch</h3>
-      <p>Stake behind the providers you trust, and route protocol fees to burn, provider and delegator rewards, and the treasury.</p>
-      <a href="#faq">Read the FAQ →</a>
-    </article>
-  </div>
-</section>
 
 <section class="sec" id="burn">
   <div class="panel burn">
@@ -188,13 +161,12 @@
 <section class="sec" id="contracts">
   <div class="sec-head">
     <h2><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M12 2.5l8.5 4.8v9.4L12 21.5l-8.5-4.8V7.3z" fill="#111512"/></svg>Contracts</h2>
-    <p>Robinhood Chain (chain id 4663). Always check addresses here before you trade or stake.</p>
+    <p>Robinhood Chain (chain id 4663). Always check addresses here before you trade.</p>
   </div>
   <div class="panel table-panel">
     <table class="contracts">
       <tbody>
         <tr><td>NVLR token</td><td><code data-addr="token">–</code></td></tr>
-        <tr><td>Staking</td><td><code data-addr="staking">–</code></td></tr>
         <tr><td>USDG credit vault</td><td><code data-addr="creditVault">–</code></td></tr>
         <tr><td>Receipt anchor</td><td><code data-addr="receiptAnchor">–</code></td></tr>
       </tbody>
@@ -209,14 +181,11 @@
   </div>
   <div class="faq">
     <details><summary>What is NVLR?</summary><p>The token of envolvr, the private inference network for AI agents. It is an ERC-20 on Robinhood Chain with a supply of 1,000,000,000.</p></details>
-    <details><summary>What do I get for staking?</summary><p>A daily share of private inference for your agents, in proportion to your stake. Each day's budget is funded by NVLR trading fees, so it moves with trading activity.</p></details>
-    <details><summary>Do I need NVLR to use envolvr?</summary><p>No. Anyone can pay per request in USDG. NVLR is for those who want a daily allowance and a stake in where the network goes.</p></details>
-    <details><summary>What comes next?</summary><p>An open network: independent providers stake NVLR to serve, misbehaviour proven by receipts is slashed, holders can delegate, and protocol fees can be switched to burn and rewards. It opens when network volume supports it.</p></details>
-    <details><summary>Does envolvr buy back NVLR?</summary><p>Yes. A portion of protocol revenue is used to buy back NVLR and burn it, on an ongoing basis.</p></details>
-    <details><summary>How do I unstake?</summary><p>Request it in the app. Your tokens can be withdrawn after the cooldown shown there.</p></details>
-    <details><summary>Is NVLR an investment?</summary><p>No. NVLR is prepaid access to compute. It is not a share in envolvr, its revenue or its profits.</p></details>
+    <details><summary>How does the flywheel work?</summary><p>Agents pay for private inference on envolvr. A portion of protocol revenue is used to buy back NVLR and burn it, on an ongoing basis, so more usage means more NVLR bought back.</p></details>
+    <details><summary>Do I need NVLR to use envolvr?</summary><p>No. Anyone can pay per request in USDG.</p></details>
+    <details><summary>Where can I get NVLR?</summary><p>On Robinhood Chain. Check the token address in <a href="#contracts">Contracts</a> before you trade.</p></details>
   </div>
-  <p class="tok-legal">NVLR is intended as prepaid access to compute. Nothing on this page is financial, legal or investment advice or an offer to sell securities. Availability may be restricted in some jurisdictions. Digital assets are volatile and you can lose what you spend on them. See the <a href="/terms/">Terms of Service</a>.</p>
+  <p class="tok-legal">Nothing on this page is financial, legal or investment advice or an offer to sell securities. Availability may be restricted in some jurisdictions. Digital assets are volatile and you can lose what you spend on them. See the <a href="/terms/">Terms of Service</a>.</p>
 </section>
 
 </div>
@@ -237,7 +206,7 @@
     </div>
     <div class="foot-legal">
       <span class="foot-legal-links">© 2026 envolvr<a href="/terms/">Terms of Service</a><a href="/privacy/">Privacy Policy</a></span>
-      <p>Nothing on this site is financial, legal or investment advice, and nothing here is an offer to sell securities. NVLR is intended as prepaid access to compute. Availability may be restricted in some jurisdictions. The attestation guarantee is limited to what is described in the protocol spec.</p>
+      <p>Nothing on this site is financial, legal or investment advice, and nothing here is an offer to sell securities. Availability may be restricted in some jurisdictions. The attestation guarantee is limited to what is described in the protocol spec.</p>
     </div>
     <div class="foot-mark" aria-hidden="true">
       <svg viewBox="0 0 24 24"><path d="M12 2.5l8.5 4.8v9.4L12 21.5l-8.5-4.8V7.3z" fill="none" stroke="#0f1110" stroke-width="2.4" stroke-linejoin="round"/><path d="M7.8 10.4l4.2 3.4 4.2-3.4" fill="none" stroke="#0f1110" stroke-width="2.4" stroke-linejoin="round"/></svg>
