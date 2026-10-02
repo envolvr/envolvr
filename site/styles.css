@@ -161,7 +161,7 @@ code{font-family:var(--mono)}
 .hl-grid,.promo-grid{display:grid;grid-template-columns:minmax(0,1fr);gap:16px}
 .promo-grid{margin-top:16px}
 @media (min-width:720px){.hl-grid,.promo-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.promo-grid .changelog{grid-column:1 / -1}}
-@media (min-width:1100px){.hl-grid,.promo-grid{grid-template-columns:repeat(3,minmax(0,1fr))}.promo-grid .changelog{grid-column:auto}}
+@media (min-width:1100px){.promo-grid{grid-template-columns:repeat(3,minmax(0,1fr))}.promo-grid .changelog{grid-column:auto}}
 .card-title{display:flex;align-items:center;gap:10px;font-family:var(--serif);font-weight:500;font-size:calc(24px * var(--serif-scale));line-height:32px;letter-spacing:var(--serif-track)}
 .badge{display:inline-flex;align-items:center;gap:6px;font-size:12px;line-height:16px;padding:4px 10px;border-radius:999px;background:var(--chip);color:var(--ink);white-space:nowrap}
 .badge > i{width:6px;height:6px;border-radius:50%;background:currentColor;display:block}
@@ -586,3 +586,71 @@ table.contracts a{color:var(--violet);text-decoration:underline;text-underline-o
 .faq a{color:var(--violet);text-decoration:underline;text-underline-offset:3px}
 .tok-legal{margin-top:32px;max-width:860px;font-size:12.5px;line-height:19px;color:var(--muted)}
 .tok-legal a{text-decoration:underline;text-underline-offset:3px}
+
+/* ---- Intercepted prompt (under the hero) ---- */
+.intercept-wrap{padding-top:56px}
+@media (max-width:819px){.intercept-wrap{padding-top:36px}}
+.intercept{position:relative;overflow:hidden;display:grid;grid-template-columns:minmax(0,1fr);gap:28px;align-items:center;padding:36px 36px;border-radius:24px;background:var(--ink-2);color:#fff}
+@media (min-width:1000px){.intercept{grid-template-columns:minmax(0,1fr) minmax(360px,430px);gap:56px;padding:52px 52px;min-height:440px}}
+@media (max-width:479px){.intercept{padding:24px 20px;border-radius:16px}}
+.intercept::before{content:"";position:absolute;inset:0;z-index:1;background:repeating-linear-gradient(0deg,rgba(255,255,255,.025) 0 1px,transparent 1px 4px);pointer-events:none}
+/* Diagonal bands drifting left to right; their colours blend between the
+   readable (warm) and sealed (volt, violet) states. */
+@property --c1{syntax:"<color>";inherits:true;initial-value:rgba(229,72,77,.45)}
+@property --c2{syntax:"<color>";inherits:true;initial-value:rgba(255,138,101,.26)}
+@property --c3{syntax:"<color>";inherits:true;initial-value:rgba(229,72,77,.18)}
+@property --c4{syntax:"<color>";inherits:true;initial-value:rgba(255,190,120,.45)}
+.ic-bg{position:absolute;inset:0;overflow:hidden;pointer-events:none;container-type:inline-size;
+  -webkit-mask-image:linear-gradient(90deg,rgba(0,0,0,.12) 0%,rgba(0,0,0,.22) 40%,rgba(0,0,0,.75) 62%,#000 78%);
+          mask-image:linear-gradient(90deg,rgba(0,0,0,.12) 0%,rgba(0,0,0,.22) 40%,rgba(0,0,0,.75) 62%,#000 78%);
+  --c1:rgba(229,72,77,.45);--c2:rgba(255,138,101,.26);--c3:rgba(229,72,77,.18);--c4:rgba(255,190,120,.45);
+  transition:--c1 1.2s ease,--c2 1.2s ease,--c3 1.2s ease,--c4 1.2s ease}
+.intercept[data-state="sealed"] .ic-bg{--c1:rgba(204,255,0,.34);--c2:rgba(122,92,255,.36);--c3:rgba(84,101,196,.3);--c4:rgba(204,255,0,.75)}
+.ic-band{position:absolute;left:0;top:-30%;height:160%;transform:skewX(-28deg);animation:icsweep 16s linear infinite}
+.ic-band.b1{width:120px;background:linear-gradient(180deg,transparent,var(--c1) 45%,transparent)}
+.ic-band.b2{width:220px;background:linear-gradient(180deg,transparent 10%,var(--c2) 60%,transparent);animation-duration:22s;animation-delay:-9s}
+.ic-band.b3{width:280px;background:linear-gradient(180deg,var(--c3),transparent 80%);animation-duration:28s;animation-delay:-20s}
+.ic-band.b4{width:4px;background:linear-gradient(180deg,transparent,var(--c4),transparent);animation-duration:11s;animation-delay:-4s}
+.ic-band.b5{width:2px;background:linear-gradient(180deg,transparent,var(--c4),transparent);animation-duration:14s;animation-delay:-11s;opacity:.6}
+@keyframes icsweep{from{translate:-320px 0}to{translate:calc(100cqw + 120px) 0}}
+@media (max-width:999px){.ic-bg{-webkit-mask-image:linear-gradient(180deg,rgba(0,0,0,.15) 0%,rgba(0,0,0,.25) 40%,#000 75%);mask-image:linear-gradient(180deg,rgba(0,0,0,.15) 0%,rgba(0,0,0,.25) 40%,#000 75%)}}
+@media (max-width:899px){.ic-band{opacity:.7}.ic-band.b3{display:none}}
+@media (prefers-reduced-motion:reduce){.ic-band{animation:none}.ic-band.b1{translate:70cqw 0}.ic-band.b2{translate:82cqw 0}.ic-band.b4{translate:60cqw 0}.ic-band.b3,.ic-band.b5{display:none}}
+.ic-main{position:relative;z-index:2;display:flex;flex-direction:column;gap:16px;min-width:0}
+.ic-label{align-self:flex-start;display:inline-flex;align-items:center;gap:8px;padding:5px 12px 5px 10px;border-radius:999px;font-family:var(--mono);font-size:12.5px;line-height:18px;letter-spacing:normal;background:rgba(229,72,77,.14);color:#ff8a8d;border:1px solid rgba(229,72,77,.35);transition:background .4s,color .4s,border-color .4s}
+.ic-label i{width:7px;height:7px;border-radius:50%;background:currentColor;box-shadow:0 0 0 3px rgba(229,72,77,.2);animation:icpulse 1.4s ease-in-out infinite}
+.intercept[data-state="sealed"] .ic-label{background:rgba(204,255,0,.12);color:var(--volt);border-color:rgba(204,255,0,.35)}
+.intercept[data-state="sealed"] .ic-label i{box-shadow:0 0 0 3px rgba(204,255,0,.18);animation:none}
+@keyframes icpulse{50%{opacity:.35}}
+.ic-prompt{display:flex;gap:12px;align-items:flex-start;min-width:0;margin-top:6px;font-family:var(--mono);font-size:clamp(18px,1.85vw,26px);line-height:1.35;letter-spacing:normal;color:#fff}
+.ic-who{flex:none;color:#7b827c;font-size:.62em;line-height:2.18}
+.ic-line{position:relative;min-width:0}
+.ic-prompt [data-ic-text]{display:inline-block;overflow-wrap:anywhere;will-change:transform}
+.ic-beam{position:absolute;top:-14%;left:0;width:16px;height:128%;transform:skewX(-20deg);background:linear-gradient(90deg,transparent,rgba(204,255,0,.9) 50%,transparent);box-shadow:0 0 24px 6px rgba(204,255,0,.35);opacity:0;pointer-events:none}
+.ic-label span,.ic-note{will-change:transform}
+.intercept[data-state="sealed"] .ic-prompt [data-ic-text]{color:#b9c3ff}
+.ic-note{font-size:14px;line-height:20px;color:#a3aaa4}
+.ic-side{position:relative;z-index:2;display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-top:14px}
+.ic-cta{display:inline-flex;padding:13px 20px;border-radius:10px;background:var(--volt);color:var(--ink);font-size:15px;font-weight:500;white-space:nowrap}
+.ic-cta:hover{color:var(--ink);filter:brightness(.96)}
+.ic-replay{all:unset;cursor:pointer;position:absolute;right:18px;bottom:12px;z-index:3;display:inline-flex;align-items:center;gap:7px;font-size:12px;line-height:16px;color:#8a918b;padding:5px 8px;border-radius:7px}
+.ic-replay::before{content:"";width:8px;height:10px;border-left:3px solid currentColor;border-right:3px solid currentColor;box-sizing:border-box}
+.ic-replay[aria-pressed="true"]::before{width:0;height:0;border-style:solid;border-width:5px 0 5px 9px;border-color:transparent transparent transparent currentColor}
+.ic-replay:hover{color:#fff;background:rgba(255,255,255,.06)}
+.ic-replay:focus-visible{outline:2px solid var(--volt);outline-offset:2px;border-radius:4px}
+.intercept.ic-paused .ic-band{animation-play-state:paused}
+.ic-prompt .ic-s{color:#b9c3ff}.ic-prompt .ic-n{color:var(--volt)}.ic-prompt .ic-p{color:#fff}
+/* The receipt card inside the strip: hidden (its space kept) until the prompt is
+   sealed, then it slides in from the left, and leaves to the right with the ciphertext. */
+.ic-receipt{position:relative;z-index:2;min-width:0}
+.ic-receipt .rcard{color:var(--ink);opacity:0;transform:translateX(-28px);box-shadow:0 24px 70px -20px rgba(204,255,0,.35);
+  transition:opacity .55s ease,transform .6s cubic-bezier(.16,1,.3,1)}
+.intercept[data-receipt="shown"] .ic-receipt .rcard{opacity:1;transform:none}
+.intercept[data-receipt="leaving"] .ic-receipt .rcard{opacity:0;transform:translateX(56px);transition:opacity .34s ease-in,transform .34s cubic-bezier(.7,0,.84,0)}
+.intercept[data-receipt="hidden"] .ic-receipt .rcard{transition:none}
+@media (prefers-reduced-motion:reduce){.ic-receipt .rcard,.intercept[data-receipt] .ic-receipt .rcard{transform:none}}
+/* The badge keeps one width through waiting, checking n/7 and verified, so the card header never reflows. */
+.ic-receipt .rcard-head .badge{min-width:112px;justify-content:center;flex:none}
+@media (max-width:479px){.ic-receipt .rcard-head{flex-direction:column;align-items:flex-start;gap:12px}}
+@media (max-width:379px){.ic-receipt .rcard-foot [data-foot]{min-height:32px}}
+@media (max-width:999px){.intercept{padding-bottom:52px}}

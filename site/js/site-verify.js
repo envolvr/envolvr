@@ -57,7 +57,8 @@ if (hero) {
     setBadge(badge, 'white', 'checking 0/7');
     foot.textContent = 'Checking in your browser…';
     try {
-      const v = await run(hero, await sample(), { pace: 220, onTick: (n, total) => setBadge(badge, 'white', `checking ${n}/${total}`) });
+      const pace = hero.closest('#intercept') ? 150 : 220;
+      const v = await run(hero, await sample(), { pace, onTick: (n, total) => setBadge(badge, 'white', `checking ${n}/${total}`) });
       setBadge(badge, v.verified ? 'ok' : 'bad', v.verified ? 'verified' : `${v.failed} failed`);
       foot.textContent = v.verified ? 'Verified in your browser, just now' : 'Checked in your browser, just now';
     } catch {
@@ -68,7 +69,25 @@ if (hero) {
     }
   };
   hero.querySelector('[data-rerun]').addEventListener('click', go);
-  go();
+  // Inside the intercepted-prompt strip the card follows its loop: it waits while
+  // the prompt is readable and verifies once it is sealed. Elsewhere it runs on load.
+  const strip = hero.closest('#intercept');
+  const reset = () => {
+    if (busy) return;
+    hero.querySelectorAll('.vrow').forEach((r) => {
+      r.classList.remove('pass', 'fail', 'skip');
+      if (r.dataset.dt) r.querySelector('.dt').textContent = r.dataset.dt;
+    });
+    setBadge(badge, 'idle', 'waiting');
+    foot.textContent = 'Waiting for the response…';
+  };
+  if (strip) {
+    reset();
+    strip.addEventListener('envolvr:plain', reset);
+    strip.addEventListener('envolvr:sealed', go);
+  } else {
+    go();
+  }
 }
 
 // ---- verify section ----

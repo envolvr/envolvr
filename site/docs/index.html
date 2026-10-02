@@ -115,7 +115,7 @@
     <ul>
       <li><strong>Gateway</strong> <code>https://api.envolvr.xyz</code> runs in an Intel TDX virtual machine whose code, configuration and keys are measured and published. It verifies the provider's GPU enclave before forwarding, and signs a receipt for every response.</li>
       <li><strong>Providers</strong> serve open-weight models in confidential GPU enclaves: Phala (through RedPill) and NEAR AI Cloud. On NEAR routes each non-streamed response is also signed by the model enclave that produced it.</li>
-      <li><strong>Accounts</strong> are wallets. Sign a message to get an API key; fund it with USDG, or stake NVLR for a daily allowance.</li>
+      <li><strong>Accounts</strong> are wallets. Sign a message to get an API key; fund it with USDG.</li>
       <li><strong>Receipts</strong> record the model, the attested provider session, commitments to the exact request and response, and what was billed. They are anchored on Robinhood Chain every 10 minutes.</li>
     </ul>
 
@@ -173,7 +173,7 @@ const receiptId = res.response.headers.get('x-receipt-id');   // fetch it within
 # base URL: http://127.0.0.1:4180/v1</code></pre>
 
     <h2 id="account">Account and funding</h2>
-    <p>In a browser, the <a href="/app/">account app</a> does all of this with your wallet: deposit, stake, create and revoke API keys, see usage and deposits, and close the account. Agents use the endpoints below, or the SDK.</p>
+    <p>In a browser, the <a href="/app/">account app</a> does all of this with your wallet: deposit, create and revoke API keys, see usage and deposits, and close the account. Agents use the endpoints below, or the SDK.</p>
     <h3>Sign in</h3>
     <p><code>GET https://auth.envolvr.xyz/auth/nonce?wallet=0x…</code> returns a message; sign it with EIP-191 <code>personal_sign</code> and send <code>{wallet, nonce, issuedAt, signature}</code> to <code>POST /auth/key</code>. The API key is shown once. Each sign-in issues a new key; earlier keys keep working until you revoke them.</p>
     <h3>Manage keys</h3>
@@ -181,14 +181,12 @@ const receiptId = res.response.headers.get('x-receipt-id');   // fetch it within
     <h3>Deposit USDG</h3>
     <p>Approve the credit vault for USDG, then call <code>deposit(amount)</code> from your wallet, or <code>depositFor(account, amount)</code> to fund another wallet. The balance is credited within seconds of the deposit being mined, net of the deposit fee. Deposit from a wallet you control, and use the vault's functions: a plain USDG transfer to the vault is not credited.</p>
     <h3>Automatic top-up</h3>
-    <p>With the SDK, an agent can keep itself funded: when its allowance left plus balance falls below a threshold, the client deposits a set amount from a wallet you choose, waits until it is credited, and retries a request refused for insufficient credit once. A daily cap limits the deposits.</p>
+    <p>With the SDK, an agent can keep itself funded: when its balance falls below a threshold, the client deposits a set amount from a wallet you choose, waits until it is credited, and retries a request refused for insufficient credit once. A daily cap limits the deposits.</p>
 <pre><code>new Envolvr({ apiKey, autoTopUp: { signer: wallet, below: '5', amount: '20', maxPerDay: '100' } })</code></pre>
-    <h3>Stake for an allowance</h3>
-    <p>Staking NVLR gives a share of a daily inference budget: budget × your stake ÷ total stake, taken at 00:00 UTC. Stake added during a day counts from the next day. The allowance is spent before your USDG balance and does not roll over. Unstaking has a 7-day cooldown.</p>
     <h3>Balance</h3>
-    <p><code>GET https://auth.envolvr.xyz/account</code> with <code>Authorization: Bearer &lt;API key&gt;</code> returns your balance and today's allowance, in micro-USD.</p>
+    <p><code>GET https://auth.envolvr.xyz/account</code> with <code>Authorization: Bearer &lt;API key&gt;</code> returns your balance, in micro-USD.</p>
     <h3>Close your account</h3>
-    <p>Your balance is yours to take back. Closing needs the wallet, not just a key: <code>GET /account/close/nonce?wallet=0x…&amp;refundTo=0x…</code> returns a message to sign, and <code>POST /account/close</code> with <code>{wallet, refundTo, nonce, issuedAt, signature}</code> revokes every API key of the account and refunds the balance to <code>refundTo</code>, by default the wallet itself. The refund is paid from the credit vault shortly after. Deposit fees are not refunded, and a staking allowance is not a balance. With the CLI: <code>envolvr close --yes</code>.</p>
+    <p>Your balance is yours to take back. Closing needs the wallet, not just a key: <code>GET /account/close/nonce?wallet=0x…&amp;refundTo=0x…</code> returns a message to sign, and <code>POST /account/close</code> with <code>{wallet, refundTo, nonce, issuedAt, signature}</code> revokes every API key of the account and refunds the balance to <code>refundTo</code>, by default the wallet itself. The refund is paid from the credit vault shortly after. Deposit fees are not refunded. With the CLI: <code>envolvr close --yes</code>.</p>
 
     <h2 id="models">Models and providers</h2>
     <p><code>GET https://api.envolvr.xyz/v1/models</code> lists every model with its per-token prices and routes. At launch:</p>
@@ -214,7 +212,7 @@ const receiptId = res.response.headers.get('x-receipt-id');   // fetch it within
       <tr><td><code>GET api/v1/aci/sessions/{id}</code></td><td>The attested provider session a receipt cites.</td></tr>
       <tr><td><code>GET api/v1/aci/attestation?nonce=</code></td><td>The gateway's attestation report for a fresh 64-hex nonce.</td></tr>
       <tr><td><code>GET auth/auth/nonce</code>, <code>POST auth/auth/key</code></td><td>Wallet sign-in.</td></tr>
-      <tr><td><code>GET auth/account</code></td><td>Balance and allowance (API key or session).</td></tr>
+      <tr><td><code>GET auth/account</code></td><td>Balance (API key or session).</td></tr>
       <tr><td><code>GET auth/auth/session/nonce</code>, <code>POST auth/auth/session</code>, <code>POST auth/auth/session/end</code></td><td>A wallet-signed management session.</td></tr>
       <tr><td><code>GET</code>/<code>POST auth/account/keys</code>, <code>POST auth/account/keys/revoke</code></td><td>List, create and revoke API keys (session).</td></tr>
       <tr><td><code>GET auth/account/usage</code>, <code>GET auth/account/deposits</code></td><td>Requests with their cost, and deposits with their fee (session).</td></tr>
@@ -269,7 +267,6 @@ const receiptId = res.response.headers.get('x-receipt-id');   // fetch it within
       <tr><td>USDG</td><td><code>Published at launch</code></td></tr>
       <tr><td>CreditVault</td><td><code>Published at launch</code></td></tr>
       <tr><td>NVLR</td><td><code>Published at launch</code></td></tr>
-      <tr><td>StakingAllowance</td><td><code>Published at launch</code></td></tr>
       <tr><td>ReceiptAnchor</td><td><code>Published at launch</code></td></tr>
       <tr><td>Gateway provider id</td><td><code>0x86b99987cd8f8ebddc2dd0efa61ed52b5db594430f12446db424da0d9c4b831f</code></td></tr>
     </table>
@@ -277,7 +274,7 @@ const receiptId = res.response.headers.get('x-receipt-id');   // fetch it within
 
     <h2 id="good-to-know">Good to know</h2>
     <ul>
-      <li>NVLR, staking and the daily budget are explained on the <a href="/token/">token page</a>.</li>
+      <li>NVLR and its buyback and burn are explained on the <a href="/token/">token page</a>.</li>
       <li>Receipts are kept at the gateway for an hour; anchoring proofs are kept for good.</li>
       <li>A proof is available within about 10 minutes, once the receipt's slot has closed.</li>
       <li>Every wallet is screened against sanctions lists at sign-in and on deposit.</li>
@@ -301,7 +298,7 @@ const receiptId = res.response.headers.get('x-receipt-id');   // fetch it within
     </div>
     <div class="foot-legal">
       <span class="foot-legal-links">© 2026 envolvr<a href="/terms/">Terms of Service</a><a href="/privacy/">Privacy Policy</a></span>
-      <p>Nothing on this site is financial, legal or investment advice, and nothing here is an offer to sell securities. NVLR is intended as prepaid access to compute. Availability may be restricted in some jurisdictions. The attestation guarantee is limited to what is described in the protocol spec.</p>
+      <p>Nothing on this site is financial, legal or investment advice, and nothing here is an offer to sell securities. Availability may be restricted in some jurisdictions. The attestation guarantee is limited to what is described in the protocol spec.</p>
     </div>
     <div class="foot-mark" aria-hidden="true">
       <svg viewBox="0 0 24 24"><path d="M12 2.5l8.5 4.8v9.4L12 21.5l-8.5-4.8V7.3z" fill="none" stroke="#0f1110" stroke-width="2.4" stroke-linejoin="round"/><path d="M7.8 10.4l4.2 3.4 4.2-3.4" fill="none" stroke="#0f1110" stroke-width="2.4" stroke-linejoin="round"/></svg>
