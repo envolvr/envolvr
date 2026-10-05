@@ -12,7 +12,7 @@ import { concatBytes, hexToBytes, utf8ToBytes } from '@noble/hashes/utils';
 import { closeAccount, closeAccountMessage, depositUsdg, netCredit, signIn, signInMessage } from '../src/api.ts';
 import { Envolvr, verifySaved } from '../src/client.ts';
 import { addressOfKey, encodeCall, hex, personalSign, signTx, unhex } from '../src/evm.ts';
-import { fromMicros, MAINNET, type Network, TESTNET, toMicros } from '../src/network.ts';
+import { fromMicros, MAINNET, type Network, PENDING_ADDRESS, TESTNET, toMicros } from '../src/network.ts';
 import type { TopUpEvent } from '../src/topup.ts';
 import { billingOf, chargedTo, payerCommitment, receiptDigest, type Receipt } from '../src/receipts.ts';
 import type { Signer } from '../src/wallet.ts';
@@ -296,7 +296,9 @@ test('auto top-up: a failed deposit is reported and the request still runs', asy
   assert.match((events[0] as { error: Error }).error.message, /less than/);
 });
 
-test('MAINNET: on-chain steps refuse until the contracts are published', async () => {
+test('MAINNET: chain 4663 with its contracts; on-chain steps refuse on a network whose contracts are placeholders', async () => {
   assert.equal(MAINNET.chainId, 4663);
-  await assert.rejects(depositUsdg({ signer: signer(), amountMicros: 1n, network: MAINNET }), /published at launch/);
+  for (const a of [MAINNET.usdg, MAINNET.creditVault, MAINNET.receiptAnchor]) assert.notEqual(a, PENDING_ADDRESS);
+  const pending: Network = { ...MAINNET, usdg: PENDING_ADDRESS, creditVault: PENDING_ADDRESS };
+  await assert.rejects(depositUsdg({ signer: signer(), amountMicros: 1n, network: pending }), /published at launch/);
 });

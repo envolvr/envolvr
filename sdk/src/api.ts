@@ -2,7 +2,7 @@
 // and the pricing, and move USDG into the credit vault.
 
 import { decodeWords, encodeCall, Rpc } from './evm.ts';
-import { assertContracts, type Network, TESTNET } from './network.ts';
+import { assertContracts, MAINNET, type Network, TESTNET } from './network.ts';
 import type { Signer } from './wallet.ts';
 
 async function json<T>(res: Response): Promise<T> {
@@ -21,7 +21,7 @@ export function signInMessage(wallet: string, nonce: string, issuedAt: string): 
  * Sign in with a wallet and get an API key. The key is shown once; keep it.
  * Each sign-in issues a new key; earlier keys keep working.
  */
-export async function signIn(signer: Signer, network: Network = TESTNET): Promise<{ apiKey: string; wallet: string }> {
+export async function signIn(signer: Signer, network: Network = MAINNET): Promise<{ apiKey: string; wallet: string }> {
   const n = await json<{ nonce: string; issuedAt: string; message: string }>(
     await fetch(`${network.control}/auth/nonce?wallet=${signer.address}`),
   );
@@ -51,7 +51,7 @@ export async function closeAccount(signer: Signer, opts: { refundTo?: string; ne
   closed: boolean; revokedKeys: number;
   refund?: { id: number; amountMicros: string; status: 'pending' | 'held'; refundTo: string };
 }> {
-  const network = opts.network ?? TESTNET;
+  const network = opts.network ?? MAINNET;
   const refundTo = opts.refundTo ?? signer.address;
   const n = await json<{ nonce: string; issuedAt: string; refundTo: string; message: string }>(
     await fetch(`${network.control}/account/close/nonce?wallet=${signer.address}&refundTo=${refundTo}`),
@@ -75,7 +75,7 @@ export interface Account {
   allowanceLeftMicros: string;
 }
 
-export async function getAccount(apiKey: string, network: Network = TESTNET): Promise<Account> {
+export async function getAccount(apiKey: string, network: Network = MAINNET): Promise<Account> {
   return json(await fetch(`${network.control}/account`, { headers: { authorization: `Bearer ${apiKey}` } }));
 }
 
@@ -85,7 +85,7 @@ export interface Pricing {
   tokenPricing: string;
 }
 
-export async function getPricing(network: Network = TESTNET): Promise<Pricing> {
+export async function getPricing(network: Network = MAINNET): Promise<Pricing> {
   return json(await fetch(`${network.control}/pricing`));
 }
 
@@ -102,7 +102,7 @@ export function netCredit(amountMicros: bigint, feeBps: number): bigint {
  * vault is not credited.
  */
 export async function depositUsdg(opts: { signer: Signer; amountMicros: bigint; account?: string; network?: Network }) {
-  const network = opts.network ?? TESTNET;
+  const network = opts.network ?? MAINNET;
   const { signer, amountMicros } = opts;
   if (!signer.sendTransaction) throw new Error('this signer cannot send transactions');
   if (amountMicros <= 0n) throw new Error('the amount must be positive');

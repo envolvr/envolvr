@@ -11,12 +11,11 @@ the account with USDG, runs inference, keeps every receipt, and verifies it.
 npm install @envolvr/sdk        # Node 20+
 ```
 
-## From zero to a verified receipt (testnet)
+## From zero to a verified receipt
 
 ```bash
-export ENVOLVR_PRIVATE_KEY=0x…            # a wallet with a little Robinhood testnet ETH for gas
+export ENVOLVR_PRIVATE_KEY=0x…            # a wallet with USDG and a little ETH on Robinhood Chain
 npx @envolvr/sdk signin --save            # sign a message, get an API key
-npx @envolvr/sdk testnet-mint 20          # test USDG (testnet only)
 npx @envolvr/sdk deposit 10               # credited net of the deposit fee, within seconds
 npx @envolvr/sdk chat "Reply with the single word: sealed"
 npx @envolvr/sdk verify --last            # signature, billing, payer, on-chain anchor
@@ -33,9 +32,9 @@ is anchored at the end of its 10-minute slot (UTC).
 ## In code
 
 ```ts
-import { Envolvr, privateKeySigner, signIn, depositUsdg, TESTNET, toMicros } from '@envolvr/sdk';
+import { Envolvr, privateKeySigner, signIn, depositUsdg, MAINNET, toMicros } from '@envolvr/sdk';
 
-const wallet = privateKeySigner(process.env.KEY!, { rpcUrl: TESTNET.rpcUrl, chainId: TESTNET.chainId });
+const wallet = privateKeySigner(process.env.KEY!, { rpcUrl: MAINNET.rpcUrl, chainId: MAINNET.chainId });
 const { apiKey } = await signIn(wallet);                          // keep it: shown once
 await depositUsdg({ signer: wallet, amountMicros: toMicros('10') });
 
@@ -57,8 +56,8 @@ sending and checks every receipt, run the local verifying proxy
 
 ### Automatic top-up
 
-Keep an agent funded without watching its balance. When the allowance left plus
-the balance falls below `below`, the client deposits `amount` from `signer` and
+Keep an agent funded without watching its balance. When the balance falls below
+`below`, the client deposits `amount` from `signer` and
 waits until it is credited; a request refused for insufficient credit is topped
 up and retried once. `maxPerDay` caps the deposits per UTC day (default: one
 top-up). The signer can be the agent's own wallet or another one, which then

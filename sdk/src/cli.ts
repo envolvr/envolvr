@@ -1,24 +1,23 @@
 #!/usr/bin/env node
 // envolvr: sign in, fund, run private inference, and verify its receipts.
 //
-//   ENVOLVR_PRIVATE_KEY  wallet key, for signin, deposit and testnet-mint
+//   ENVOLVR_PRIVATE_KEY  wallet key, for signin and deposit
 //   ENVOLVR_API_KEY      API key, for everything else (or ~/.envolvr/credentials.json)
 
 import { chmodSync, existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { homedir } from 'node:os';
 import { join } from 'node:path';
-import { closeAccount, depositUsdg, getPricing, mintTestUsdg, signIn } from './api.ts';
+import { closeAccount, depositUsdg, getPricing, signIn } from './api.ts';
 import { AUDIT_CHECKS, verifyGateway } from './attest.ts';
 import { Envolvr, savedReceipts, verifySaved } from './client.ts';
-import { fromMicros, TESTNET, toMicros } from './network.ts';
+import { fromMicros, MAINNET, toMicros } from './network.ts';
 import { privateKeySigner } from './wallet.ts';
 
 const HELP = `envolvr: private inference your agent can prove
 
   envolvr signin [--save]             sign in with ENVOLVR_PRIVATE_KEY, print a new API key
-  envolvr testnet-mint <usd>          mint test USDG to the wallet (testnet)
   envolvr deposit <usd> [--for 0x…]   deposit USDG (net of the deposit fee) to your balance
-  envolvr account                     balance and today's staking allowance
+  envolvr account                     your balance
   envolvr pricing                     the deposit fee and how token prices are set
   envolvr models                      models and per-token prices
   envolvr chat <prompt> [--model m] [--provider '{"only":["near-ai"]}']
@@ -39,7 +38,7 @@ const flag = (name: string) => {
   const i = args.indexOf(`--${name}`);
   return i > 0 ? args[i + 1] : undefined;
 };
-const network = TESTNET;
+const network = MAINNET;
 const receiptDir = process.env.ENVOLVR_RECEIPTS ?? 'envolvr-receipts';
 const credentialsPath = join(homedir(), '.envolvr', 'credentials.json');
 
@@ -72,11 +71,6 @@ async function main() {
       }
       return;
     }
-    case 'testnet-mint': {
-      const tx = await mintTestUsdg({ signer: wallet(), amountMicros: toMicros(args[1]), network });
-      console.log(`minted ${args[1]} test USDG: ${network.explorer}/tx/${tx}`);
-      return;
-    }
     case 'deposit': {
       const r = await depositUsdg({ signer: wallet(), amountMicros: toMicros(args[1]), account: flag('for'), network });
       console.log(`deposited ${usd(r.amountMicros)} for ${r.account}: ${network.explorer}/tx/${r.depositTx}`);
@@ -85,7 +79,8 @@ async function main() {
     }
     case 'account': {
       const a = await new Envolvr({ apiKey: apiKey(), network }).account();
-      console.log(`${a.wallet}\nbalance ${usd(a.balanceMicros)} | allowance today ${usd(a.allowanceTodayMicros)}, left ${usd(a.allowanceLeftMicros)}`);
+      const allowance = BigInt(a.allowanceTodayMicros) > 0n ? ` | allowance today ${usd(a.allowanceTodayMicros)}, left ${usd(a.allowanceLeftMicros)}` : '';
+      console.log(`${a.wallet}\nbalance ${usd(a.balanceMicros)}${allowance}`);
       return;
     }
     case 'pricing': {

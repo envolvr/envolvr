@@ -37,10 +37,9 @@ export const MAINNET: Network = {
   chainId: 4663,
   rpcUrl: 'https://rpc.mainnet.chain.robinhood.com',
   explorer: 'https://robin.etherscan.io',
-  // LAUNCH: the mainnet addresses (also the site's data/network.json and app/src/config.ts).
-  usdg: PENDING_ADDRESS,
-  creditVault: PENDING_ADDRESS,
-  receiptAnchor: PENDING_ADDRESS,
+  usdg: '0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168',
+  creditVault: '0x24DbbBd7d5eE9674D8A8B19a492E87A4957B1261',
+  receiptAnchor: '0x591fadf9d2D9d0A0fedEEd95d74321694797AF60',
   providerId: '0x86b99987cd8f8ebddc2dd0efa61ed52b5db594430f12446db424da0d9c4b831f',
 };
 

@@ -8,7 +8,7 @@ import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 
 import { join } from 'node:path';
 import { getAccount, getPricing } from './api.ts';
 import { auditReceipt, type AuditSummary, fetchAttestationReport, type PapResult, summarizeAudit } from './attest.ts';
-import { type Network, TESTNET } from './network.ts';
+import { MAINNET, type Network } from './network.ts';
 import { AutoTopUp, type AutoTopUpOptions } from './topup.ts';
 import { type Anchor, billingOf, type Billing, chargedTo, type Receipt, verifyAnchor } from './receipts.ts';
 
@@ -43,7 +43,7 @@ export class Envolvr {
    */
   constructor(opts: { apiKey: string; network?: Network; receiptDir?: string; autoTopUp?: AutoTopUpOptions }) {
     this.apiKey = opts.apiKey;
-    this.network = opts.network ?? TESTNET;
+    this.network = opts.network ?? MAINNET;
     this.receiptDir = opts.receiptDir;
     if (opts.autoTopUp) this.topUp = new AutoTopUp(opts.autoTopUp, this.apiKey, this.network);
   }
@@ -164,7 +164,7 @@ export async function verifySaved(dir: string, opts: {
   /** Leave the signature to a separate `pap audit` run (for example where npx is unavailable). */
   skipSignature?: boolean;
 }): Promise<Verification> {
-  const network = opts.network ?? TESTNET;
+  const network = opts.network ?? MAINNET;
   const receiptPath = join(dir, 'receipt.json');
   const receipt = JSON.parse(readFileSync(receiptPath, 'utf8')) as Receipt;
   const reports = join(opts.receiptDir ?? join(dir, '..'), 'attestation');
