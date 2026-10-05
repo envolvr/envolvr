@@ -9,7 +9,7 @@ import { ed25519 } from '@noble/curves/ed25519';
 import { sha256 } from '@noble/hashes/sha2';
 import { bytesToHex, hexToBytes, utf8ToBytes } from '@noble/hashes/utils';
 import { billingOf, receiptDigest, verifyAnchor, type Receipt } from '../sdk/src/receipts.ts';
-import { TESTNET } from '../sdk/src/network.ts';
+import { MAINNET } from '../sdk/src/network.ts';
 
 /** What a visitor verifies: the receipt, and whatever else they have of the exchange. */
 export interface Bundle {
@@ -127,11 +127,11 @@ export async function* verify(bundle: Bundle, opts: { rpc?: boolean } = {}): Asy
   // Every network call gives up after 5 s, so an offline service never stalls the page.
   const timed: typeof fetch = (input, init) => fetch(input, { ...init, signal: AbortSignal.timeout(5000) });
   const fetchImpl: typeof fetch = bundle.proof === undefined ? timed
-    : (input, init) => (String(input).startsWith(`${TESTNET.control}/receipts/`)
+    : (input, init) => (String(input).startsWith(`${MAINNET.control}/receipts/`)
       ? Promise.resolve(new Response(JSON.stringify(bundle.proof), { status: 200 }))
       : timed(input, init));
   try {
-    const a = await verifyAnchor(receipt, TESTNET, fetchImpl);
+    const a = await verifyAnchor(receipt, MAINNET, fetchImpl);
     if (a.status === 'anchored') {
       const at = new Date(a.anchoredAt! * 1000).toISOString().slice(11, 16);
       yield { id: 'anchor', label: 'on-chain anchor', status: 'pass', detail: `rhc · batch ${a.batchIndex} · ${at} utc` };
@@ -141,7 +141,7 @@ export async function* verify(bundle: Bundle, opts: { rpc?: boolean } = {}): Asy
   } catch (err) {
     const msg = (err as Error).message;
     const offline = /unreachable|HTTP|abort|timeout/i.test(msg);
-    yield { id: 'anchor', label: 'on-chain anchor', status: offline ? 'skip' : 'fail', detail: offline ? 'proof service paused on testnet' : msg };
+    yield { id: 'anchor', label: 'on-chain anchor', status: offline ? 'skip' : 'fail', detail: offline ? 'proof service unreachable' : msg };
   }
 }
 
