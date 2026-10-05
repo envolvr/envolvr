@@ -12,7 +12,7 @@ export const chain = defineChain({
   name: 'Robinhood Chain',
   nativeCurrency: { name: 'Ether', symbol: 'ETH', decimals: 18 },
   rpcUrls: { default: { http: ['https://rpc.mainnet.chain.robinhood.com'] } },
-  blockExplorers: { default: { name: 'Blockscout', url: 'https://robinhoodchain.blockscout.com' } },
+  blockExplorers: { default: { name: 'Etherscan', url: 'https://robin.etherscan.io' } },
 });
 
 // LAUNCH: fill in the mainnet addresses (also the site's data/network.json and the docs' contract table).

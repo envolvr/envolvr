@@ -36,7 +36,7 @@ export const MAINNET: Network = {
   control: 'https://auth.envolvr.xyz',
   chainId: 4663,
   rpcUrl: 'https://rpc.mainnet.chain.robinhood.com',
-  explorer: 'https://robinhoodchain.blockscout.com',
+  explorer: 'https://robin.etherscan.io',
   // LAUNCH: the mainnet addresses (also the site's data/network.json and app/src/config.ts).
   usdg: PENDING_ADDRESS,
   creditVault: PENDING_ADDRESS,
