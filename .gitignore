@@ -12,11 +12,12 @@ target/
 out/
 cache/
 broadcast/
-site/app/
+app/dist/
 
 # separate repos
 /gateway/
 /internal/
+/site/
 
 # local runs
 infra/simulator/dstack-simulator-*/

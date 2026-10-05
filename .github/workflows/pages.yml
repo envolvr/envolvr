@@ -1,13 +1,13 @@
-# Publishes site/ (envolvr.xyz: the landing page, /docs/ and /llms.txt) and the
-# account app built from app/ into site/app/ (envolvr.xyz/app/) to GitHub Pages
-# whenever either changes on main. The build job installs npm packages and has
+# Publishes the account app, built from app/ into app/dist/, to GitHub Pages at
+# https://app.envolvr.xyz whenever it changes on main. The build log is public, so
+# anyone can match what is served to this source. The build job installs npm packages and has
 # no write permissions; only the deploy job can publish.
 name: pages
 
 on:
   push:
     branches: [main]
-    paths: ['site/**', 'app/**', '.github/workflows/pages.yml']
+    paths: ['app/**', '.github/workflows/pages.yml']
   workflow_dispatch:
 
 permissions:
@@ -24,13 +24,12 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           sparse-checkout: |
-            site
             app
           persist-credentials: false
       - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: 24
-      - name: Build the account app into site/app
+      - name: Build the account app into app/dist
         working-directory: app
         run: |
           npx --yes pnpm@10.13.1 install --frozen-lockfile
@@ -39,7 +38,7 @@ jobs:
       - uses: actions/configure-pages@45bfe0192ca1faeb007ade9deae92b16b8254a0d # v6.0.0
       - uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0
         with:
-          path: site
+          path: app/dist
 
   deploy:
     needs: build

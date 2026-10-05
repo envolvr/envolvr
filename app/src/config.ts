@@ -15,7 +15,7 @@ export const chain = defineChain({
   blockExplorers: { default: { name: 'Blockscout', url: 'https://robinhoodchain.blockscout.com' } },
 });
 
-// LAUNCH: fill in the mainnet addresses (also site/data/network.json and the docs' contract table).
+// LAUNCH: fill in the mainnet addresses (also the site's data/network.json and the docs' contract table).
 const PENDING = '0x0000000000000000000000000000000000000000';
 export const contracts = {
   usdg: PENDING,

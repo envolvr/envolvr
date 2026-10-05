@@ -2,14 +2,14 @@
 // visitor's browser: the digest and anchor code is the SDK's own
 // (sdk/src/receipts.ts), the signature is Ed25519 under the key the attested
 // keyset lists, and the anchor is read from the ReceiptAnchor contract on
-// Robinhood Chain through the public RPC. Built into site/js/verifier.js by
-// site/build.mjs.
+// Robinhood Chain through the public RPC. Built into the site's js/verifier.js
+// by verifier/build.mjs.
 
 import { ed25519 } from '@noble/curves/ed25519';
 import { sha256 } from '@noble/hashes/sha2';
 import { bytesToHex, hexToBytes, utf8ToBytes } from '@noble/hashes/utils';
-import { billingOf, receiptDigest, verifyAnchor, type Receipt } from '../../sdk/src/receipts.ts';
-import { TESTNET } from '../../sdk/src/network.ts';
+import { billingOf, receiptDigest, verifyAnchor, type Receipt } from '../sdk/src/receipts.ts';
+import { TESTNET } from '../sdk/src/network.ts';
 
 /** What a visitor verifies: the receipt, and whatever else they have of the exchange. */
 export interface Bundle {

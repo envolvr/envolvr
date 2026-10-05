@@ -37,7 +37,7 @@ export const MAINNET: Network = {
   chainId: 4663,
   rpcUrl: 'https://rpc.mainnet.chain.robinhood.com',
   explorer: 'https://robinhoodchain.blockscout.com',
-  // LAUNCH: the mainnet addresses (also site/data/network.json and app/src/config.ts).
+  // LAUNCH: the mainnet addresses (also the site's data/network.json and app/src/config.ts).
   usdg: PENDING_ADDRESS,
   creditVault: PENDING_ADDRESS,
   receiptAnchor: PENDING_ADDRESS,
