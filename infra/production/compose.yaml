@@ -181,7 +181,7 @@ services:
       - -c
       - |
         set -eu
-        COMMIT=b47b15da1ebc6a59b1c2a0736a53b963ebf94efb
+        COMMIT=fd9a7057944ccb75780c2427d46ecd0397971a73
         [ -d /opt/envolvr/.git ] || git clone --quiet --no-checkout https://github.com/envolvr/envolvr.git /opt/envolvr
         cd /opt/envolvr
         git fetch --quiet origin
@@ -192,7 +192,7 @@ services:
         npx --yes pnpm@10.13.1 install --frozen-lockfile --prod
         exec node --disable-warning=ExperimentalWarning src/main.ts
     configs:
-      - source: control-config-r9
+      - source: control-config-r10
         target: /etc/envolvr/control.json
     environment:
       CONTROL_CONFIG: /etc/envolvr/control.json
@@ -326,14 +326,14 @@ configs:
         }
       ]
 
-  control-config-r9:
+  control-config-r10:
     content: |
       {
         "port": 8787,
-        "dbPath": "/data/control.db",
+        "dbPath": "/data/control-mainnet.db",
         "marginBps": 0,
         "depositFeeBps": 500,
-        "corsOrigins": ["https://envolvr.xyz"],
+        "corsOrigins": ["https://envolvr.xyz", "https://app.envolvr.xyz"],
         "minAvailableMicros": 1000,
         "models": {
           "z-ai/glm-5.3": { "routes": [
@@ -361,12 +361,12 @@ configs:
           ] }
         },
         "chain": {
-          "rpcUrl": "https://rpc.testnet.chain.robinhood.com/rpc",
-          "stakingAllowance": "0xFA4296E49055185aD188fd64c9af28F7Db1135F4",
-          "creditVault": "0x2aaB804f3eB6B436CB542d56D171d020bC2d7c51",
-          "depositStartBlock": 123339348,
+          "rpcUrl": "https://rpc.mainnet.chain.robinhood.com",
+          "creditVault": "0x24DbbBd7d5eE9674D8A8B19a492E87A4957B1261",
+          "depositStartBlock": 80953079,
           "confirmations": 1
         },
+        "topUp": { "chainId": 4663 },
         "blockedWallets": [],
         "screening": {
           "oracleRpcUrls": ["https://ethereum-rpc.publicnode.com", "https://arb1.arbitrum.io/rpc"],
@@ -376,14 +376,14 @@ configs:
           "endpoint": "https://s3.us-east-005.backblazeb2.com",
           "bucket": "envolvr-ledger",
           "region": "us-east-005",
-          "prefix": "testnet/",
+          "prefix": "mainnet/",
           "intervalMs": 300000,
           "retainDays": 30
         },
         "anchoring": {
-          "receiptAnchor": "0xff179938C830134D8E2922dAe7e16Ee4F0E33853",
+          "receiptAnchor": "0x591fadf9d2D9d0A0fedEEd95d74321694797AF60",
           "providerId": "0x86b99987cd8f8ebddc2dd0efa61ed52b5db594430f12446db424da0d9c4b831f",
-          "chainId": 46630,
+          "chainId": 4663,
           "intervalMs": 600000
         }
       }
