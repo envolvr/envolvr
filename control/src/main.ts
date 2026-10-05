@@ -40,7 +40,7 @@ if (config.backup) {
 }
 
 const store = new Store(config.dbPath);
-const allowance = config.chain
+const allowance = config.chain?.stakingAllowance
   ? new StakingAllowanceReader(config.chain.rpcUrl, config.chain.stakingAllowance)
   : noAllowance;
 

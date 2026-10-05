@@ -22,7 +22,8 @@ export interface Config {
   models: Record<string, ModelRoutes>;
   chain?: {
     rpcUrl: string;
-    stakingAllowance: string;
+    /** StakingAllowance address; without it every account's allowance is zero. */
+    stakingAllowance?: string;
     /** CreditVault address; when set, USDG deposits are credited automatically. */
     creditVault?: string;
     /** Block the vault was deployed in; the watcher starts here. */

@@ -16,3 +16,4 @@ runs = 512
 
 [rpc_endpoints]
 robinhood_testnet = "https://rpc.testnet.chain.robinhood.com/rpc"
+robinhood_mainnet = "https://rpc.mainnet.chain.robinhood.com"
