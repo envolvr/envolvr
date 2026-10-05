@@ -32,5 +32,8 @@
       "setAnchorerTx": "0xaf44df2196d4e0f0ea2957e02695f342c6ce6592a11dfa0803da851e7a74619a",
       "fundingTx": "0x1449c79cfdfeb350031d270e2c83a962f8089c81e395441d7539ab2fd2cb1e9c"
     }
-  ]
+  ],
+  "sourceVerified": {
+    "etherscan": "https://robin.etherscan.io (2026-10-05; standard JSON input from forge, solc 0.8.28, 10000 runs, cancun)"
+  }
 }
