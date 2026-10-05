@@ -15,11 +15,12 @@ export const chain = defineChain({
   blockExplorers: { default: { name: 'Etherscan', url: 'https://robin.etherscan.io' } },
 });
 
-// LAUNCH: fill in the mainnet addresses (also the site's data/network.json and the docs' contract table).
+// The same addresses as the site's data/network.json and the docs' contract table.
+// NVLR and staking are not deployed yet (the staking card is hidden).
 const PENDING = '0x0000000000000000000000000000000000000000';
 export const contracts = {
-  usdg: PENDING,
-  creditVault: PENDING,
+  usdg: '0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168',
+  creditVault: '0x24DbbBd7d5eE9674D8A8B19a492E87A4957B1261',
   nvlr: PENDING,
   staking: PENDING,
 } as const;

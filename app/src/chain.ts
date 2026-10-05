@@ -2,7 +2,7 @@
 // the transactions the wallet signs (approve, deposit, stake, unstake, withdraw,
 // and, with TESTNET, a test USDG mint).
 
-import { createPublicClient, createWalletClient, custom, http, parseAbi, type Address } from 'viem';
+import { createPublicClient, createWalletClient, custom, http, parseAbi, zeroAddress, type Address } from 'viem';
 import { chain, contracts } from './config.ts';
 import type { Eip1193 } from './wallet.ts';
 
@@ -51,16 +51,21 @@ export interface ChainState {
 export async function readState(address: Address): Promise<ChainState> {
   const read = <T>(address_: Address, abi: any, functionName: string, args: unknown[] = []) =>
     publicClient.readContract({ address: address_, abi, functionName, args }) as Promise<T>;
-  const day = await read<bigint>(contracts.staking, staking, 'currentDayStart');
+  // NVLR and staking are not deployed yet: their reads count as zero until they are.
+  const hasToken = contracts.nvlr !== zeroAddress;
+  const hasStaking = contracts.staking !== zeroAddress;
+  const stakingRead = <T>(functionName: string, args: unknown[], none: T) =>
+    hasStaking ? read<T>(contracts.staking, staking, functionName, args) : Promise.resolve(none);
+  const day = await stakingRead<bigint>('currentDayStart', [], 0n);
   const [usdg, nvlr, staked, totalStake, pending, budgetToday, allowanceToday, cooldown, eth] = await Promise.all([
     read<bigint>(contracts.usdg, erc20, 'balanceOf', [address]),
-    read<bigint>(contracts.nvlr, erc20, 'balanceOf', [address]),
-    read<bigint>(contracts.staking, staking, 'stakeOf', [address]),
-    read<bigint>(contracts.staking, staking, 'totalStake'),
-    read<readonly [bigint, number]>(contracts.staking, staking, 'pendingUnstake', [address]),
-    read<bigint>(contracts.staking, staking, 'budgetAt', [day]),
-    read<bigint>(contracts.staking, staking, 'allowanceOf', [address, day]),
-    read<bigint>(contracts.staking, staking, 'cooldown'),
+    hasToken ? read<bigint>(contracts.nvlr, erc20, 'balanceOf', [address]) : Promise.resolve(0n),
+    stakingRead<bigint>('stakeOf', [address], 0n),
+    stakingRead<bigint>('totalStake', [], 0n),
+    stakingRead<readonly [bigint, number]>('pendingUnstake', [address], [0n, 0]),
+    stakingRead<bigint>('budgetAt', [day], 0n),
+    stakingRead<bigint>('allowanceOf', [address, day], 0n),
+    stakingRead<bigint>('cooldown', [], 0n),
     publicClient.getBalance({ address }),
   ]);
   return {
