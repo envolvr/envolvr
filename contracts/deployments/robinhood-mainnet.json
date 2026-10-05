@@ -1,0 +1,36 @@
+{
+  "network": "robinhood-mainnet",
+  "chainId": 4663,
+  "rpc": "https://rpc.mainnet.chain.robinhood.com",
+  "explorer": "https://robinhoodchain.blockscout.com",
+  "deployedAt": "2026-10-05",
+  "owner": "0x7bdC2440588Dd94BFB8852372dD16D07e7079A80",
+  "contracts": {
+    "ReceiptAnchor": "0x591fadf9d2D9d0A0fedEEd95d74321694797AF60",
+    "WeightsRegistry": "0x86A69E4b4194bCD5A10F3926Cb92F02C545BcFf0",
+    "CreditVault": "0x24DbbBd7d5eE9674D8A8B19a492E87A4957B1261",
+    "USDG": "0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168"
+  },
+  "deployTxs": {
+    "ReceiptAnchor": "0x14d4f7240c774eedcff9d6a397d5e339f149fe1dbabc7ad5d5a5f4e6490b7ddf",
+    "WeightsRegistry": "0x3651b9b051a18442ea982cf0ab3bcada39e078fa161f2495d3b5de0afa9833e4",
+    "CreditVault": "0xa4f96c3ec6ef02825a47bb202fe1a4dd5a928ddf5f7183eed8112ac85d653051"
+  },
+  "creditVault": {
+    "deployBlock": 80953079,
+    "usdg": "Global Dollar (USDG) by Paxos, 6 decimals",
+    "keeper": null,
+    "note": "automatic top-up: setKeeper(<keeper>) once the control plane logs its KMS-derived keeper address"
+  },
+  "anchoring": [
+    {
+      "providerId": "0x86b99987cd8f8ebddc2dd0efa61ed52b5db594430f12446db424da0d9c4b831f",
+      "providerLabel": "envolvr.provider:9e49e39941a14a320720714fcc1bae5d45c5d4e8 (envolvr-prod gateway)",
+      "anchorer": "0x3186f79f0673112d6474e9cb575dd4632dbd8450",
+      "note": "key derived by the dstack KMS inside envolvr-prod (path envolvr/control/receipt-anchorer)",
+      "registeredAt": "2026-10-05",
+      "setAnchorerTx": "0xaf44df2196d4e0f0ea2957e02695f342c6ce6592a11dfa0803da851e7a74619a",
+      "fundingTx": "0x1449c79cfdfeb350031d270e2c83a962f8089c81e395441d7539ab2fd2cb1e9c"
+    }
+  ]
+}
