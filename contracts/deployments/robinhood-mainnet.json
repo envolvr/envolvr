@@ -4,7 +4,7 @@
   "rpc": "https://rpc.mainnet.chain.robinhood.com",
   "explorer": "https://robinhoodchain.blockscout.com",
   "deployedAt": "2026-10-05",
-  "owner": "0x7bdC2440588Dd94BFB8852372dD16D07e7079A80",
+  "owner": "0x7bdC2440588Dd94BFB8852372dD16D07e7079A80 (ReceiptAnchor, WeightsRegistry)",
   "contracts": {
     "ReceiptAnchor": "0x591fadf9d2D9d0A0fedEEd95d74321694797AF60",
     "WeightsRegistry": "0x86A69E4b4194bCD5A10F3926Cb92F02C545BcFf0",
@@ -19,8 +19,8 @@
   "creditVault": {
     "deployBlock": 80953079,
     "usdg": "Global Dollar (USDG) by Paxos, 6 decimals",
-    "keeper": null,
-    "note": "automatic top-up: setKeeper(<keeper>) once the control plane logs its KMS-derived keeper address"
+    "keeper": "0xe6b1c08f8ad6e05004c53d348c38879721541163 (setKeeper 0xbfe8\u20263f8c)",
+    "owner": "0x202e19EadFd3CAfF43F54E7Df0135A16Bce2f423 (Safe 1.5.0, since 2026-10-05; transferOwnership 0xc35b\u20268f8c, acceptOwnership via Safe 0x74d7\u202690f3)"
   },
   "anchoring": [
     {
