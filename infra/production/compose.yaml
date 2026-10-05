@@ -73,9 +73,9 @@ services:
         target: /etc/git-launcher/gateway.conf
       - source: run-gateway-r1
         target: /etc/envolvr/run-gateway.sh
-      - source: gateway-config-r5
+      - source: gateway-config-r6
         target: /etc/private-ai-gateway/gateway.config.json
-      - source: gateway-upstreams-r3
+      - source: gateway-upstreams-r4
         target: /etc/private-ai-gateway/upstreams.seed.json
     environment:
       PRIVATE_AI_GATEWAY_CONFIG_PATH: /etc/private-ai-gateway/gateway.config.json
@@ -192,7 +192,7 @@ services:
         npx --yes pnpm@10.13.1 install --frozen-lockfile --prod
         exec node --disable-warning=ExperimentalWarning src/main.ts
     configs:
-      - source: control-config-r10
+      - source: control-config-r11
         target: /etc/envolvr/control.json
     environment:
       CONTROL_CONFIG: /etc/envolvr/control.json
@@ -247,11 +247,11 @@ configs:
   # state_dir holds the live upstream config, sessions and receipts. It moves
   # to a fresh directory when the upstream seed must apply again; the Rust
   # build cache (PRIVATE_AI_GATEWAY_CACHE_DIR) stays where it is.
-  gateway-config-r5:
+  gateway-config-r6:
     content: |
       {
         "bind": "0.0.0.0:8086",
-        "state_dir": "/var/lib/private-ai-gateway/state-r3",
+        "state_dir": "/var/lib/private-ai-gateway/state-r4",
         "upstream_config_seed_path": "/etc/private-ai-gateway/upstreams.seed.json",
         "admin_token": "${PRIVATE_AI_GATEWAY_ADMIN_TOKEN:?set PRIVATE_AI_GATEWAY_ADMIN_TOKEN}",
         "dstack_endpoint": "unix:/var/run/dstack.sock",
@@ -273,7 +273,7 @@ configs:
   # Seeds the gateway's upstream config when its state_dir has none. API keys
   # arrive only as encrypted env, decrypted inside the VM; do not send them
   # through the admin API, whose TLS ends at Phala's ingress.
-  gateway-upstreams-r3:
+  gateway-upstreams-r4:
     content: |
       [
         {
@@ -282,7 +282,8 @@ configs:
           "base_url": "https://api.redpill.ai",
           "models": {
             "z-ai/glm-5.3": "z-ai/glm-5.3",
-            "qwen/qwen3.8-27b": "qwen/qwen3.8-27b"
+            "qwen/qwen3.8-27b": "qwen/qwen3.8-27b",
+            "nvidia/nemotron-3.5-lightning": "nvidia/nemotron-3.5-lightning"
           },
           "bearer_token": "${ENVOLVR_UPSTREAM_KEY:?set ENVOLVR_UPSTREAM_KEY}",
           "accepted_subjects": ["app-id:0xfdb7a14e5a6675f752e2cb69c9067a98ca402918"],
@@ -309,7 +310,10 @@ configs:
             "qwen/qwen3.8-27b": "Qwen/Qwen3.8-27B-TEE",
             "deepseek/deepseek-v4-flash": "deepseek-ai/DeepSeek-V4-Flash-0731-TEE",
             "deepseek/deepseek-v3.2": "deepseek-ai/DeepSeek-V3.2-TEE",
-            "moonshotai/kimi-k2.6": "moonshotai/Kimi-K2.6-TEE"
+            "moonshotai/kimi-k2.6": "moonshotai/Kimi-K2.6-TEE",
+            "moonshotai/kimi-k3": "moonshotai/Kimi-K3-TEE",
+            "qwen/qwen3.5-397b-a17b": "Qwen/Qwen3.5-397B-A17B-TEE",
+            "google/gemma-4-31b-turbo": "google/gemma-4-31B-turbo-TEE"
           },
           "bearer_token": "${ENVOLVR_CHUTES_KEY:?set ENVOLVR_CHUTES_KEY}",
           "chutes_e2ee_api_base": "https://api.chutes.ai",
@@ -317,7 +321,10 @@ configs:
             "Qwen/Qwen3.8-27B-TEE": "9ecb73cc-909b-5334-9cd8-74985945cff5",
             "deepseek-ai/DeepSeek-V4-Flash-0731-TEE": "b4d58772-e72b-55d1-9d73-d30dff6d2ed8",
             "deepseek-ai/DeepSeek-V3.2-TEE": "398651e1-5f85-5e50-a513-7c5324e8e839",
-            "moonshotai/Kimi-K2.6-TEE": "aac09863-35b4-5d9b-9b67-6e6a9d54273a"
+            "moonshotai/Kimi-K2.6-TEE": "aac09863-35b4-5d9b-9b67-6e6a9d54273a",
+            "moonshotai/Kimi-K3-TEE": "0bb5d4c2-b5da-587d-b88e-62b4839028ec",
+            "Qwen/Qwen3.5-397B-A17B-TEE": "51a4284a-a5a0-5e44-a9cc-6af5a2abfbcf",
+            "google/gemma-4-31B-turbo-TEE": "42ee92ba-a537-5a73-8741-876067750db7"
           },
           "chutes_e2ee_discovery_rounds": 8,
           "chutes_e2ee_discovery_interval_seconds": 2,
@@ -326,7 +333,7 @@ configs:
         }
       ]
 
-  control-config-r10:
+  control-config-r11:
     content: |
       {
         "port": 8787,
@@ -358,6 +365,18 @@ configs:
           ] },
           "moonshotai/kimi-k2.6": { "routes": [
             { "upstream": "chutes", "inputCostPerToken": "0.0000005", "outputCostPerToken": "0.00000285", "endpoints": ["/v1/chat/completions"] }
+          ] },
+          "moonshotai/kimi-k3": { "routes": [
+            { "upstream": "chutes", "inputCostPerToken": "0.000003", "outputCostPerToken": "0.000015", "endpoints": ["/v1/chat/completions"] }
+          ] },
+          "qwen/qwen3.5-397b-a17b": { "routes": [
+            { "upstream": "chutes", "inputCostPerToken": "0.00000045", "outputCostPerToken": "0.000003", "endpoints": ["/v1/chat/completions"] }
+          ] },
+          "google/gemma-4-31b-turbo": { "routes": [
+            { "upstream": "chutes", "inputCostPerToken": "0.00000012", "outputCostPerToken": "0.00000037", "endpoints": ["/v1/chat/completions"] }
+          ] },
+          "nvidia/nemotron-3.5-lightning": { "routes": [
+            { "upstream": "redpill", "inputCostPerToken": "0.00000007", "outputCostPerToken": "0.0000002" }
           ] }
         },
         "chain": {
