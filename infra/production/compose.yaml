@@ -192,7 +192,7 @@ services:
         npx --yes pnpm@10.13.1 install --frozen-lockfile --prod
         exec node --disable-warning=ExperimentalWarning src/main.ts
     configs:
-      - source: control-config-r11
+      - source: control-config-r12
         target: /etc/envolvr/control.json
     environment:
       CONTROL_CONFIG: /etc/envolvr/control.json
@@ -333,7 +333,7 @@ configs:
         }
       ]
 
-  control-config-r11:
+  control-config-r12:
     content: |
       {
         "port": 8787,
@@ -365,9 +365,6 @@ configs:
           ] },
           "moonshotai/kimi-k2.6": { "routes": [
             { "upstream": "chutes", "inputCostPerToken": "0.0000005", "outputCostPerToken": "0.00000285", "endpoints": ["/v1/chat/completions"] }
-          ] },
-          "moonshotai/kimi-k3": { "routes": [
-            { "upstream": "chutes", "inputCostPerToken": "0.000003", "outputCostPerToken": "0.000015", "endpoints": ["/v1/chat/completions"] }
           ] },
           "qwen/qwen3.5-397b-a17b": { "routes": [
             { "upstream": "chutes", "inputCostPerToken": "0.00000045", "outputCostPerToken": "0.000003", "endpoints": ["/v1/chat/completions"] }
