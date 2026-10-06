@@ -73,9 +73,9 @@ services:
         target: /etc/git-launcher/gateway.conf
       - source: run-gateway-r1
         target: /etc/envolvr/run-gateway.sh
-      - source: gateway-config-r6
+      - source: gateway-config-r7
         target: /etc/private-ai-gateway/gateway.config.json
-      - source: gateway-upstreams-r4
+      - source: gateway-upstreams-r5
         target: /etc/private-ai-gateway/upstreams.seed.json
     environment:
       PRIVATE_AI_GATEWAY_CONFIG_PATH: /etc/private-ai-gateway/gateway.config.json
@@ -192,7 +192,7 @@ services:
         npx --yes pnpm@10.13.1 install --frozen-lockfile --prod
         exec node --disable-warning=ExperimentalWarning src/main.ts
     configs:
-      - source: control-config-r12
+      - source: control-config-r13
         target: /etc/envolvr/control.json
     environment:
       CONTROL_CONFIG: /etc/envolvr/control.json
@@ -247,11 +247,11 @@ configs:
   # state_dir holds the live upstream config, sessions and receipts. It moves
   # to a fresh directory when the upstream seed must apply again; the Rust
   # build cache (PRIVATE_AI_GATEWAY_CACHE_DIR) stays where it is.
-  gateway-config-r6:
+  gateway-config-r7:
     content: |
       {
         "bind": "0.0.0.0:8086",
-        "state_dir": "/var/lib/private-ai-gateway/state-r4",
+        "state_dir": "/var/lib/private-ai-gateway/state-r5",
         "upstream_config_seed_path": "/etc/private-ai-gateway/upstreams.seed.json",
         "admin_token": "${PRIVATE_AI_GATEWAY_ADMIN_TOKEN:?set PRIVATE_AI_GATEWAY_ADMIN_TOKEN}",
         "dstack_endpoint": "unix:/var/run/dstack.sock",
@@ -273,7 +273,7 @@ configs:
   # Seeds the gateway's upstream config when its state_dir has none. API keys
   # arrive only as encrypted env, decrypted inside the VM; do not send them
   # through the admin API, whose TLS ends at Phala's ingress.
-  gateway-upstreams-r4:
+  gateway-upstreams-r5:
     content: |
       [
         {
@@ -283,7 +283,9 @@ configs:
           "models": {
             "z-ai/glm-5.3": "z-ai/glm-5.3",
             "qwen/qwen3.8-27b": "qwen/qwen3.8-27b",
-            "nvidia/nemotron-3.5-lightning": "nvidia/nemotron-3.5-lightning"
+            "nvidia/nemotron-3.5-lightning": "nvidia/nemotron-3.5-lightning",
+            "phala/qwen3.8-27b-uncensored": "phala/qwen3.8-27b-uncensored",
+            "phala/gemma-4-26b-a4b-uncensored": "phala/gemma-4-26b-a4b-uncensored"
           },
           "bearer_token": "${ENVOLVR_UPSTREAM_KEY:?set ENVOLVR_UPSTREAM_KEY}",
           "accepted_subjects": ["app-id:0xfdb7a14e5a6675f752e2cb69c9067a98ca402918"],
@@ -333,7 +335,7 @@ configs:
         }
       ]
 
-  control-config-r12:
+  control-config-r13:
     content: |
       {
         "port": 8787,
@@ -374,6 +376,12 @@ configs:
           ] },
           "nvidia/nemotron-3.5-lightning": { "routes": [
             { "upstream": "redpill", "inputCostPerToken": "0.00000007", "outputCostPerToken": "0.0000002" }
+          ] },
+          "phala/qwen3.8-27b-uncensored": { "routes": [
+            { "upstream": "redpill", "inputCostPerToken": "0.0000003", "outputCostPerToken": "0.0000015" }
+          ] },
+          "phala/gemma-4-26b-a4b-uncensored": { "routes": [
+            { "upstream": "redpill", "inputCostPerToken": "0.00000015", "outputCostPerToken": "0.0000007" }
           ] }
         },
         "chain": {
