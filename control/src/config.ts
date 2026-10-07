@@ -163,8 +163,18 @@ function validateAnchoring(config: Config): void {
 
 export function validateModels(models: Record<string, ModelRoutes>): void {
   if (!models || typeof models !== 'object') throw new Error('models must be an object');
+  // An upstream serves attested or incognito models, never both, so an attested
+  // model can never fail over to a relay.
+  const kindOf = new Map<string, string>();
   for (const [model, entry] of Object.entries(models)) {
     const routes = entry?.routes;
+    const privacy = entry?.privacy ?? 'attested';
+    if (privacy !== 'attested' && privacy !== 'incognito') throw new Error(`${model}: privacy must be attested or incognito`);
+    for (const r of Array.isArray(routes) ? routes : []) {
+      const kind = kindOf.get(r?.upstream);
+      if (kind && kind !== privacy) throw new Error(`${model}: upstream ${r.upstream} serves both attested and incognito models`);
+      kindOf.set(r?.upstream, privacy);
+    }
     if (!Array.isArray(routes) || routes.length === 0) throw new Error(`${model}: routes must be a non-empty list`);
     const seen = new Set<string>();
     for (const r of routes) {

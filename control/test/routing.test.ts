@@ -57,3 +57,10 @@ test('validateModels: routes, rates, duplicates and a default route are required
   assert.throws(() => validateModels({ m: { routes: [{ upstream: 'x', outputCostPerToken: '1' } as Route] } }), /required/);
   assert.throws(() => validateModels({ m: { inputCostPerToken: '1' } as never }), /non-empty/);
 });
+
+test('validateModels: an upstream serves attested or incognito models, never both', () => {
+  assert.doesNotThrow(() => validateModels({ m: { routes: [a] }, x: { privacy: 'incognito', routes: [{ ...b, upstream: 'relay' }] } }));
+  assert.throws(() => validateModels({ m: { routes: [a] }, x: { privacy: 'incognito', routes: [a] } }), /both attested and incognito/);
+  assert.throws(() => validateModels({ x: { privacy: 'incognito', routes: [a] }, m: { routes: [a] } }), /both attested and incognito/);
+  assert.throws(() => validateModels({ m: { privacy: 'private' as never, routes: [a] } }), /attested or incognito/);
+});

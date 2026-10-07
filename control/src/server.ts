@@ -155,6 +155,7 @@ export function createControlServer(deps: Deps): Server {
     };
   }
 
+  const privacyOf = (model: string) => config.models[model]?.privacy ?? 'attested';
   const priced = new Map<string, Route[]>(
     Object.entries(config.models).map(([model, { routes }]) => [
       model,
@@ -259,13 +260,14 @@ export function createControlServer(deps: Deps): Server {
     for (const [id, routes] of priced) {
       if (provider !== null) {
         const route = routes.find((r) => r.upstream === provider);
-        if (route) data.push({ id, object: 'model', owned_by: 'envolvr', pricing: quote([route]) });
+        if (route) data.push({ id, object: 'model', owned_by: 'envolvr', privacy: privacyOf(id), pricing: quote([route]) });
         continue;
       }
       data.push({
         id,
         object: 'model',
         owned_by: 'envolvr',
+        privacy: privacyOf(id),
         pricing: quote(selectRoutes(routes, {})),
         routes: routes.map((r) => ({ provider: r.upstream, pricing: quote([r]), ...(r.optIn ? { optIn: true } : {}) })),
       });

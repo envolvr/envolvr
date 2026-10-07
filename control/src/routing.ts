@@ -18,8 +18,18 @@ export interface Route extends Rates {
   endpoints?: string[];
 }
 
+/**
+ * How private a model is. `attested`: every route runs the model in an attested
+ * enclave. `incognito`: the supplier's attested gateway relays the request to a
+ * provider outside a TEE under shared credentials, so the request is unlinked
+ * from the caller but the provider reads it. An upstream serves one kind only.
+ */
+export type Privacy = 'attested' | 'incognito';
+
 export interface ModelRoutes {
   routes: Route[];
+  /** Default `attested`. */
+  privacy?: Privacy;
 }
 
 export interface ProviderPrefs {

@@ -27,6 +27,10 @@ const config: Config = {
         },
       ],
     },
+    'anthropic/claude-sonnet-5-5': {
+      privacy: 'incognito',
+      routes: [{ upstream: 'near-incognito', inputCostPerToken: '0.000002', outputCostPerToken: '0.00001' }],
+    },
   },
   blockedWallets: [], controlToken: CONTROL, adminToken: ADMIN,
 };
@@ -188,8 +192,13 @@ test('catalogs: every model with its routes, or one upstream at its own price', 
   assert.deepEqual(qwen.pricing, { inputCostPerToken: '0.000000288', outputCostPerToken: '0.000003' });
   assert.deepEqual(qwen.routes.map((r: { provider: string; optIn?: boolean }) => [r.provider, r.optIn ?? false]),
     [['redpill', false], ['near-ai', true]]);
+  assert.equal(qwen.privacy, 'attested');
+  const claude = all.data.find((m: { id: string }) => m.id === 'anthropic/claude-sonnet-5-5');
+  assert.equal(claude.privacy, 'incognito');
+  assert.deepEqual(claude.routes.map((r: { provider: string }) => r.provider), ['near-incognito']);
   const near = (await call('GET', '/models/providers/near-ai', undefined, CONTROL)).body;
   assert.deepEqual(near.data.map((m: { id: string }) => m.id), ['qwen/qwen3.8-27b']);
+  assert.equal(near.data[0].privacy, 'attested');
   assert.deepEqual(near.data[0].pricing, { inputCostPerToken: '0.000000528', outputCostPerToken: '0.00000396' });
 });
 
