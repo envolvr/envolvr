@@ -192,7 +192,7 @@ services:
         npx --yes pnpm@10.13.1 install --frozen-lockfile --prod
         exec node --disable-warning=ExperimentalWarning src/main.ts
     configs:
-      - source: control-config-r13
+      - source: control-config-r14
         target: /etc/envolvr/control.json
     environment:
       CONTROL_CONFIG: /etc/envolvr/control.json
@@ -335,7 +335,7 @@ configs:
         }
       ]
 
-  control-config-r13:
+  control-config-r14:
     content: |
       {
         "port": 8787,
@@ -388,7 +388,8 @@ configs:
           "rpcUrl": "https://rpc.mainnet.chain.robinhood.com",
           "creditVault": "0x24DbbBd7d5eE9674D8A8B19a492E87A4957B1261",
           "depositStartBlock": 80953079,
-          "confirmations": 1
+          "confirmations": 1,
+          "depositPollMs": 10000
         },
         "topUp": { "chainId": 4663 },
         "blockedWallets": [],
