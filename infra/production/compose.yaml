@@ -45,6 +45,11 @@
 # os_image_hash = sha256(sha256sum.txt), and every boot file is checked against
 # that list before the verifier can use it.
 #
+# The near-incognito upstream serves NEAR's incognito models, which NEAR runs
+# outside a TEE on a partner provider under shared credentials. It verifies only
+# NEAR's gateway enclave and TLS key (near_router_only); its models are labelled
+# incognito in the catalog, and their receipts say no model enclave served them.
+#
 # The credit ledger (control.db) is copied off the VM to Backblaze B2 every five
 # minutes when it changed and on every stop, sealed with a key the dstack KMS
 # derives for this app, so only a VM of this app can read a copy. When /data/control.db
@@ -69,13 +74,13 @@ services:
     image: docker.io/dstacktee/git-launcher@sha256:4437dce18ec713b0991d34bd926d324966b1a0b90fad485b8ddb3f4ed2af138b
     command: ["/etc/git-launcher/gateway.conf"]
     configs:
-      - source: gateway-pin-r9
+      - source: gateway-pin-r10
         target: /etc/git-launcher/gateway.conf
       - source: run-gateway-r1
         target: /etc/envolvr/run-gateway.sh
-      - source: gateway-config-r7
+      - source: gateway-config-r8
         target: /etc/private-ai-gateway/gateway.config.json
-      - source: gateway-upstreams-r5
+      - source: gateway-upstreams-r6
         target: /etc/private-ai-gateway/upstreams.seed.json
     environment:
       PRIVATE_AI_GATEWAY_CONFIG_PATH: /etc/private-ai-gateway/gateway.config.json
@@ -181,7 +186,7 @@ services:
       - -c
       - |
         set -eu
-        COMMIT=fd9a7057944ccb75780c2427d46ecd0397971a73
+        COMMIT=b3363a932d20d231106e2793f336b6f7b58530d0
         [ -d /opt/envolvr/.git ] || git clone --quiet --no-checkout https://github.com/envolvr/envolvr.git /opt/envolvr
         cd /opt/envolvr
         git fetch --quiet origin
@@ -192,7 +197,7 @@ services:
         npx --yes pnpm@10.13.1 install --frozen-lockfile --prod
         exec node --disable-warning=ExperimentalWarning src/main.ts
     configs:
-      - source: control-config-r14
+      - source: control-config-r15
         target: /etc/envolvr/control.json
     environment:
       CONTROL_CONFIG: /etc/envolvr/control.json
@@ -209,10 +214,10 @@ services:
     restart: unless-stopped
 
 configs:
-  gateway-pin-r9:
+  gateway-pin-r10:
     content: |
       REPO_URL=https://github.com/envolvr/private-ai-gateway.git
-      COMMIT_SHA=1fab07a0f98a6ee16936b0269efe970fbb12be84
+      COMMIT_SHA=ba064638fd7070ff4e90e7b65d6402618a9ca72f
       WORK_DIR=/var/lib/git-launcher/private-ai-gateway
       INSTALL_CMD=dpkg --configure -a && apt-get update -qq && apt-get install -y --no-install-recommends gcc libc6-dev curl ca-certificates && curl -fsSL --retry 3 -o /tmp/uv.tar.gz https://github.com/astral-sh/uv/releases/download/0.12.18/uv-x86_64-unknown-linux-gnu.tar.gz && echo '89eadd7c76fc063887959510d5ba0ab1264dfd5f1143b925ddb73021a40acf16  /tmp/uv.tar.gz' | sha256sum -c - && tar -xzf /tmp/uv.tar.gz -C /usr/local/bin --strip-components=1 uv-x86_64-unknown-linux-gnu/uv && uv sync --frozen --no-dev
       RUN_CMD=bash /etc/envolvr/run-gateway.sh
@@ -247,11 +252,11 @@ configs:
   # state_dir holds the live upstream config, sessions and receipts. It moves
   # to a fresh directory when the upstream seed must apply again; the Rust
   # build cache (PRIVATE_AI_GATEWAY_CACHE_DIR) stays where it is.
-  gateway-config-r7:
+  gateway-config-r8:
     content: |
       {
         "bind": "0.0.0.0:8086",
-        "state_dir": "/var/lib/private-ai-gateway/state-r5",
+        "state_dir": "/var/lib/private-ai-gateway/state-r6",
         "upstream_config_seed_path": "/etc/private-ai-gateway/upstreams.seed.json",
         "admin_token": "${PRIVATE_AI_GATEWAY_ADMIN_TOKEN:?set PRIVATE_AI_GATEWAY_ADMIN_TOKEN}",
         "dstack_endpoint": "unix:/var/run/dstack.sock",
@@ -273,7 +278,7 @@ configs:
   # Seeds the gateway's upstream config when its state_dir has none. API keys
   # arrive only as encrypted env, decrypted inside the VM; do not send them
   # through the admin API, whose TLS ends at Phala's ingress.
-  gateway-upstreams-r5:
+  gateway-upstreams-r6:
     content: |
       [
         {
@@ -303,6 +308,21 @@ configs:
           "bearer_token": "${ENVOLVR_NEAR_KEY:?set ENVOLVR_NEAR_KEY}",
           "verifier_request_timeout_seconds": 300,
           "read_timeout_seconds": 120
+        },
+        {
+          "name": "near-incognito",
+          "provider": "near-ai",
+          "base_url": "https://cloud-api.near.ai",
+          "models": {
+            "anthropic/claude-fable-5-1": "anthropic/claude-fable-5-1",
+            "anthropic/claude-opus-5-5": "anthropic/claude-opus-5-5",
+            "anthropic/claude-sonnet-5-5": "anthropic/claude-sonnet-5-5",
+            "anthropic/claude-haiku-4-5": "anthropic/claude-haiku-4-5"
+          },
+          "bearer_token": "${ENVOLVR_NEAR_KEY:?set ENVOLVR_NEAR_KEY}",
+          "near_router_only": true,
+          "verifier_request_timeout_seconds": 300,
+          "read_timeout_seconds": 300
         },
         {
           "name": "chutes",
@@ -335,7 +355,7 @@ configs:
         }
       ]
 
-  control-config-r14:
+  control-config-r15:
     content: |
       {
         "port": 8787,
@@ -382,6 +402,18 @@ configs:
           ] },
           "phala/gemma-4-26b-a4b-uncensored": { "routes": [
             { "upstream": "redpill", "inputCostPerToken": "0.00000015", "outputCostPerToken": "0.0000007" }
+          ] },
+          "anthropic/claude-fable-5-1": { "privacy": "incognito", "routes": [
+            { "upstream": "near-incognito", "inputCostPerToken": "0.00001", "outputCostPerToken": "0.00005", "cacheReadCostPerToken": "0.00000025", "endpoints": ["/v1/chat/completions"] }
+          ] },
+          "anthropic/claude-opus-5-5": { "privacy": "incognito", "routes": [
+            { "upstream": "near-incognito", "inputCostPerToken": "0.000004", "outputCostPerToken": "0.00002", "cacheReadCostPerToken": "0.0000002", "endpoints": ["/v1/chat/completions"] }
+          ] },
+          "anthropic/claude-sonnet-5-5": { "privacy": "incognito", "routes": [
+            { "upstream": "near-incognito", "inputCostPerToken": "0.000002", "outputCostPerToken": "0.00001", "cacheReadCostPerToken": "0.0000002", "endpoints": ["/v1/chat/completions"] }
+          ] },
+          "anthropic/claude-haiku-4-5": { "privacy": "incognito", "routes": [
+            { "upstream": "near-incognito", "inputCostPerToken": "0.000001", "outputCostPerToken": "0.000005", "cacheReadCostPerToken": "0.0000001", "endpoints": ["/v1/chat/completions"] }
           ] }
         },
         "chain": {
