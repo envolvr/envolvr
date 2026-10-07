@@ -67,7 +67,7 @@
         <div class="panel-body">
           <div class="panel-head"><div><h2 class="panel-title">Deposit USDG</h2><p class="panel-sub">Pay per request from your balance</p></div></div>
           <label class="field"><span>Amount</span><input id="depositAmount" inputmode="decimal" placeholder="10.00"><em>USDG</em></label>
-          <p class="app-note" id="depositPreview">Credited to your balance, net of the deposit fee, within seconds.</p>
+          <p class="app-note" id="depositPreview">Credited to your balance, net of the deposit fee, within seconds. Prepaid credit: it never expires and is not refundable.</p>
           <div class="row"><button class="btn btn-primary" id="deposit">Deposit</button><button class="btn btn-outline" id="mint" hidden>Get 20 test USDG</button></div>
         </div>
       </article>
@@ -124,14 +124,6 @@
         </div>
       </article>
 
-      <article class="panel amber" id="closeCard">
-        <div class="panel-body">
-          <div class="panel-head"><div><h2 class="panel-title">Close account</h2><p class="panel-sub">Signed with your wallet</p></div></div>
-          <p class="app-note">Revokes every API key and refunds your balance, net of deposit fees, to the wallet below.</p>
-          <label class="field"><span>Refund to</span><input id="refundTo" spellcheck="false"></label>
-          <div class="row"><button class="btn btn-outline danger" id="close">Close account</button></div>
-        </div>
-      </article>
     </div>
   </section>
 </main>

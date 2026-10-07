@@ -28,17 +28,17 @@ export async function admin<T>(path: string, body?: unknown): Promise<T> {
 
 export interface Reserves {
   vaultUsdgMicros: string | null; owedMicros: string; withdrawableMicros: string | null; solvent: boolean | null;
-  shortfallMicros: string; balancesMicros: string; refundsPendingMicros: string; refundsHeldMicros: string;
-  depositsHeldMicros: string; overdrawnMicros: string;
+  shortfallMicros: string; balancesMicros: string; depositsHeldMicros: string; overdrawnMicros: string;
+  creditAtSuppliersMicros: string | null;
 }
 
 export const reserves = () => admin<Reserves>('/admin/reserves');
 
 export function printReserves(r: Reserves): void {
-  console.log(`vault ${r.vaultUsdgMicros === null ? 'unknown' : usd(r.vaultUsdgMicros)}, owed to users ${usd(r.owedMicros)}`
-    + ` (balances ${usd(r.balancesMicros)}, refunds ${usd(BigInt(r.refundsPendingMicros) + BigInt(r.refundsHeldMicros))},`
-    + ` held deposits ${usd(r.depositsHeldMicros)}), withdrawable ${r.withdrawableMicros === null ? 'unknown' : usd(r.withdrawableMicros)}`
-    + (r.solvent === false ? `, SHORTFALL ${usd(r.shortfallMicros)}` : ''));
+  console.log(`vault ${r.vaultUsdgMicros === null ? 'unknown' : usd(r.vaultUsdgMicros)}, users' credit ${usd(r.balancesMicros)}`
+    + `${r.creditAtSuppliersMicros && r.creditAtSuppliersMicros !== '0' ? ` (${usd(r.creditAtSuppliersMicros)} of it prepaid at suppliers)` : ''},`
+    + ` held deposits ${usd(r.depositsHeldMicros)}, withdrawable ${r.withdrawableMicros === null ? 'unknown' : usd(r.withdrawableMicros)}`
+    + (r.solvent === false ? `, SHORTFALL ${usd(r.shortfallMicros)} against held deposits` : ''));
 }
 
 /** The owner key, checked against CreditVault.owner(). */

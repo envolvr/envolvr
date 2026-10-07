@@ -29,7 +29,7 @@ async function withServer(store: Store, vault: bigint | undefined, fn: (base: st
 const get = (base: string, path: string, token = ADMIN) =>
   fetch(`${base}${path}`, { headers: { authorization: `Bearer ${token}` } });
 
-/** Three accounts: one with $5, one overdrawn by $0.25, one closed into a $2 refund; plus a held $10 deposit. */
+/** Three accounts: one with $5, one overdrawn by $0.25, one with $2; plus a held $10 deposit. */
 function ledger(): Store {
   const store = new Store(':memory:');
   const a = store.ensureAccount(wallet(1), NOW);
@@ -42,7 +42,6 @@ function ledger(): Store {
   });
   const c = store.ensureAccount(wallet(3), NOW);
   store.credit(c.id, 2_000_000n);
-  store.closeAccount(c.id, wallet(9), false, NOW);
   store.applyDeposits('vault', [{
     txHash: '0x' + '11'.repeat(32), logIndex: 0, account: wallet(4), payer: wallet(4), amountMicros: 10_000_000n,
     depositId: 1, blockNumber: 1,
@@ -50,29 +49,37 @@ function ledger(): Store {
   return store;
 }
 
-test('liabilities count positive balances, unpaid refunds and held deposits; overdrafts stand apart', () => {
+test('liabilities count positive balances and held deposits; overdrafts stand apart', () => {
   const l = ledger().liabilities();
-  assert.equal(l.balancesMicros, 5_000_000n);
+  assert.equal(l.balancesMicros, 7_000_000n);
   assert.equal(l.overdrawnMicros, 250_000n);
-  assert.equal(l.refundsPendingMicros, 2_000_000n);
-  assert.equal(l.refundsHeldMicros, 0n);
   assert.equal(l.depositsHeldMicros, 10_000_000n);
   assert.equal(l.owedMicros, 17_000_000n);
 });
 
-test('/admin/reserves: only the surplus over what is owed is withdrawable', async () => {
+test('/admin/reserves: credit is not refundable, so all but held deposits may go to suppliers', async () => {
   await withServer(ledger(), 20_000_000n, async (base) => {
     const r = await (await get(base, '/admin/reserves')).json() as Record<string, unknown>;
     assert.equal(r.vaultUsdgMicros, '20000000');
     assert.equal(r.owedMicros, '17000000');
-    assert.equal(r.withdrawableMicros, '3000000');
+    assert.equal(r.withdrawableMicros, '10000000');
     assert.equal(r.solvent, true);
     assert.equal(r.shortfallMicros, '0');
+    assert.equal(r.creditAtSuppliersMicros, '0');
   });
 });
 
-test('/admin/reserves: a vault below what is owed reports the shortfall and nothing withdrawable', async () => {
-  await withServer(ledger(), 16_000_000n, async (base) => {
+test('/admin/reserves: credit the vault no longer holds is reported as held at suppliers', async () => {
+  await withServer(ledger(), 12_000_000n, async (base) => {
+    const r = await (await get(base, '/admin/reserves')).json() as Record<string, unknown>;
+    assert.equal(r.withdrawableMicros, '2000000');
+    assert.equal(r.solvent, true);
+    assert.equal(r.creditAtSuppliersMicros, '5000000');
+  });
+});
+
+test('/admin/reserves: a vault below its held deposits reports the shortfall and nothing withdrawable', async () => {
+  await withServer(ledger(), 9_000_000n, async (base) => {
     const r = await (await get(base, '/admin/reserves')).json() as Record<string, unknown>;
     assert.equal(r.withdrawableMicros, '0');
     assert.equal(r.solvent, false);
@@ -133,7 +140,6 @@ test('the monitor token reads /admin/reserves and /admin/spend, and nothing else
     const m = 'm'.repeat(40);
     assert.equal((await get(base, '/admin/reserves', m)).status, 200);
     assert.equal((await get(base, '/admin/spend', m)).status, 200);
-    assert.equal((await get(base, '/admin/refunds', m)).status, 401);
     assert.equal((await get(base, '/admin/deposits/held', m)).status, 401);
     const credit = await fetch(`${base}/admin/credit`, {
       method: 'POST', headers: { authorization: `Bearer ${m}`, 'content-type': 'application/json' },

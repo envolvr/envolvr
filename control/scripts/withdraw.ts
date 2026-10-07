@@ -4,11 +4,14 @@
 //   CONTROL_URL=https://auth.envolvr.xyz ADMIN_TOKEN=… OWNER_PRIVATE_KEY=… \
 //     node --disable-warning=ExperimentalWarning scripts/withdraw.ts <to> <usd | all> [--send]
 //
-// The vault holds users' unspent balances, unpaid refunds and held deposits next
-// to what envolvr has earned (spent balances and deposit fees). Only the surplus
-// over what is owed, GET /admin/reserves `withdrawableMicros`, may leave here;
-// anything more is refused. `all` withdraws the whole surplus. Without --send it
-// only prints the reserves and what it would do. RPC_URL, CHAIN_ID and
+// The vault holds users' prepaid credit, deposits held by sanctions screening and
+// what envolvr has earned (spent balances and deposit fees). Credit is not
+// refundable, so it may be served from supplier balances paid from here: all but
+// the held deposits, GET /admin/reserves `withdrawableMicros`, may leave; anything
+// more is refused. Withdraw what suppliers need (the treasury page plans it) and
+// keep vault plus supplier balances above users' credit. `all` withdraws
+// everything withdrawable. Without --send it only prints the reserves and what it
+// would do. RPC_URL, CHAIN_ID and
 // CREDIT_VAULT default to Robinhood Chain testnet.
 
 import { owner, printReserves, reserves, usd, withdraw } from './vault.ts';
@@ -31,7 +34,7 @@ else {
   micros = BigInt(m[1]) * 1_000_000n + BigInt((m[2] ?? '').padEnd(6, '0'));
 }
 if (micros <= 0n) throw new Error('nothing to withdraw');
-if (micros > surplus) throw new Error(`refused: ${usd(micros)} is more than the withdrawable ${usd(surplus)}; the rest is owed to users`);
+if (micros > surplus) throw new Error(`refused: ${usd(micros)} is more than the withdrawable ${usd(surplus)}; the rest is held deposits`);
 
 console.log(`withdraw ${usd(micros)} -> ${to}`);
 if (!send) { console.log('dry run: add --send to withdraw'); process.exit(0); }

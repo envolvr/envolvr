@@ -6,9 +6,6 @@ import { CONTROL } from './config.ts';
 const lines = (...l: string[]) => l.join('\n');
 export const manageMessage = (wallet: string, nonce: string, issuedAt: string) =>
   lines('envolvr: sign in to manage this account.', '', `Wallet: ${wallet.toLowerCase()}`, `Nonce: ${nonce}`, `Issued At: ${issuedAt}`);
-export const closeMessage = (wallet: string, refundTo: string, nonce: string, issuedAt: string) =>
-  lines('envolvr: close this account and refund its balance.', '', `Wallet: ${wallet.toLowerCase()}`,
-    `Refund to: ${refundTo.toLowerCase()}`, `Nonce: ${nonce}`, `Issued At: ${issuedAt}`);
 
 async function call<T>(method: string, path: string, opts: { token?: string; body?: unknown } = {}): Promise<T> {
   const res = await fetch(`${CONTROL}${path}`, {
@@ -50,12 +47,3 @@ export const usage = (token: string) => call<{ usage: Usage[] }>('GET', '/accoun
 
 export interface Deposit { txHash: string; logIndex: number; amountMicros: string; feeMicros: string; held: boolean; blockNumber: number }
 export const deposits = (token: string) => call<{ deposits: Deposit[] }>('GET', '/account/deposits', { token }).then((r) => r.deposits);
-
-export async function closeAccount(wallet: string, refundTo: string, sign: Sign) {
-  const n = await call<{ nonce: string; issuedAt: string; refundTo: string; message: string }>(
-    'GET', `/account/close/nonce?wallet=${wallet}&refundTo=${refundTo}`);
-  const expected = closeMessage(wallet, refundTo, n.nonce, n.issuedAt);
-  if (n.message !== expected) throw new Error('unexpected message from the server; not signing it');
-  return call<{ closed: boolean; revokedKeys: number; refund?: { id: number; amountMicros: string; status: string; refundTo: string } }>(
-    'POST', '/account/close', { body: { wallet, refundTo, nonce: n.nonce, issuedAt: n.issuedAt, signature: await sign(expected) } });
-}

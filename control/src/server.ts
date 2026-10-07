@@ -24,19 +24,16 @@
 //   GET  /account/usage?limit=    recent requests, cost and how they were paid
 //   GET  /account/deposits        deposits, fees kept, held ones
 //   GET  /pricing                 the deposit fee and how prices are set
-//   GET  /account/close/nonce?wallet=0x…&refundTo=0x…   message to sign to close
-//   POST /account/close           signed message -> keys revoked, sessions ended, balance to a refund
+// Credit is prepaid and not refundable: a balance stays with its wallet and
+// never expires. There is no account closure; keys are revoked one by one.
 // Operator (bearer: adminToken; the two read-only reports also take monitorToken):
 //   POST /admin/credit            credit a wallet's USDG balance
 //   GET  /admin/account?wallet=   balance and today's allowance
 //   GET  /admin/deposits/held     deposits held by sanctions screening
 //   POST /admin/deposits/release  credit a held deposit after review
 //   GET|POST /admin/deposit-fee   read or set the deposit fee (bps); applies at once
-//   GET  /admin/refunds?status=   refunds from closed accounts (pending, held, paid)
-//   POST /admin/refunds/paid      record a refund paid ({id, txHash}) after the vault owner sent it
-//   POST /admin/refunds/release   release a held refund for payout, after review
-//   GET  /admin/reserves          the vault's USDG against what it owes users, and what
-//                                 the owner may withdraw for suppliers and the treasury
+//   GET  /admin/reserves          the vault's USDG against users' credit and held deposits,
+//                                 and what the owner may withdraw to pay suppliers
 //   GET  /admin/spend?days=       billed per upstream per UTC day, and the daily average
 //
 // Sanctions screening (screening.ts) gates sign-in (fails closed, 503 while
@@ -48,7 +45,7 @@
 import { createServer, type IncomingMessage, type Server, type ServerResponse } from 'node:http';
 import { timingSafeEqual } from 'node:crypto';
 import {
-  closeAccountMessage, hashApiKey, manageMessage, newApiKey, newNonce, newSessionToken, recoverSigner, signInMessage,
+  hashApiKey, manageMessage, newApiKey, newNonce, newSessionToken, recoverSigner, signInMessage,
 } from './auth.ts';
 import type { AllowanceSource, ReserveSource } from './chain.ts';
 import type { Config } from './config.ts';
@@ -125,18 +122,23 @@ export function createControlServer(deps: Deps): Server {
   const log = deps.log ?? (() => {});
   const screening = deps.screening ?? new Screening(store, { blocklist: config.blockedWallets });
   // Routes with the resale margin applied, per public model.
-  // The vault's USDG against what it owes: only the surplus may leave the vault
-  // for suppliers or the treasury; refunds are paid from what is owed.
+  // The vault's USDG against what it owes. Users' credit is prepaid service, not
+  // refundable cash, so it may be served from supplier balances paid out of the
+  // vault: only deposits held by screening must stay in the vault as USDG. The
+  // credit the vault no longer holds must sit at the suppliers; the monitor and
+  // the treasury page check that against their balances.
   async function reservesView() {
     const owed = store.liabilities();
     const vault = deps.reserves ? await deps.reserves.vaultUsdgMicros() : undefined;
-    const surplus = vault === undefined ? undefined : vault - owed.owedMicros;
+    const free = vault === undefined ? undefined : vault - owed.depositsHeldMicros;
+    const outside = vault === undefined ? undefined : owed.owedMicros - vault;
     return {
       ...owed,
       vaultUsdgMicros: vault ?? null,
-      withdrawableMicros: surplus === undefined ? null : surplus > 0n ? surplus : 0n,
-      solvent: surplus === undefined ? null : surplus >= 0n,
-      shortfallMicros: surplus !== undefined && surplus < 0n ? -surplus : 0n,
+      withdrawableMicros: free === undefined ? null : free > 0n ? free : 0n,
+      solvent: free === undefined ? null : free >= 0n,
+      shortfallMicros: free !== undefined && free < 0n ? -free : 0n,
+      creditAtSuppliersMicros: outside === undefined ? null : outside > 0n ? outside : 0n,
     };
   }
 
@@ -409,69 +411,6 @@ export function createControlServer(deps: Deps): Server {
     return { wallet: account.wallet, balanceMicros: store.accountByWallet(wallet)!.balanceMicros };
   }
 
-  function closeNonce(url: URL) {
-    const wallet = url.searchParams.get('wallet') ?? '';
-    const refundTo = url.searchParams.get('refundTo') ?? wallet;
-    if (!WALLET.test(wallet) || !WALLET.test(refundTo)) throw new HttpError(400, 'wallet and refundTo must be 0x addresses');
-    const nonce = newNonce();
-    const issuedAt = new Date(now() * 1000).toISOString();
-    store.putNonce(nonce, wallet, now() + NONCE_TTL);
-    return { nonce, issuedAt, refundTo: refundTo.toLowerCase(), message: closeAccountMessage(wallet, refundTo, nonce, issuedAt) };
-  }
-
-  /**
-   * Close an account on a request signed by its wallet: every API key is
-   * revoked and the balance becomes a refund to `refundTo` (default the wallet),
-   * paid by the vault owner. Screened like a sign-in; a flagged wallet or
-   * refund address leaves the refund held for review.
-   */
-  async function closeAccount(body: Record<string, unknown>) {
-    const { wallet, nonce, issuedAt, signature } = body as Record<string, string>;
-    const refundTo = String(body.refundTo ?? wallet ?? '');
-    if (!WALLET.test(wallet ?? '') || !WALLET.test(refundTo) || !nonce || !issuedAt || !signature) {
-      throw new HttpError(400, 'wallet, refundTo, nonce, issuedAt and signature are required');
-    }
-    let signer: string;
-    try {
-      signer = recoverSigner(closeAccountMessage(wallet, refundTo, nonce, issuedAt), signature);
-    } catch {
-      throw new HttpError(401, 'invalid signature');
-    }
-    if (signer !== wallet.toLowerCase()) throw new HttpError(401, 'signature does not match wallet');
-    const account = store.accountByWallet(wallet);
-    if (!account) throw new HttpError(404, 'no such account');
-    let flagged: boolean;
-    try {
-      flagged = (await screening.check(wallet)) || (await screening.check(refundTo));
-    } catch (err) {
-      if (err instanceof ScreeningUnavailable) throw new HttpError(503, 'sanctions screening unavailable, try again shortly');
-      throw err;
-    }
-    if (!store.takeNonce(nonce, wallet, now())) throw new HttpError(401, 'nonce expired or already used');
-    const closed = store.closeAccount(account.id, refundTo, flagged, now());
-    log('account closed', { refund: closed.refund?.status ?? 'none' });
-    return {
-      closed: true,
-      revokedKeys: closed.revokedKeys,
-      refund: closed.refund && {
-        id: closed.refund.id, amountMicros: closed.refund.amountMicros, status: closed.refund.status, refundTo: refundTo.toLowerCase(),
-      },
-    };
-  }
-
-  function adminRefund(path: 'paid' | 'release', body: Record<string, unknown>) {
-    const id = Number(body.id);
-    if (!Number.isInteger(id)) throw new HttpError(400, 'id is required');
-    if (path === 'paid') {
-      const txHash = String(body.txHash ?? '');
-      if (!/^0x[0-9a-fA-F]{64}$/.test(txHash)) throw new HttpError(400, 'txHash must be 0x and 64 hex');
-      if (!store.refundPaid(id, txHash, now())) throw new HttpError(409, 'no pending refund with that id');
-      return { id, status: 'paid', txHash: txHash.toLowerCase() };
-    }
-    if (!store.releaseRefund(id)) throw new HttpError(409, 'no held refund with that id');
-    return { id, status: 'pending' };
-  }
-
   function adminRelease(body: Record<string, unknown>) {
     const txHash = String(body.txHash ?? '');
     const logIndex = Number(body.logIndex);
@@ -532,8 +471,6 @@ export function createControlServer(deps: Deps): Server {
           models: '/v1/models on the gateway lists every model with its per-token prices',
         });
       }
-      if (route === 'GET /account/close/nonce') return send(res, 200, closeNonce(url));
-      if (route === 'POST /account/close') return send(res, 200, await closeAccount(await readJson(req)));
       if (route === 'GET /auth/nonce') return send(res, 200, authNonce(url));
       if (route === 'POST /auth/key') return send(res, 200, await authKey(await readJson(req)));
       if (route === 'POST /admin/credit') { admin(); return send(res, 200, adminCredit(await readJson(req))); }
@@ -569,12 +506,6 @@ export function createControlServer(deps: Deps): Server {
         return send(res, 200, { usage: store.usageOf(session().id, limit) });
       }
       if (route === 'GET /account/deposits') return send(res, 200, { deposits: store.depositsOf(session().id) });
-      if (route === 'GET /admin/refunds') {
-        admin();
-        return send(res, 200, { refunds: store.refunds(url.searchParams.get('status') ?? undefined) });
-      }
-      if (route === 'POST /admin/refunds/paid') { admin(); return send(res, 200, adminRefund('paid', await readJson(req))); }
-      if (route === 'POST /admin/refunds/release') { admin(); return send(res, 200, adminRefund('release', await readJson(req))); }
       if (route === 'GET /admin/reserves') { reader(); return send(res, 200, await reservesView()); }
       if (route === 'GET /admin/spend') { reader(); return send(res, 200, spendView(url)); }
       if (route === 'GET /admin/deposit-fee') { admin(); return send(res, 200, { bps: depositFeeBps() }); }

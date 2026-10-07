@@ -79,7 +79,6 @@ function renderWallets() {
       $('walletChip').hidden = false;
       $('walletChip').textContent = short(address);
       $('disconnect').hidden = false;
-      $<HTMLInputElement>('refundTo').value = address;
       await refresh();
     });
     list.append(b);
@@ -187,8 +186,8 @@ function updatePreview() {
   try { amount = input ? parseUnits(input, 6) : 0n; } catch { amount = 0n; }
   const fee = state.feeBps === undefined ? undefined : (amount * BigInt(state.feeBps)) / 10_000n;
   $('depositPreview').textContent = amount > 0n && fee !== undefined
-    ? `You will be credited ${usd(amount - fee)} (${usd(fee)} deposit fee), within seconds of the deposit being mined.`
-    : 'Credited to your balance, net of the deposit fee, within seconds.';
+    ? `You will be credited ${usd(amount - fee)} (${usd(fee)} deposit fee), within seconds of the deposit being mined. Prepaid credit: it never expires and is not refundable.`
+    : 'Credited to your balance, net of the deposit fee, within seconds. Prepaid credit: it never expires and is not refundable.';
 }
 
 // ---- actions ----
@@ -312,16 +311,6 @@ $('closeDialog').onclick = () => {
   $('newKey').textContent = '';
   $<HTMLDialogElement>('keyDialog').close();
 };
-
-$('close').onclick = (e) => busy(e.currentTarget as HTMLButtonElement, 'Check your wallet…', async () => {
-  const refundTo = $<HTMLInputElement>('refundTo').value.trim();
-  if (!/^0x[0-9a-fA-F]{40}$/.test(refundTo)) throw new Error('the refund address must be a 0x address');
-  if (!confirm(`Close this account? Every API key stops working, and the balance is refunded to ${refundTo}.`)) return;
-  const r = await api.closeAccount(state.address!, refundTo, sign);
-  saveSession(undefined);
-  toast(r.refund ? `Account closed. Refund of ${usd(r.refund.amountMicros)} ${r.refund.status === 'held' ? 'held for review' : 'on its way'}.` : 'Account closed.');
-  await refresh();
-});
 
 $('disconnect').onclick = async () => {
   if (state.session) await api.endSession(state.session).catch(() => undefined);

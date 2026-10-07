@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import type { AddressInfo } from 'node:net';
 import type { Server } from 'node:http';
 import { secp256k1 } from '@noble/curves/secp256k1';
-import { addressOf, closeAccountMessage, hashApiKey, personalSign, signInMessage } from '../src/auth.ts';
+import { addressOf, hashApiKey, personalSign, signInMessage } from '../src/auth.ts';
 import type { Config } from '../src/config.ts';
 import { Store } from '../src/db.ts';
 import { createControlServer } from '../src/server.ts';
@@ -88,15 +88,6 @@ test('a sign-in signature cannot start a session; an ended session stops working
   assert.equal((await call('POST', '/auth/session', { wallet, nonce: n.nonce, issuedAt: n.issuedAt, signature: wrong })).status, 401);
   const { token } = await session(key);
   assert.equal((await call('POST', '/auth/session/end', {}, token)).status, 200);
-  assert.equal((await call('GET', '/account/keys', undefined, token)).status, 401);
-});
-
-test('closing the account ends its sessions', async () => {
-  const key = secp256k1.utils.randomPrivateKey();
-  const { wallet, token } = await session(key);
-  const n = (await call('GET', `/account/close/nonce?wallet=${wallet}`)).body;
-  const signature = personalSign(closeAccountMessage(wallet, n.refundTo, n.nonce, n.issuedAt), key);
-  assert.equal((await call('POST', '/account/close', { wallet, refundTo: n.refundTo, nonce: n.nonce, issuedAt: n.issuedAt, signature })).status, 200);
   assert.equal((await call('GET', '/account/keys', undefined, token)).status, 401);
 });
 

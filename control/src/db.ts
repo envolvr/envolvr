@@ -145,17 +145,6 @@ export class Store {
         created_at INTEGER NOT NULL,
         expires_at INTEGER NOT NULL
       );
-      CREATE TABLE IF NOT EXISTS refunds (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        account_id INTEGER NOT NULL REFERENCES accounts(id),
-        wallet TEXT NOT NULL,
-        refund_to TEXT NOT NULL,
-        amount_micros INTEGER NOT NULL,
-        status TEXT NOT NULL,
-        requested_at INTEGER NOT NULL,
-        tx_hash TEXT,
-        paid_at INTEGER
-      );
       CREATE TABLE IF NOT EXISTS topup_rules (
         payer TEXT NOT NULL,
         account TEXT NOT NULL,
@@ -241,66 +230,6 @@ export class Store {
 
   close(): void {
     this.db.close();
-  }
-
-  /**
-   * Close an account: revoke its API keys, end its management sessions and move
-   * its positive balance into a refund to `refundTo`, pending payout (or held,
-   * when screening flagged it). In one transaction. Returns the refund, if there was a balance to refund.
-   */
-  closeAccount(accountId: number, refundTo: string, held: boolean, now: number): {
-    revokedKeys: number; refund?: { id: number; amountMicros: bigint; status: 'pending' | 'held' };
-  } {
-    this.db.exec('BEGIN IMMEDIATE');
-    try {
-      const account = this.db.prepare('SELECT wallet, balance_micros FROM accounts WHERE id = ?').get(accountId) as
-        { wallet: string; balance_micros: number } | undefined;
-      if (!account) throw new Error(`no account ${accountId}`);
-      const revokedKeys = Number(this.db.prepare('UPDATE api_keys SET revoked_at = ? WHERE account_id = ? AND revoked_at IS NULL')
-        .run(now, accountId).changes);
-      this.db.prepare('DELETE FROM sessions WHERE account_id = ?').run(accountId);
-      const balance = BigInt(account.balance_micros);
-      let refund: { id: number; amountMicros: bigint; status: 'pending' | 'held' } | undefined;
-      if (balance > 0n) {
-        const status = held ? 'held' : 'pending';
-        this.db.prepare('UPDATE accounts SET balance_micros = balance_micros - ? WHERE id = ?').run(balance, accountId);
-        const r = this.db.prepare(`INSERT INTO refunds (account_id, wallet, refund_to, amount_micros, status, requested_at)
-          VALUES (?, ?, ?, ?, ?, ?)`).run(accountId, account.wallet, refundTo.toLowerCase(), balance, status, now);
-        refund = { id: Number(r.lastInsertRowid), amountMicros: balance, status };
-      }
-      this.db.exec('COMMIT');
-      return { revokedKeys, refund };
-    } catch (err) {
-      this.db.exec('ROLLBACK');
-      throw err;
-    }
-  }
-
-  refunds(status?: string): {
-    id: number; wallet: string; refundTo: string; amountMicros: bigint; status: string; requestedAt: number;
-    txHash: string | null; paidAt: number | null;
-  }[] {
-    const rows = (status
-      ? this.db.prepare('SELECT * FROM refunds WHERE status = ? ORDER BY id').all(status)
-      : this.db.prepare('SELECT * FROM refunds ORDER BY id').all()) as {
-        id: number; wallet: string; refund_to: string; amount_micros: number; status: string; requested_at: number;
-        tx_hash: string | null; paid_at: number | null;
-      }[];
-    return rows.map((r) => ({
-      id: r.id, wallet: r.wallet, refundTo: r.refund_to, amountMicros: BigInt(r.amount_micros), status: r.status,
-      requestedAt: r.requested_at, txHash: r.tx_hash, paidAt: r.paid_at,
-    }));
-  }
-
-  /** Record a pending refund as paid by `txHash`. False unless it was pending. */
-  refundPaid(id: number, txHash: string, now: number): boolean {
-    return this.db.prepare("UPDATE refunds SET status = 'paid', tx_hash = ?, paid_at = ? WHERE id = ? AND status = 'pending'")
-      .run(txHash.toLowerCase(), now, id).changes === 1;
-  }
-
-  /** Release a held refund (after review) for payout. False unless it was held. */
-  releaseRefund(id: number): boolean {
-    return this.db.prepare("UPDATE refunds SET status = 'pending' WHERE id = ? AND status = 'held'").run(id).changes === 1;
   }
 
   /** The deposit fee in basis points: the ledger's setting, or `fallback` until one is set. */
@@ -404,26 +333,18 @@ export class Store {
   }
 
   /**
-   * What the vault's USDG owes to users, in micro-USD: positive balances, refunds
-   * not yet paid (pending or held), and deposits held by screening (in full: a
-   * held deposit is either credited net of its fee or returned whole). Negative
-   * balances, where a request cost more than was left, are reported apart and
-   * never offset what is owed to others.
+   * What is owed to users, in micro-USD: positive balances, which are prepaid
+   * credit (service owed, not refundable), and deposits held by screening, which
+   * are cash (in full: a held deposit is credited net of its fee after review, or
+   * dealt with as the law requires). Negative balances, where a request cost more
+   * than was left, are reported apart and never offset what is owed to others.
    */
-  liabilities(): {
-    balancesMicros: bigint; overdrawnMicros: bigint; refundsPendingMicros: bigint; refundsHeldMicros: bigint;
-    depositsHeldMicros: bigint; owedMicros: bigint;
-  } {
+  liabilities(): { balancesMicros: bigint; overdrawnMicros: bigint; depositsHeldMicros: bigint; owedMicros: bigint } {
     const one = (sql: string) => BigInt((this.db.prepare(sql).get() as { v: number | null }).v ?? 0);
     const balancesMicros = one('SELECT SUM(MAX(balance_micros, 0)) AS v FROM accounts');
     const overdrawnMicros = -one('SELECT SUM(MIN(balance_micros, 0)) AS v FROM accounts');
-    const refundsPendingMicros = one("SELECT SUM(amount_micros) AS v FROM refunds WHERE status = 'pending'");
-    const refundsHeldMicros = one("SELECT SUM(amount_micros) AS v FROM refunds WHERE status = 'held'");
     const depositsHeldMicros = one('SELECT SUM(amount_micros) AS v FROM deposits WHERE held = 1');
-    return {
-      balancesMicros, overdrawnMicros, refundsPendingMicros, refundsHeldMicros, depositsHeldMicros,
-      owedMicros: balancesMicros + refundsPendingMicros + refundsHeldMicros + depositsHeldMicros,
-    };
+    return { balancesMicros, overdrawnMicros, depositsHeldMicros, owedMicros: balancesMicros + depositsHeldMicros };
   }
 
   /**
